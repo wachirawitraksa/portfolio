@@ -5,6 +5,7 @@ from .deps import LoginRequired, current_session
 from .routers import (
     account,
     articles,
+    ask,
     auth,
     categories,
     glossary,
@@ -24,6 +25,7 @@ app = FastAPI(title="Portfolio API", docs_url="/api/docs", openapi_url="/api/ope
 # Caddy sends only /api/* from the main domain and strips nothing; the admin
 # host is rewritten to /admin/*. So /admin is unreachable from the public domain.
 app.include_router(public.router, prefix="/api")
+app.include_router(ask.router, prefix="/api")
 
 admin = APIRouter(prefix="/admin")
 admin.include_router(auth.router)

@@ -12,6 +12,7 @@ from ..db import get_db
 from ..deps import COOKIE, LoginRequired, current_session, require_csrf
 from ..github import GitHub, get_github
 from ..models import AuthSession, User
+from ..netutil import client_ip
 from ..ratelimit import login_limiter
 from ..security import expiry, new_token, verify_password, verify_totp
 from ..templating import templates
@@ -27,10 +28,6 @@ GITHUB_ERROR = "เข้าสู่ระบบด้วย GitHub ไม่�
 def go(path: str) -> RedirectResponse:
     # Paths are what the browser sees on the admin host, which has no /admin prefix.
     return RedirectResponse(path, status_code=303)
-
-
-def client_ip(request: Request) -> str:
-    return request.client.host if request.client else "unknown"
 
 
 def login_page(request: Request, error: str | None = None, status: int = 200):

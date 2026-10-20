@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}คำถามจากผู้เข้าชม{% endblock %}
+{% block content %}
+<h1>คำถามจากผู้เข้าชม</h1>
+<p class="muted">24 ชั่วโมงที่ผ่านมา: ถาม {{ asked_today }} ครั้ง · เรียกโมเดล {{ model_calls_today }} ครั้ง · ตอบจาก cache {{ cached_today }} ครั้ง
+  · บันทึกคำถามพร้อมค่าแฮชของ IP (ไม่เก็บ IP จริง)</p>
+<p><a href="/rag">← กลับไปหน้าช่องถามตอบ</a></p>
+
+{% if repeated %}
+<section class="card">
+  <h2>คำถามที่ตอบไม่ได้และถูกถามซ้ำ <span class="muted">(เอาไปเติมเนื้อหา หรือเพิ่มใน glossary)</span></h2>
+  <table>
+    <thead><tr><th>คำถาม</th><th>ครั้ง</th><th>ล่าสุด</th><th></th></tr></thead>
+    <tbody>
+    {% for text, n, last in repeated %}
+      <tr><td>{{ text }}</td><td>{{ n }}</td><td>{{ last.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td><a href="/rag?q={{ text | urlencode }}">ลองค้น</a></td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+
+<p>
+  {% for key, label in filters.items() %}
+    {% if key == show %}<strong>{{ label }}</strong>{% else %}<a href="/rag/questions?show={{ key }}">{{ label }}</a>{% endif %}{% if not loop.last %} · {% endif %}
+  {% endfor %}
+</p>
+{% if rows %}
+<table>
+  <thead><tr><th>เวลา</th><th>คำถาม</th><th>ผล</th><th>คะแนน</th><th>แหล่งที่มา</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>
+      <td>{{ r.created_at.strftime('%m-%d %H:%M') }}</td>
+      <td>{{ r.question }}{% if r.normalized and r.normalized != r.question.lower() %}<div class="muted">→ {{ r.normalized }}</div>{% endif %}</td>
+      <td>{{ mode_labels.get(r.mode, r.mode) }}{% if r.cached %} <span class="muted">(cache)</span>{% endif %}{% if r.tier %} <span class="muted">· {{ r.tier }}</span>{% endif %}</td>
+      <td>{{ "%.2f" | format(r.top_score) }}</td>
+      <td>{% for s in r.sources %}{{ s.title_th or s.title_en }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">ยังไม่มีคำถามในหมวดนี้</p>
+{% endif %}
+{% endblock %}

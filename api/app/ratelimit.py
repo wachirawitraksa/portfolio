@@ -25,3 +25,5 @@ class LoginLimiter:
 login_limiter = LoginLimiter()
 # Password checks on the account page: a stolen session must not be able to guess the password.
 password_limiter = LoginLimiter()
+# Bursts on the question box. The per-day limit per visitor is counted in the database.
+ask_limiter = LoginLimiter()

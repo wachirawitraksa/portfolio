@@ -1,7 +1,21 @@
 from datetime import date, datetime
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Index, Integer, String, Table, Text, func
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Table,
+    Text,
+    func,
+)
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -308,6 +322,33 @@ class RagChunk(Base):
     sound: Mapped[str] = mapped_column(Text, default="")  # phonetic key for Thai typed in Latin letters
     embedding: Mapped[list[float]] = mapped_column(Vector(EMBED_DIM))
     built_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class RagQuery(Base):
+    """Every question asked in the question box, and what became of it. Read by the owner to find
+    what visitors want that the site does not answer yet, and reused as the answer cache."""
+
+    __tablename__ = "rag_query"
+    __table_args__ = (
+        Index("ix_rag_query_ip_created", "ip_hash", "created_at"),
+        Index("ix_rag_query_cache", "cache_key", "created_at"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    ip_hash: Mapped[str] = mapped_column(String(16), default="")
+    question: Mapped[str] = mapped_column(String(300), default="")
+    normalized: Mapped[str] = mapped_column(String(300), default="")
+    language: Mapped[str] = mapped_column(String(8), default="")
+    band: Mapped[str] = mapped_column(String(8), default="")  # high | medium | low
+    top_score: Mapped[float] = mapped_column(Float, default=0.0)
+    # answer | uncertain | no_answer | fallback | redirect | greeting | blocked
+    mode: Mapped[str] = mapped_column(String(16), default="")
+    tier: Mapped[str] = mapped_column(String(8), default="")  # which model was asked: cheap | smart | ""
+    cached: Mapped[bool] = mapped_column(Boolean, default=False)
+    cache_key: Mapped[str] = mapped_column(String(32), default="")
+    answer: Mapped[str] = mapped_column(Text, default="")
+    sources: Mapped[list] = mapped_column(JSON, default=list)
 
 
 class ProjectImage(Base):

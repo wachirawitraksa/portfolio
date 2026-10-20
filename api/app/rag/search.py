@@ -156,9 +156,9 @@ def credit(concept: Concept):
     return func.greatest(*options) if len(options) > 1 else options[0]
 
 
-async def retrieve(db: AsyncSession, raw: str) -> Retrieval:
-    kn = await knowledge(db)
-    prepared = prepare(raw, kn)
+async def retrieve(db: AsyncSession, raw: str, prepared: Prepared | None = None) -> Retrieval:
+    """Pass `prepared` when the question was already cleaned up (the answer pipeline does, to check its cache)."""
+    prepared = prepared or prepare(raw, await knowledge(db))
     if not prepared.concepts and not prepared.sound:
         return Retrieval(prepared)
 
