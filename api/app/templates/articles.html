@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}บทความ{% endblock %}
+{% block content %}
+<h1>{% if trash %}ถังขยะ: บทความ{% else %}บทความ{% endif %}</h1>
+<p>
+  {% if trash %}<a href="/articles">กลับไปรายการ</a>
+  {% else %}<a href="/articles/new">+ เพิ่มบทความ</a> · <a href="/articles?trash=true">ถังขยะ</a>{% endif %}
+</p>
+{% if rows %}
+<table>
+  <thead><tr><th>ชื่อ</th><th>ที่มา</th><th>วันที่</th><th>สถานะ</th><th></th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>
+      <td>
+        {{ r.title_th or r.title_en }}
+        {% if r.title_th and r.title_en %}<div class="muted">{{ r.title_en }}</div>{% endif %}
+        {% if untranslated[r.id] %}<div class="missing">ยังไม่ได้แปล {{ untranslated[r.id] | length }} ช่อง</div>{% endif %}
+      </td>
+      <td>{{ source_labels[r.source] }}{% if r.platform %} · {{ r.platform }}{% endif %}</td>
+      <td>{{ r.published_on.isoformat() if r.published_on else '' }}</td>
+      <td>{{ status_labels[r.status] }}</td>
+      <td class="row-actions">
+        {% if trash %}
+          <form method="post" action="/articles/{{ r.id }}/restore" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>กู้คืน</button></form>
+        {% else %}
+          <a class="btn" href="/articles/{{ r.id }}/edit">แก้ไข</a>
+          <form method="post" action="/articles/{{ r.id }}/trash" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>ลบ</button></form>
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">{% if trash %}ถังขยะว่างอยู่{% else %}ยังไม่มีบทความ กด "เพิ่มบทความ" เพื่อเริ่มต้น{% endif %}</p>
+{% endif %}
+{% endblock %}

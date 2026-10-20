@@ -8,6 +8,7 @@ from ..db import get_db
 from ..models import (
     EMPLOYMENT_TYPES,
     PROJECT_TEXT_FIELDS,
+    Article,
     Category,
     Kind,
     Project,
@@ -226,6 +227,58 @@ async def experience(db: AsyncSession = Depends(get_db)):
         }
         for w in rows
     ]
+
+
+def article_json(a: Article, detail: bool = False) -> dict:
+    data = {
+        "id": a.id,
+        "title_th": a.title_th,
+        "title_en": a.title_en,
+        "summary_th": a.summary_th,
+        "summary_en": a.summary_en,
+        "source": a.source,
+        "platform": a.platform,
+        "external_url": a.external_url,
+        "published_on": a.published_on.isoformat() if a.published_on else None,
+        "tags": [{"id": t.id, "name": t.name} for t in a.tags if t.deleted_at is None],
+    }
+    if detail:
+        # Markdown, as written. Empty for articles that live on another platform.
+        data["body_th"] = a.body_th
+        data["body_en"] = a.body_en
+    return data
+
+
+def published_articles() -> list:
+    return [Article.status == "published", Article.deleted_at.is_(None)]
+
+
+@router.get("/articles")
+async def articles(
+    limit: Annotated[int, Query(ge=1, le=60)] = 12,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    db: AsyncSession = Depends(get_db),
+):
+    where = published_articles()
+    total = (await db.execute(select(func.count()).select_from(Article).where(*where))).scalar_one()
+    rows = (
+        await db.execute(
+            select(Article)
+            .where(*where)
+            .order_by(Article.published_on.desc().nulls_last(), Article.id.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+    ).scalars().all()
+    return {"total": total, "items": [article_json(a) for a in rows]}
+
+
+@router.get("/articles/{article_id}")
+async def article(article_id: int, db: AsyncSession = Depends(get_db)):
+    row = (await db.execute(select(Article).where(Article.id == article_id, *published_articles()))).scalar_one_or_none()
+    if row is None:
+        raise HTTPException(404)
+    return article_json(row, detail=True)
 
 
 @router.get("/media/{image_id}")

@@ -191,6 +191,39 @@ class WorkEntry(Base):
         return "moment" if self.ended_on is None or self.ended_on == self.started_on else "range"
 
 
+article_tag = Table(
+    "article_tag",
+    Base.metadata,
+    Column("article_id", ForeignKey("article.id", ondelete="CASCADE"), primary_key=True),
+    Column("tag_id", ForeignKey("tag.id", ondelete="CASCADE"), primary_key=True),
+)
+
+ARTICLE_SOURCES = ("internal", "external")
+
+
+class Article(Base):
+    """Written on this site (source=internal) or a link to another platform (source=external)."""
+
+    __tablename__ = "article"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title_th: Mapped[str] = mapped_column(String(200), default="")
+    title_en: Mapped[str] = mapped_column(String(200), default="")
+    summary_th: Mapped[str] = mapped_column(Text, default="")
+    summary_en: Mapped[str] = mapped_column(Text, default="")
+    # Markdown text, served as-is; the front end renders it. Empty for external articles.
+    body_th: Mapped[str] = mapped_column(Text, default="")
+    body_en: Mapped[str] = mapped_column(Text, default="")
+    source: Mapped[str] = mapped_column(String(16), default="internal")
+    external_url: Mapped[str] = mapped_column(String(500), default="")
+    platform: Mapped[str] = mapped_column(String(80), default="")  # Medium, dev.to, ...
+    published_on: Mapped[date | None] = mapped_column(Date)
+    status: Mapped[str] = mapped_column(String(16), default="draft")
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    tags: Mapped[list[Tag]] = relationship(secondary=article_tag, lazy="selectin", order_by="Tag.name")
+
+
 class ProjectImage(Base):
     """A picture or screenshot of one entry. The file lives in object storage under `key`."""
 

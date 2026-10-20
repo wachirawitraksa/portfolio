@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}{% if row and row.id %}แก้ไขบทความ{% else %}เพิ่มบทความ{% endif %}{% endblock %}
+{% from "_chips.html" import chips, chips_script %}
+{% block content %}
+<h1>{% if row and row.id %}แก้ไขบทความ{% else %}เพิ่มบทความ{% endif %}</h1>
+{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+
+<form method="post" action="{% if row and row.id %}/articles/{{ row.id }}{% else %}/articles{% endif %}">
+  <input type="hidden" name="csrf_token" value="{{ csrf }}">
+
+  <section class="card">
+    <h2>ชื่อและที่มา</h2>
+    <div class="pair">
+      {% for lang, lang_label in (("th", "ไทย"), ("en", "English")) %}
+      {% set value = (row | attr("title_" ~ lang)) if row else "" %}
+      <div>
+        <label for="title_{{ lang }}">ชื่อบทความ · {{ lang_label }}{% if row and row.id and not value %} <span class="missing">ยังไม่ได้กรอก</span>{% endif %}</label>
+        <input id="title_{{ lang }}" name="title_{{ lang }}" type="text" maxlength="200" value="{{ value }}" {% if loop.first and not (row and row.id) %}autofocus{% endif %}>
+      </div>
+      {% endfor %}
+    </div>
+    <label for="source">ที่มา</label>
+    <select id="source" name="source" style="max-width: 280px">
+      {% for key, label in sources %}<option value="{{ key }}" {% if (row.source if row and row.source else 'internal') == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <label for="published_on">วันที่เผยแพร่</label>
+    <input id="published_on" name="published_on" type="date" value="{{ row.published_on.isoformat() if row and row.published_on else '' }}" style="max-width: 200px">
+    <div class="pair">
+      {% for lang, lang_label in (("th", "ไทย"), ("en", "English")) %}
+      {% set value = (row | attr("summary_" ~ lang)) if row else "" %}
+      <div>
+        <label for="summary_{{ lang }}">สรุปสั้น ๆ · {{ lang_label }}{% if row and row.id and not value %} <span class="missing">ยังไม่ได้กรอก</span>{% endif %}</label>
+        <textarea id="summary_{{ lang }}" name="summary_{{ lang }}" rows="3">{{ value }}</textarea>
+      </div>
+      {% endfor %}
+    </div>
+    {{ chips("tag", "หัวข้อ / tag", "(พิมพ์ชื่อใหม่แล้วกดเพิ่มได้เลย)", "tag_ids", "new_tags", chosen_tags, tag_options, 0) }}
+  </section>
+
+  <section class="card" id="external-fields">
+    <h2>ลิงก์ไปแพลตฟอร์มอื่น <span class="muted">(ใช้เมื่อที่มาเป็น "ลิงก์ไปแพลตฟอร์มอื่น")</span></h2>
+    <label for="external_url">ลิงก์บทความ</label>
+    <input id="external_url" name="external_url" type="text" maxlength="500" value="{{ row.external_url if row else '' }}">
+    <label for="platform">ชื่อแพลตฟอร์ม <span class="muted">(เช่น Medium, dev.to)</span></label>
+    <input id="platform" name="platform" type="text" maxlength="80" value="{{ row.platform if row else '' }}" style="max-width: 280px">
+  </section>
+
+  <section class="card" id="internal-fields">
+    <h2>เนื้อหา <span class="muted">(ใช้เมื่อที่มาเป็น "เขียนในเว็บนี้" · เขียนด้วย Markdown ได้)</span></h2>
+    <div class="pair">
+      {% for lang, lang_label in (("th", "ไทย"), ("en", "English")) %}
+      {% set value = (row | attr("body_" ~ lang)) if row else "" %}
+      <div>
+        <label for="body_{{ lang }}">{{ lang_label }}{% if row and row.id and row.source == 'internal' and not value %} <span class="missing">ยังไม่ได้กรอก</span>{% endif %}</label>
+        <textarea id="body_{{ lang }}" name="body_{{ lang }}" rows="14">{{ value }}</textarea>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>การแสดงผล</h2>
+    <label for="status">สถานะ</label>
+    <select id="status" name="status" style="max-width: 280px">
+      {% for value, text in statuses %}<option value="{{ value }}" {% if (row.status if row and row.status else 'draft') == value %}selected{% endif %}>{{ text }}</option>{% endfor %}
+    </select>
+  </section>
+
+  <p><button>บันทึก</button> <a href="/articles">ยกเลิก</a></p>
+</form>
+
+{{ chips_script() }}
+<script>
+  // Show only the block that matches the chosen source.
+  (function () {
+    var select = document.getElementById("source");
+    var external = document.getElementById("external-fields");
+    var internal = document.getElementById("internal-fields");
+    function sync() {
+      external.hidden = select.value !== "external";
+      internal.hidden = select.value !== "internal";
+    }
+    select.addEventListener("change", sync);
+    sync();
+  })();
+</script>
+{% endblock %}

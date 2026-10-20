@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.responses import RedirectResponse
 
 from .deps import LoginRequired, current_session
-from .routers import auth, categories, images, kinds, projects, public, tags, work
+from .routers import articles, auth, categories, images, kinds, projects, public, tags, work
 
 app = FastAPI(title="Portfolio API", docs_url="/api/docs", openapi_url="/api/openapi.json")
 
@@ -19,6 +19,7 @@ admin.include_router(images.router, dependencies=[Depends(current_session)])
 admin.include_router(images.preview, dependencies=[Depends(current_session)])
 admin.include_router(tags.router, dependencies=[Depends(current_session)])
 admin.include_router(work.router, dependencies=[Depends(current_session)])
+admin.include_router(articles.router, dependencies=[Depends(current_session)])
 
 
 @admin.get("/")
