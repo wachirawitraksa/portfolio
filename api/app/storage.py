@@ -15,6 +15,7 @@ class Storage(Protocol):
     async def put(self, key: str, data: bytes, content_type: str) -> None: ...
     async def get(self, key: str) -> bytes | None: ...
     async def delete(self, key: str) -> None: ...
+    async def ping(self) -> None: ...  # returns when storage answers, raises when it does not
 
 
 class S3Storage:
@@ -27,7 +28,10 @@ class S3Storage:
             aws_access_key_id=s.s3_access_key,
             aws_secret_access_key=s.s3_secret_key,
             region_name="us-east-1",
-            config=Config(s3={"addressing_style": "path"}),
+            # Short waits: a storage that is down should fail a request quickly, not hold it for a minute.
+            config=Config(
+                s3={"addressing_style": "path"}, connect_timeout=3, read_timeout=15, retries={"max_attempts": 2}
+            ),
         )
         self.ready = False
 
@@ -51,6 +55,17 @@ class S3Storage:
             if e.response["Error"]["Code"] in ("NoSuchKey", "404"):
                 return None
             raise
+
+    def _ping(self) -> None:
+        try:
+            self.client.head_bucket(Bucket=self.bucket)
+        except ClientError as e:
+            if e.response["Error"]["Code"] in ("404", "NoSuchBucket", "NotFound"):
+                return  # the service answers; the bucket is created by the first upload
+            raise
+
+    async def ping(self) -> None:
+        await to_thread.run_sync(self._ping)
 
     async def put(self, key: str, data: bytes, content_type: str) -> None:
         await to_thread.run_sync(self._put, key, data, content_type)

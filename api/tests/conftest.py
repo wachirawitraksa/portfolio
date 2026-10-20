@@ -54,6 +54,9 @@ class MemoryStorage:
     async def delete(self, key):
         self.files.pop(key, None)
 
+    async def ping(self):
+        return None
+
 
 @pytest.fixture(autouse=True)
 def storage():

@@ -145,6 +145,18 @@ class SettingsOut(BaseModel):
     how_i_work_project_id: int | None
 
 
+class LiveOut(BaseModel):
+    status: Literal["ok"]
+
+
+class HealthOut(BaseModel):
+    """Whether the things the API depends on answer. Details of a failure stay in the server log."""
+
+    status: Literal["ok", "degraded"]
+    database: Literal["ok", "fail"]
+    storage: Literal["ok", "fail"]
+
+
 class AskIn(BaseModel):
     question: str = Field(max_length=1000)
 

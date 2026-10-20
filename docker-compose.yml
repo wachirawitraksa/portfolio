@@ -29,6 +29,14 @@ services:
         condition: service_healthy
       storage:
         condition: service_started
+    # Healthy when /api/health answers 200: the database and the file storage both respond.
+    # (The image has no curl, so Python makes the request; a 503 raises and fails the check.)
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=5)"]
+      interval: 15s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
     # Dev only: direct access (Swagger at /docs). Localhost only.
     ports: ["127.0.0.1:${API_PORT:-8000}:8000"]
 

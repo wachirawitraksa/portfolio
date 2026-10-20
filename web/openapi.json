@@ -344,6 +344,42 @@
         "title": "HTTPValidationError",
         "type": "object"
       },
+      "HealthOut": {
+        "description": "Whether the things the API depends on answer. Details of a failure stay in the server log.",
+        "properties": {
+          "database": {
+            "enum": [
+              "ok",
+              "fail"
+            ],
+            "title": "Database",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "degraded"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "storage": {
+            "enum": [
+              "ok",
+              "fail"
+            ],
+            "title": "Storage",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "database",
+          "storage"
+        ],
+        "title": "HealthOut",
+        "type": "object"
+      },
       "ImageOut": {
         "properties": {
           "caption_en": {
@@ -398,6 +434,20 @@
           "name_en"
         ],
         "title": "KindOut",
+        "type": "object"
+      },
+      "LiveOut": {
+        "properties": {
+          "status": {
+            "const": "ok",
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "LiveOut",
         "type": "object"
       },
       "ProfileOut": {
@@ -1218,6 +1268,54 @@
           }
         },
         "summary": "Experience"
+      }
+    },
+    "/api/health": {
+      "get": {
+        "description": "200 when the database and the file storage both answer, 503 when either does not. For monitoring\nand for the container health check.",
+        "operationId": "health_api_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthOut"
+                }
+              }
+            },
+            "description": "The database or the file storage is not answering"
+          }
+        },
+        "summary": "Health"
+      }
+    },
+    "/api/health/live": {
+      "get": {
+        "description": "The process is up and answering. Touches nothing else.",
+        "operationId": "live_api_health_live_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Live"
       }
     },
     "/api/how-i-work": {

@@ -98,6 +98,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Health
+         * @description 200 when the database and the file storage both answer, 503 when either does not. For monitoring
+         *     and for the container health check.
+         */
+        get: operations["health_api_health_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/health/live": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Live
+         * @description The process is up and answering. Touches nothing else.
+         */
+        get: operations["live_api_health_live_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/how-i-work": {
         parameters: {
             query?: never;
@@ -434,6 +475,27 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /**
+         * HealthOut
+         * @description Whether the things the API depends on answer. Details of a failure stay in the server log.
+         */
+        HealthOut: {
+            /**
+             * Database
+             * @enum {string}
+             */
+            database: "ok" | "fail";
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ok" | "degraded";
+            /**
+             * Storage
+             * @enum {string}
+             */
+            storage: "ok" | "fail";
+        };
         /** ImageOut */
         ImageOut: {
             /** Caption En */
@@ -455,6 +517,14 @@ export interface components {
             name_en: string;
             /** Name Th */
             name_th: string;
+        };
+        /** LiveOut */
+        LiveOut: {
+            /**
+             * Status
+             * @constant
+             */
+            status: "ok";
         };
         /** ProfileOut */
         ProfileOut: {
@@ -806,6 +876,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WorkItem"][];
+                };
+            };
+        };
+    };
+    health_api_health_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HealthOut"];
+                };
+            };
+            /** @description The database or the file storage is not answering */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HealthOut"];
+                };
+            };
+        };
+    };
+    live_api_health_live_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LiveOut"];
                 };
             };
         };

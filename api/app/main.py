@@ -9,6 +9,7 @@ from .routers import (
     auth,
     categories,
     glossary,
+    health,
     images,
     kinds,
     profile,
@@ -27,6 +28,7 @@ app = FastAPI(title="Portfolio API", docs_url="/api/docs", openapi_url="/api/ope
 # host is rewritten to /admin/*. So /admin is unreachable from the public domain.
 app.include_router(public.router, prefix="/api")
 app.include_router(ask.router, prefix="/api")
+app.include_router(health.router, prefix="/api")
 
 admin = APIRouter(prefix="/admin")
 admin.include_router(auth.router)
