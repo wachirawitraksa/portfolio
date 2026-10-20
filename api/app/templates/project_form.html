@@ -5,7 +5,8 @@
 <h1>{% if row and row.id %}แก้ไขรายการ{% else %}เพิ่มรายการ{% endif %}</h1>
 {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
 
-<form method="post" action="{% if row and row.id %}/projects/{{ row.id }}{% else %}/projects{% endif %}">
+<form id="project-form" method="post" action="{% if row and row.id %}/projects/{{ row.id }}{% else %}/projects{% endif %}"
+      data-kind-fields='{{ kind_fields | tojson }}' data-filled='{{ filled_groups | tojson }}' data-labels='{{ groups | tojson }}'>
   <input type="hidden" name="csrf_token" value="{{ csrf }}">
 
   <section class="card">
@@ -15,6 +16,7 @@
     <select id="kind_id" name="kind_id" style="max-width: 280px">
       {% for k in kinds %}<option value="{{ k.id }}" {% if (row.kind_id if row and row.kind_id else kinds[0].id) == k.id %}selected{% endif %}>{{ k.name_th or k.name_en }}</option>{% endfor %}
     </select>
+    <p class="muted" id="hidden-note" hidden></p>
     {% else %}
     <p class="empty">ยังไม่มีชนิด <a href="/kinds/new">เพิ่มชนิดก่อน</a> (เช่น ผลงาน ใบเซอร์ รางวัล)</p>
     {% endif %}
@@ -33,10 +35,12 @@
 
     {{ chips("cat", "ประเภท", "(ไม่เกิน " ~ max_categories ~ " พิมพ์ชื่อใหม่แล้วกดเพิ่มได้เลย)", "category_ids", "new_categories",
              chosen_categories, category_options, max_categories) }}
+    <div data-group="tech"{% if 'tech' not in visible %} hidden{% endif %}>
     {{ chips("tag", "เทคโนโลยี / tag", "(พิมพ์ชื่อใหม่แล้วกดเพิ่มได้เลย)", "tag_ids", "new_tags", chosen_tags, tag_options, 0) }}
+    </div>
   </section>
 
-  <section class="card">
+  <section class="card" data-group="story"{% if 'story' not in visible %} hidden{% endif %}>
     <h2>รายละเอียด <span class="muted">(กรอกทีหลังได้)</span></h2>
     {% for name, label, multiline in fields[1:] %}
     <fieldset>
@@ -54,8 +58,8 @@
     {% endfor %}
   </section>
 
-  <section class="card">
-    <h2>ใบเซอร์ / รางวัล / คอร์ส <span class="muted">(เว้นว่างได้ถ้าไม่ใช่)</span></h2>
+  <section class="card" data-group="credential"{% if 'credential' not in visible %} hidden{% endif %}>
+    <h2>ใบเซอร์ / รางวัล / คอร์ส</h2>
     <div class="pair">
       <div>
         <label for="issuer">ผู้ออก</label>
@@ -72,12 +76,16 @@
 
   <section class="card">
     <h2>ลิงก์และข้อมูลอื่น</h2>
-    <label for="year">ปี</label>
-    <input id="year" name="year" type="text" inputmode="numeric" value="{{ row.year if row and row.year else '' }}" style="max-width: 120px">
-    <label for="repo_url">ลิงก์ repo</label>
-    <input id="repo_url" name="repo_url" type="text" value="{{ row.repo_url if row else '' }}">
-    <label for="demo_url">ลิงก์ demo ที่กดใช้ได้จริง</label>
-    <input id="demo_url" name="demo_url" type="text" value="{{ row.demo_url if row else '' }}">
+    <div data-group="year"{% if 'year' not in visible %} hidden{% endif %}>
+      <label for="year">ปี</label>
+      <input id="year" name="year" type="text" inputmode="numeric" value="{{ row.year if row and row.year else '' }}" style="max-width: 120px">
+    </div>
+    <div data-group="links"{% if 'links' not in visible %} hidden{% endif %}>
+      <label for="repo_url">ลิงก์ repo</label>
+      <input id="repo_url" name="repo_url" type="text" value="{{ row.repo_url if row else '' }}">
+      <label for="demo_url">ลิงก์ demo ที่กดใช้ได้จริง</label>
+      <input id="demo_url" name="demo_url" type="text" value="{{ row.demo_url if row else '' }}">
+    </div>
     <label for="aliases">ชื่อเรียกอื่น (หนึ่งบรรทัดต่อหนึ่งชื่อ ใช้เป็น glossary ให้ระบบถามตอบหาเจอ)</label>
     <textarea id="aliases" name="aliases" rows="3">{{ (row.aliases | join("\n")) if row else '' }}</textarea>
   </section>
@@ -161,4 +169,32 @@
 </section>
 
 {{ chips_script() }}
+<script>
+  // Show only the fields the chosen kind uses. Fields that get hidden stay in the form, so what was typed
+  // there is kept (and saved again unchanged); a note says when a hidden group already holds data.
+  (function () {
+    var form = document.getElementById("project-form");
+    var select = document.getElementById("kind_id");
+    if (!form || !select) { return; }
+    var byKind = JSON.parse(form.dataset.kindFields);
+    var filled = JSON.parse(form.dataset.filled);
+    var labels = JSON.parse(form.dataset.labels);
+    var note = document.getElementById("hidden-note");
+    var everything = Object.keys(labels);
+
+    function sync() {
+      var allowed = byKind[select.value] || everything;
+      form.querySelectorAll("[data-group]").forEach(function (el) {
+        el.hidden = allowed.indexOf(el.dataset.group) < 0;
+      });
+      var kept = filled.filter(function (group) { return allowed.indexOf(group) < 0; });
+      note.hidden = kept.length === 0;
+      note.textContent = kept.length
+        ? "ชนิดนี้ไม่ใช้ช่อง: " + kept.map(function (g) { return labels[g].split(" (")[0]; }).join(", ") + " (ข้อมูลที่เคยกรอกยังเก็บไว้ ไม่หาย)"
+        : "";
+    }
+    select.addEventListener("change", sync);
+    sync();
+  })();
+</script>
 {% endblock %}

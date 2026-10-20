@@ -10,6 +10,7 @@ from ..db import get_db
 from ..deps import current_session, require_csrf
 from ..forms import is_http_url, split_lines, untranslated
 from ..models import (
+    KIND_FIELD_GROUPS,
     MAX_CATEGORIES,
     PROJECT_TEXT_FIELDS,
     STATUSES,
@@ -58,6 +59,22 @@ async def choices(db: AsyncSession):
     return categories, tags, kinds
 
 
+def filled_groups(row, tag_ids, new) -> list[str]:
+    """Groups of fields this entry already has data in, so the form can say so when a kind hides them."""
+    filled = []
+    if any(str(getattr(row, f"{name}_{lang}", "") or "").strip() for name in PROJECT_TEXT_FIELDS[1:] for lang in ("th", "en")):
+        filled.append("story")
+    if tag_ids or new["tags"]:
+        filled.append("tech")
+    if (row.repo_url or "").strip() or (row.demo_url or "").strip():
+        filled.append("links")
+    if (row.issuer or "").strip() or row.issued_on or (row.verify_url or "").strip():
+        filled.append("credential")
+    if row.year:
+        filled.append("year")
+    return filled
+
+
 async def form_page(request, session, db, row, category_ids, tag_ids, error=None, status=200, new=None):
     categories, tags, kinds = await choices(db)
     new = new or {"tags": [], "categories": []}
@@ -72,7 +89,16 @@ async def form_page(request, session, db, row, category_ids, tag_ids, error=None
         ).scalars().all()
         images = [i for i in every if i.deleted_at is None]
         trashed_images = [i for i in every if i.deleted_at is not None]
+    # Which groups of fields each kind shows; the page script swaps them when the kind changes.
+    every_group = list(KIND_FIELD_GROUPS)
+    kind_fields = {k.id: [g for g in k.fields if g in KIND_FIELD_GROUPS] for k in kinds}
+    current = row.kind_id if row is not None and row.kind_id in kind_fields else (kinds[0].id if kinds else None)
+    visible = kind_fields.get(current, every_group)
     context = {
+        "kind_fields": kind_fields,
+        "visible": visible,
+        "groups": KIND_FIELD_GROUPS,
+        "filled_groups": filled_groups(row, tag_ids, new) if row is not None else [],
         "images": images,
         "trashed_images": trashed_images,
         "row": row,

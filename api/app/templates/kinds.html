@@ -8,12 +8,13 @@
 </div>
 {% if rows %}
 <table>
-  <thead><tr><th>ชื่อไทย</th><th>ชื่ออังกฤษ</th><th>สถานะ</th><th></th></tr></thead>
+  <thead><tr><th>ชื่อไทย</th><th>ชื่ออังกฤษ</th><th>ช่องที่ใช้</th><th>สถานะ</th><th></th></tr></thead>
   <tbody>
   {% for r in rows %}
     <tr>
       <td>{{ r.name_th or '' }}{% if not r.name_th %}<span class="missing">ยังไม่ได้กรอก</span>{% endif %}</td>
       <td>{{ r.name_en or '' }}{% if not r.name_en %}<span class="missing">ยังไม่ได้กรอก</span>{% endif %}</td>
+      <td>{% for key in r.fields %}<span class="badge info">{{ groups[key].split(' (')[0] if key in groups else key }}</span> {% endfor %}{% if not r.fields %}<span class="muted">เฉพาะช่องพื้นฐาน</span>{% endif %}</td>
       <td>{% if r.hidden %}<span class="badge">ซ่อนอยู่</span>{% else %}<span class="badge ok">แสดง</span>{% endif %}</td>
       <td class="row-actions">
         {% if trash %}

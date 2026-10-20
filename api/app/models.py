@@ -92,6 +92,17 @@ MAX_CATEGORIES = 3
 PROJECT_TEXT_FIELDS = ("title", "problem", "work", "role", "result", "learned", "next_steps")
 
 
+# The groups of fields an entry's form can show. Each kind chooses which groups it uses, so a certificate
+# is not asked for a repo link and a project is not asked who issued it.
+KIND_FIELD_GROUPS = {
+    "tech": "เทคโนโลยี / tag",
+    "story": "เรื่องราว (โจทย์ สิ่งที่ทำ บทบาท ผลลัพธ์ สิ่งที่ได้เรียน)",
+    "links": "ลิงก์ repo / demo",
+    "credential": "ใบเซอร์ / รางวัล (ผู้ออก วันที่ได้รับ ลิงก์ตรวจสอบ)",
+    "year": "ปี",
+}
+
+
 class Kind(Base):
     """What sort of entry this is: project, certificate, award, course, activity, ..."""
 
@@ -102,6 +113,8 @@ class Kind(Base):
     name_en: Mapped[str] = mapped_column(String(120), default="")
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
     hidden: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Keys of KIND_FIELD_GROUPS this kind's form shows. A new kind starts with all of them.
+    fields: Mapped[list[str]] = mapped_column(ARRAY(Text), default=lambda: list(KIND_FIELD_GROUPS))
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 

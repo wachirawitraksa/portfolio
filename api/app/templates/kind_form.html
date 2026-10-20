@@ -2,13 +2,24 @@
 {% block title %}{% if row %}แก้ไขชนิด{% else %}เพิ่มชนิด{% endif %}{% endblock %}
 {% block content %}
 <h1>{% if row %}แก้ไขชนิด{% else %}เพิ่มชนิด{% endif %}</h1>
-<form method="post" action="{% if row %}/kinds/{{ row.id }}{% else %}/kinds{% endif %}" style="max-width: 420px">
+<form method="post" action="{% if row %}/kinds/{{ row.id }}{% else %}/kinds{% endif %}" style="max-width: 640px">
   <input type="hidden" name="csrf_token" value="{{ csrf }}">
-  <label for="name_th">ชื่อภาษาไทย</label>
-  <input id="name_th" name="name_th" type="text" value="{{ row.name_th if row else '' }}">
-  <label for="name_en">ชื่อภาษาอังกฤษ</label>
-  <input id="name_en" name="name_en" type="text" value="{{ row.name_en if row else '' }}">
-  <p class="muted">กรอกได้ทีละภาษา ช่องที่ยังว่างจะมีป้ายเตือนในรายการ และหน้าเว็บจะแสดงอีกภาษาแทน</p>
+  <input type="hidden" name="fields_sent" value="1">
+  <section class="card">
+    <label for="name_th">ชื่อภาษาไทย</label>
+    <input id="name_th" name="name_th" type="text" value="{{ row.name_th if row else '' }}">
+    <label for="name_en">ชื่อภาษาอังกฤษ</label>
+    <input id="name_en" name="name_en" type="text" value="{{ row.name_en if row else '' }}">
+    <p class="muted">กรอกได้ทีละภาษา ช่องที่ยังว่างจะมีป้ายเตือนในรายการ และหน้าเว็บจะแสดงอีกภาษาแทน</p>
+  </section>
+  <section class="card">
+    <h2>ช่องที่ใช้กับชนิดนี้</h2>
+    <p class="muted">ตอนเพิ่มหรือแก้ไขรายการ ฟอร์มจะแสดงเฉพาะช่องที่ติ๊กไว้ตามชนิดที่เลือก (ชื่อ ประเภท ชื่อเรียกอื่น และสถานะแสดงเสมอ)
+      ข้อมูลที่เคยกรอกในช่องที่ซ่อนจะไม่หาย</p>
+    {% for key, label in groups.items() %}
+    <label class="check"><input type="checkbox" name="fields" value="{{ key }}" {% if not row or key in row.fields %}checked{% endif %}> {{ label }}</label>
+    {% endfor %}
+  </section>
   <p><button>บันทึก</button> <a href="/kinds">ยกเลิก</a></p>
 </form>
 {% endblock %}

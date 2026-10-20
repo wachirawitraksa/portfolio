@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_db
 from ..deps import current_session, require_csrf
-from ..models import AuthSession, Kind, Project
+from ..models import KIND_FIELD_GROUPS, AuthSession, Kind, Project
 from ..templating import templates
 from .auth import go
 
@@ -31,27 +31,46 @@ async def list_kinds(
     query = select(Kind).order_by(Kind.sort_order, Kind.id)
     query = query.where(Kind.deleted_at.is_not(None) if trash else Kind.deleted_at.is_(None))
     rows = (await db.execute(query)).scalars().all()
-    return templates.TemplateResponse(
-        request, "kinds.html", {"rows": rows, "trash": trash, "csrf": session.csrf_token}
-    )
+    context = {"rows": rows, "trash": trash, "groups": KIND_FIELD_GROUPS, "csrf": session.csrf_token}
+    return templates.TemplateResponse(request, "kinds.html", context)
+
+
+def chosen_groups(sent: str, picked: list[str]) -> list[str]:
+    """The groups ticked in the form, in menu order. A request that did not come from the form
+    (no `fields_sent` marker) keeps every group, so nothing is hidden by accident."""
+    if not sent:
+        return list(KIND_FIELD_GROUPS)
+    return [key for key in KIND_FIELD_GROUPS if key in picked]
+
+
+def form_page(request, session, row):
+    context = {"row": row, "groups": KIND_FIELD_GROUPS, "csrf": session.csrf_token}
+    return templates.TemplateResponse(request, "kind_form.html", context)
 
 
 @router.get("/new", response_class=HTMLResponse)
 async def new_form(request: Request, session: AuthSession = Depends(current_session)):
-    return templates.TemplateResponse(
-        request, "kind_form.html", {"row": None, "csrf": session.csrf_token}
-    )
+    return form_page(request, session, None)
 
 
 @router.post("")
 async def create(
     name_th: str = Form(""),
     name_en: str = Form(""),
+    fields_sent: str = Form(""),
+    fields: list[str] = Form([]),
     _: None = Depends(require_csrf),
     db: AsyncSession = Depends(get_db),
 ):
     last = (await db.execute(select(func.coalesce(func.max(Kind.sort_order), 0)))).scalar_one()
-    db.add(Kind(name_th=name_th.strip(), name_en=name_en.strip(), sort_order=last + 1))
+    db.add(
+        Kind(
+            name_th=name_th.strip(),
+            name_en=name_en.strip(),
+            sort_order=last + 1,
+            fields=chosen_groups(fields_sent, fields),
+        )
+    )
     await db.commit()
     return go("/kinds")
 
@@ -63,10 +82,7 @@ async def edit_form(
     session: AuthSession = Depends(current_session),
     db: AsyncSession = Depends(get_db),
 ):
-    row = await get_or_404(db, kind_id)
-    return templates.TemplateResponse(
-        request, "kind_form.html", {"row": row, "csrf": session.csrf_token}
-    )
+    return form_page(request, session, await get_or_404(db, kind_id))
 
 
 @router.post("/{kind_id}")
@@ -74,11 +90,15 @@ async def update(
     kind_id: int,
     name_th: str = Form(""),
     name_en: str = Form(""),
+    fields_sent: str = Form(""),
+    fields: list[str] = Form([]),
     _: None = Depends(require_csrf),
     db: AsyncSession = Depends(get_db),
 ):
     row = await get_or_404(db, kind_id)
     row.name_th, row.name_en = name_th.strip(), name_en.strip()
+    if fields_sent:  # an edit that did not come from the form leaves the groups alone
+        row.fields = chosen_groups(fields_sent, fields)
     await db.commit()
     return go("/kinds")
 
