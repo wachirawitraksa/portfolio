@@ -76,6 +76,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/education": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Education
+         * @description Schools and degrees, newest first. Hidden and trashed entries stay out.
+         */
+        get: operations["education_api_education_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/experience": {
         parameters: {
             query?: never;
@@ -450,7 +470,7 @@ export interface components {
              * Type
              * @enum {string}
              */
-            type: "project" | "work" | "article" | "profile";
+            type: "project" | "work" | "education" | "article" | "profile";
         };
         /** CategoryOut */
         CategoryOut: {
@@ -469,6 +489,44 @@ export interface components {
             label: string;
             /** Url */
             url: string;
+        };
+        /** EducationItem */
+        EducationItem: {
+            /** Degree En */
+            degree_en: string;
+            /** Degree Th */
+            degree_th: string;
+            /** Details En */
+            details_en: string[];
+            /** Details Th */
+            details_th: string[];
+            /** Ended On */
+            ended_on: string | null;
+            /** Field En */
+            field_en: string;
+            /** Field Th */
+            field_th: string;
+            /** Grade */
+            grade: string;
+            /** Id */
+            id: number;
+            /** Institution En */
+            institution_en: string;
+            /** Institution Th */
+            institution_th: string;
+            /** Level */
+            level: string;
+            /** Level En */
+            level_en: string;
+            /** Level Th */
+            level_th: string;
+            /**
+             * Span
+             * @enum {string}
+             */
+            span: "range" | "ongoing";
+            /** Started On */
+            started_on: string;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -856,6 +914,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CategoryOut"][];
+                };
+            };
+        };
+    };
+    education_api_education_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EducationItem"][];
                 };
             };
         };

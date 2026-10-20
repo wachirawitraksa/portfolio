@@ -17,7 +17,7 @@ from .auth import go
 
 router = APIRouter(prefix="/rag")
 
-TYPE_LABELS = {"project": "ผลงาน", "work": "ประวัติการทำงาน", "article": "บทความ", "profile": "ข้อมูลส่วนตัว"}
+TYPE_LABELS = {"project": "ผลงาน", "work": "ประวัติการทำงาน", "education": "ประวัติการศึกษา", "article": "บทความ", "profile": "ข้อมูลส่วนตัว"}
 
 
 @router.get("", response_class=HTMLResponse)

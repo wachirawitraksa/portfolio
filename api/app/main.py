@@ -1,5 +1,8 @@
+from pathlib import Path
+
 from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 
 from .deps import LoginRequired, current_session
 from .routers import (
@@ -8,6 +11,8 @@ from .routers import (
     ask,
     auth,
     categories,
+    dashboard,
+    education,
     glossary,
     health,
     images,
@@ -24,6 +29,10 @@ from .routers import (
 
 app = FastAPI(title="Portfolio API", docs_url="/api/docs", openapi_url="/api/openapi.json")
 
+# The admin's stylesheet, script and htmx, served from here (on the admin host it is /static/...).
+# Nothing is loaded from another site, so the login page runs no third-party code.
+app.mount("/admin/static", StaticFiles(directory=Path(__file__).parent / "static"), name="admin-static")
+
 # Caddy sends only /api/* from the main domain and strips nothing; the admin
 # host is rewritten to /admin/*. So /admin is unreachable from the public domain.
 app.include_router(public.router, prefix="/api")
@@ -39,6 +48,7 @@ admin.include_router(images.router, dependencies=[Depends(current_session)])
 admin.include_router(images.preview, dependencies=[Depends(current_session)])
 admin.include_router(tags.router, dependencies=[Depends(current_session)])
 admin.include_router(work.router, dependencies=[Depends(current_session)])
+admin.include_router(education.router, dependencies=[Depends(current_session)])
 admin.include_router(articles.router, dependencies=[Depends(current_session)])
 admin.include_router(profile.router, dependencies=[Depends(current_session)])
 admin.include_router(settings.router, dependencies=[Depends(current_session)])
@@ -46,11 +56,7 @@ admin.include_router(account.router, dependencies=[Depends(current_session)])
 admin.include_router(glossary.router, dependencies=[Depends(current_session)])
 admin.include_router(rag_admin.router, dependencies=[Depends(current_session)])
 admin.include_router(trash.router, dependencies=[Depends(current_session)])
-
-
-@admin.get("/")
-async def home(_=Depends(current_session)):
-    return RedirectResponse("/projects", status_code=303)
+admin.include_router(dashboard.router, dependencies=[Depends(current_session)])
 
 
 # The admin pages are HTML for one person: keep them out of the public OpenAPI document (/api/openapi.json),

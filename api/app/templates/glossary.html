@@ -3,10 +3,10 @@
 {% block content %}
 <h1>{% if trash %}ถังขยะ: glossary{% else %}glossary (คำที่มีความหมายเดียวกัน){% endif %}</h1>
 <p class="muted">ช่วยให้ช่องถามตอบหาเจอแม้ผู้ถามใช้คำคนละคำ เช่น สต็อก = stock = inventory · tag เทคโนโลยีและชื่อเรียกอื่นของผลงานเป็น glossary ให้อัตโนมัติอยู่แล้ว</p>
-<p>
-  {% if trash %}<a href="/glossary">กลับไปรายการ</a>
-  {% else %}<a href="/glossary/new">+ เพิ่มกลุ่มคำ</a> · <a href="/glossary?trash=true">ถังขยะ</a>{% endif %}
-</p>
+<div class="toolbar">
+  {% if trash %}<a class="btn" href="/glossary">← กลับไปรายการ</a>
+  {% else %}<a class="btn primary" href="/glossary/new">+ เพิ่มกลุ่มคำ</a><a class="btn" href="/glossary?trash=true">ถังขยะ</a>{% endif %}
+</div>
 {% if rows %}
 <table>
   <thead><tr><th>คำที่เท่ากัน</th><th>หมายเหตุ</th><th></th></tr></thead>

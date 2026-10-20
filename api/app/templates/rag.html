@@ -21,7 +21,7 @@
   <p class="muted">ช่องถามตอบอ่านเฉพาะผลงาน (เผยแพร่แล้ว), ประวัติการทำงาน (ไม่ซ่อน), บทความ (เผยแพร่แล้ว) และข้อมูลส่วนตัว หลังแก้เนื้อหาต้องกดสร้างใหม่ (glossary มีผลทันที ไม่ต้องสร้างใหม่)</p>
   <form method="post" action="/rag/rebuild">
     <input type="hidden" name="csrf_token" value="{{ csrf }}">
-    <button>สร้างข้อมูลสำหรับค้นหาใหม่</button>
+    <button{% if status.stale or not status.built %} class="primary"{% endif %}>สร้างข้อมูลสำหรับค้นหาใหม่</button>
   </form>
 </section>
 <section class="card">

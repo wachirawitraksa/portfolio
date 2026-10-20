@@ -5,71 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
   <title>{% block title %}หลังบ้าน{% endblock %} · Portfolio</title>
-  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
-  <style>
-    :root { color-scheme: light dark; --line: #8884; --muted: #888; --accent: #2f5bd3; }
-    body { font: 15px/1.6 system-ui, "Noto Sans Thai", sans-serif; margin: 0; }
-    header { display: flex; gap: 16px; align-items: center; padding: 10px 20px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
-    header a { color: inherit; text-decoration: none; }
-    header .grow { flex: 1; }
-    main { max-width: 960px; margin: 0 auto; padding: 24px 16px 64px; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
-    form.inline { display: inline; }
-    input[type=text], input[type=email], input[type=password], textarea, select { width: 100%; padding: 8px; box-sizing: border-box; font: inherit; }
-    label { display: block; margin: 12px 0 4px; }
-    button, .btn { font: inherit; padding: 6px 12px; cursor: pointer; }
-    .muted { color: var(--muted); }
-    .empty { color: var(--muted); font-style: italic; }
-    .error { color: #c0392b; margin: 12px 0; }
-    .row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
-    fieldset { margin: 16px 0; border: 1px solid var(--line); }
-    legend { font-weight: 600; padding: 0 6px; }
-    .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    @media (max-width: 640px) { .pair { grid-template-columns: 1fr; } }
-    label.check { display: flex; gap: 8px; align-items: center; margin: 6px 0; }
-    label.check input { width: auto; }
-    textarea { font: inherit; box-sizing: border-box; padding: 8px; }
-    .card { border: 1px solid var(--line); border-radius: 10px; padding: 4px 18px 16px; margin: 18px 0; }
-    .card h2 { font-size: 17px; margin: 14px 0 4px; }
-    .chips { margin-top: 14px; }
-    .chip-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
-    .chip { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--accent); border-radius: 999px; padding: 2px 4px 2px 12px; }
-    .chip-new { border-style: dashed; }
-    .chip small { color: var(--muted); }
-    .chip-remove { border: 0; background: none; padding: 0 8px; font-size: 18px; line-height: 1; }
-    .chip-add { display: flex; gap: 8px; max-width: 460px; }
-    .missing { color: #b9770e; font-size: 13px; }
-    .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin: 12px 0; }
-    .shot { margin: 0; position: relative; border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
-    .shot img { width: 100%; height: 160px; object-fit: contain; background: #8881; border-radius: 4px; }
-    .cover-badge { position: absolute; top: 14px; left: 14px; background: var(--accent); color: #fff; font-size: 12px; padding: 1px 8px; border-radius: 999px; }
-    input[type=file] { max-width: 100%; }
-  </style>
+  <link rel="stylesheet" href="/static/admin.css">
+  <script src="/static/htmx.min.js" defer></script>
+  <script src="/static/admin.js" defer></script>
 </head>
-<body hx-boost="true">
-  {% if csrf and not hide_nav %}
-  <header>
-    <strong>หลังบ้าน</strong>
-    <a href="/projects">รายการทั้งหมด</a>
-    <a href="/work">ประวัติการทำงาน</a>
-    <a href="/articles">บทความ</a>
-    <a href="/categories">ประเภท</a>
-    <a href="/kinds">ชนิด</a>
-    <a href="/tags">tag เทคโนโลยี</a>
-    <a href="/rag">ช่องถามตอบ</a>
-    <a href="/profile">ข้อมูลส่วนตัว</a>
-    <a href="/settings">ตั้งค่า</a>
-    <a href="/trash">ถังขยะ</a>
-    <a href="/account">บัญชี</a>
-    <a href="/sessions">session ที่ล็อกอินอยู่</a>
-    <span class="grow"></span>
-    <form method="post" action="/logout" class="inline">
-      <input type="hidden" name="csrf_token" value="{{ csrf }}">
-      <button>ออกจากระบบ</button>
-    </form>
-  </header>
+{% set here = admin_path(request) %}
+{# The menu shows when logged in. The login page and the one-time TOTP page set hide_nav. #}
+{% set with_nav = csrf and not hide_nav %}
+<body hx-boost="true"{% if not with_nav %} class="bare"{% endif %}>
+  {% if with_nav %}
+  <div class="shell">
+    <aside class="sidebar" aria-label="เมนูหลังบ้าน">
+      <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">P</span> หลังบ้าน</a>
+      <nav>
+        {% for group, items in NAV %}
+        <div class="nav-group">
+          {% if group %}<div class="nav-title">{{ group }}</div>{% endif %}
+          {% for label, href, exact in items %}
+          <a href="{{ href }}"{% if nav_active(here, href, exact) %} aria-current="page"{% endif %}>{{ label }}</a>
+          {% endfor %}
+        </div>
+        {% endfor %}
+      </nav>
+      <div class="sidebar-foot">
+        <form method="post" action="/logout">
+          <input type="hidden" name="csrf_token" value="{{ csrf }}">
+          <button>ออกจากระบบ</button>
+        </form>
+      </div>
+    </aside>
+    <div class="content">
+      <div class="topbar">
+        <button type="button" class="menu-toggle" data-menu-toggle aria-label="เปิดเมนู">☰ เมนู</button>
+        <strong>หลังบ้าน</strong>
+      </div>
   {% endif %}
-  <main>{% block content %}{% endblock %}</main>
+      <main>{% block content %}{% endblock %}</main>
+  {% if with_nav %}
+    </div>
+  </div>
+  {% endif %}
 </body>
 </html>

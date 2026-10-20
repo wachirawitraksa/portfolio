@@ -24,6 +24,7 @@ BUILTIN_GROUPS = [
     ["yourself", "introduce", "who are you", "about me", "แนะนำตัว", "ตัวคุณ", "เกี่ยวกับตัวคุณ", "เกี่ยวกับผม"],
     ["contact", "reach", "email", "ติดต่อ", "อีเมล"],
     ["experience", "career", "work history", "ประสบการณ์", "ประวัติการทำงาน"],
+    ["education", "degree", "university", "college", "school", "studied", "การศึกษา", "ประวัติการศึกษา", "มหาวิทยาลัย", "ปริญญา", "เรียนจบ"],
     ["location", "based", "live", "ที่อยู่", "อยู่ที่ไหน"],
     ["cv", "resume", "เรซูเม่", "ประวัติย่อ"],
     ["project", "projects", "portfolio", "ผลงาน"],

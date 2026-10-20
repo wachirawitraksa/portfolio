@@ -2,10 +2,10 @@
 {% block title %}บทความ{% endblock %}
 {% block content %}
 <h1>{% if trash %}ถังขยะ: บทความ{% else %}บทความ{% endif %}</h1>
-<p>
-  {% if trash %}<a href="/articles">กลับไปรายการ</a>
-  {% else %}<a href="/articles/new">+ เพิ่มบทความ</a> · <a href="/articles?trash=true">ถังขยะ</a>{% endif %}
-</p>
+<div class="toolbar">
+  {% if trash %}<a class="btn" href="/articles">← กลับไปรายการ</a>
+  {% else %}<a class="btn primary" href="/articles/new">+ เพิ่มบทความ</a><a class="btn" href="/articles?trash=true">ถังขยะ</a>{% endif %}
+</div>
 {% if rows %}
 <table>
   <thead><tr><th>ชื่อ</th><th>ที่มา</th><th>วันที่</th><th>สถานะ</th><th></th></tr></thead>
@@ -19,7 +19,7 @@
       </td>
       <td>{{ source_labels[r.source] }}{% if r.platform %} · {{ r.platform }}{% endif %}</td>
       <td>{{ r.published_on.isoformat() if r.published_on else '' }}</td>
-      <td>{{ status_labels[r.status] }}</td>
+      <td><span class="badge {{ {'published': 'ok', 'draft': 'warn', 'hidden': ''}[r.status] }}">{{ status_labels[r.status] }}</span></td>
       <td class="row-actions">
         {% if trash %}
           <form method="post" action="/articles/{{ r.id }}/restore" class="inline">

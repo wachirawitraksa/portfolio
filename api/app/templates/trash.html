@@ -9,9 +9,9 @@
 <p class="muted">ของที่ลบจะมาอยู่ที่นี่ก่อน กู้คืนได้ · "ลบถาวร" ลบทั้งข้อมูลและไฟล์ในที่เก็บไฟล์ กู้คืนไม่ได้อีก</p>
 
 {% if groups %}
-<form method="post" action="/trash/empty" onsubmit="return confirm('ลบทุกอย่างในถังขยะถาวร ({{ total }} รายการ) กู้คืนไม่ได้ ยืนยัน?')">
+<form method="post" action="/trash/empty" style="margin-bottom: 16px" onsubmit="return confirm('ลบทุกอย่างในถังขยะถาวร ({{ total }} รายการ) กู้คืนไม่ได้ ยืนยัน?')">
   <input type="hidden" name="csrf_token" value="{{ csrf }}"><input type="hidden" name="kind" value="all">
-  <button>ล้างถังขยะทั้งหมด ({{ total }})</button>
+  <button class="danger">ล้างถังขยะทั้งหมด ({{ total }})</button>
 </form>
 {% for g in groups %}
 <section class="card">
@@ -31,7 +31,7 @@
           </form>
           <form method="post" action="/trash/delete" class="inline" onsubmit="return confirm('ลบรายการนี้ถาวร กู้คืนไม่ได้ ยืนยัน?')">
             <input type="hidden" name="csrf_token" value="{{ csrf }}"><input type="hidden" name="kind" value="{{ g.key }}"><input type="hidden" name="item_id" value="{{ row.id }}">
-            <button>ลบถาวร</button>
+            <button class="danger">ลบถาวร</button>
           </form>
         </td>
       </tr>
@@ -40,7 +40,7 @@
   </table>
   <form method="post" action="/trash/empty" onsubmit="return confirm('ลบ{{ g.label }}ทั้งหมดในถังขยะถาวร ({{ g.rows | length }} รายการ) ยืนยัน?')">
     <input type="hidden" name="csrf_token" value="{{ csrf }}"><input type="hidden" name="kind" value="{{ g.key }}">
-    <button>ล้างเฉพาะหมวดนี้</button>
+    <button class="danger">ล้างเฉพาะหมวดนี้</button>
   </form>
 </section>
 {% endfor %}

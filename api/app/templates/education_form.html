@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}{% if row and row.id %}แก้ไขประวัติการศึกษา{% else %}เพิ่มประวัติการศึกษา{% endif %}{% endblock %}
+{% block content %}
+<h1>{% if row and row.id %}แก้ไขประวัติการศึกษา{% else %}เพิ่มประวัติการศึกษา{% endif %}</h1>
+{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+
+<form method="post" action="{% if row and row.id %}/education/{{ row.id }}{% else %}/education{% endif %}">
+  <input type="hidden" name="csrf_token" value="{{ csrf }}">
+
+  <section class="card">
+    <h2>สถาบันและหลักสูตร</h2>
+    {% for name, label in (("institution", "สถาบัน"), ("degree", "วุฒิ / ชื่อหลักสูตร"), ("field", "สาขา / วิชาเอก")) %}
+    <div class="pair">
+      {% for lang, lang_label in (("th", "ไทย"), ("en", "English")) %}
+      {% set value = (row | attr(name ~ "_" ~ lang)) if row else "" %}
+      <div>
+        <label for="{{ name }}_{{ lang }}">{{ label }} · {{ lang_label }}{% if row and row.id and name == "institution" and not value %} <span class="missing">ยังไม่ได้กรอก</span>{% endif %}</label>
+        <input id="{{ name }}_{{ lang }}" name="{{ name }}_{{ lang }}" type="text" maxlength="200" value="{{ value }}" {% if name == "institution" and loop.first and not (row and row.id) %}autofocus{% endif %}>
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+    <div class="pair">
+      <div>
+        <label for="level">ระดับ</label>
+        <select id="level" name="level">
+          {% for key, label in levels %}<option value="{{ key }}" {% if (row.level if row and row.level else 'bachelor') == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label for="grade">เกรด / เกียรตินิยม <span class="muted">(ใส่เฉพาะที่ตรวจสอบได้จากใบทรานสคริปต์)</span></label>
+        <input id="grade" name="grade" type="text" maxlength="60" value="{{ row.grade if row else '' }}">
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>ช่วงเวลา</h2>
+    {% for key, label in spans %}
+    <label class="check"><input type="radio" name="span" value="{{ key }}" {% if span == key %}checked{% endif %}> {{ label }}</label>
+    {% endfor %}
+    <div class="pair">
+      <div>
+        <label for="started_on">เริ่มเรียน (เดือน-ปี)</label>
+        <input id="started_on" name="started_on" type="month" value="{{ row.started_on.strftime('%Y-%m') if row and row.started_on else '' }}">
+      </div>
+      <div id="ended-box">
+        <label for="ended_on">สิ้นสุด (เดือน-ปี)</label>
+        <input id="ended_on" name="ended_on" type="month" value="{{ row.ended_on.strftime('%Y-%m') if row and row.ended_on else '' }}">
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>รายละเอียดเพิ่มเติม <span class="muted">(หนึ่งบรรทัดต่อหนึ่งข้อ เช่น หัวข้อโครงงาน รางวัล กิจกรรม · ไม่บังคับ)</span></h2>
+    <div class="pair">
+      {% for lang, lang_label in (("th", "ไทย"), ("en", "English")) %}
+      {% set value = (row | attr("details_" ~ lang)) if row else "" %}
+      <div>
+        <label for="details_{{ lang }}">{{ lang_label }}{% if row and row.id and (row.details_th or row.details_en) and not value %} <span class="missing">ยังไม่ได้กรอก</span>{% endif %}</label>
+        <textarea id="details_{{ lang }}" name="details_{{ lang }}" rows="5">{{ value }}</textarea>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>การแสดงผล</h2>
+    <label class="check"><input type="checkbox" name="hidden" {% if row and row.hidden %}checked{% endif %}> ซ่อนจากหน้าเว็บ</label>
+  </section>
+
+  <p><button>บันทึก</button> <a href="/education">ยกเลิก</a></p>
+</form>
+
+<script>
+  // The end month only applies to something already finished.
+  (function () {
+    var radios = document.querySelectorAll("input[name=span]");
+    var endedBox = document.getElementById("ended-box");
+    function sync() {
+      endedBox.hidden = document.querySelector("input[name=span]:checked").value !== "range";
+    }
+    radios.forEach(function (r) { r.addEventListener("change", sync); });
+    sync();
+  })();
+</script>
+{% endblock %}

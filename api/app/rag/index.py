@@ -6,9 +6,11 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models import (
+    EDUCATION_LEVELS,
     EMPLOYMENT_TYPES,
     Article,
     ContactLink,
+    EducationEntry,
     Project,
     RagChunk,
     WorkEntry,
@@ -25,6 +27,7 @@ PARAGRAPH_LIMIT = 1000  # letters in one article chunk
 TYPE_WORDS = {
     "project": ["project", "projects", "portfolio", "ผลงาน"],
     "work": ["work", "experience", "job", "career", "ประสบการณ์", "ประวัติการทำงาน", "ที่ทำงาน"],
+    "education": ["education", "study", "degree", "university", "school", "ประวัติการศึกษา", "การศึกษา", "มหาวิทยาลัย", "ปริญญา"],
     "article": ["article", "articles", "blog", "บทความ"],
     "profile": ["about me", "profile", "contact", "ติดต่อ", "เกี่ยวกับผม", "location", "ที่อยู่"],
 }
@@ -126,6 +129,27 @@ def work_chunk(w: WorkEntry) -> RagChunk:
     )
 
 
+def education_chunk(e: EducationEntry) -> RagChunk:
+    level_th, level_en = EDUCATION_LEVELS[e.level]
+    period = e.started_on.strftime("%Y-%m") + (" – ปัจจุบัน / present" if e.ongoing else f" – {e.ended_on.strftime('%Y-%m')}")
+    items_th = "\n".join(f"• {d}" for d in e.details_th.splitlines())
+    items_en = "\n".join(f"• {d}" for d in e.details_en.splitlines())
+
+    def title(institution: str, degree: str, field: str) -> str:
+        head = " ".join(part for part in (degree, field) if part)
+        return f"{head} ({institution})" if head and institution else head or institution
+
+    return make_chunk(
+        "education", e.id, "school",
+        title(e.institution_th, e.degree_th, e.field_th), title(e.institution_en, e.degree_en, e.field_en),
+        lines(("สถาบัน", e.institution_th), ("ระดับ", level_th), ("วุฒิ", e.degree_th), ("สาขา", e.field_th),
+              ("ช่วงเวลา", period), ("เกรด", e.grade), ("", items_th)),
+        lines(("Institution", e.institution_en), ("Level", level_en), ("Degree", e.degree_en), ("Field", e.field_en),
+              ("Period", period), ("Grade", e.grade), ("", items_en)),
+        [e.institution_th, e.institution_en],
+    )
+
+
 def paragraph_groups(text: str) -> list[str]:
     """Paragraphs packed into groups of at most PARAGRAPH_LIMIT letters (a long paragraph stays whole)."""
     groups: list[str] = []
@@ -190,6 +214,14 @@ async def collect(db: AsyncSession) -> list[RagChunk]:
         )
     ).scalars()
     chunks.extend(work_chunk(w) for w in work)
+    schools = (
+        await db.execute(
+            select(EducationEntry)
+            .where(EducationEntry.hidden.is_(False), EducationEntry.deleted_at.is_(None))
+            .order_by(EducationEntry.id)
+        )
+    ).scalars()
+    chunks.extend(education_chunk(e) for e in schools)
     articles = (
         await db.execute(select(Article).where(Article.status == "published", Article.deleted_at.is_(None)).order_by(Article.id))
     ).scalars()

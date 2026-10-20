@@ -13,6 +13,7 @@ export type ProjectCard = Schemas["ProjectCard"];
 export type ProjectDetail = Schemas["ProjectDetail"];
 export type ProjectList = Schemas["ProjectList"];
 export type WorkItem = Schemas["WorkItem"];
+export type EducationItem = Schemas["EducationItem"];
 export type ArticleCard = Schemas["ArticleCard"];
 export type ArticleDetail = Schemas["ArticleDetail"];
 export type ArticleList = Schemas["ArticleList"];
@@ -40,6 +41,7 @@ export const getTags = () => get<TagCount[]>("/api/tags", []);
 export const getProfile = () => get<Profile | null>("/api/profile", null);
 export const getSettings = () => get<SiteSettings | null>("/api/settings", null);
 export const getExperience = () => get<WorkItem[]>("/api/experience", []);
+export const getEducation = () => get<EducationItem[]>("/api/education", []);
 export const getFeatured = (limit?: number) =>
   get<ProjectCard[]>(`/api/projects/featured${limit ? `?limit=${limit}` : ""}`, []);
 export const getProject = (id: number) => get<ProjectDetail | null>(`/api/projects/${id}`, null);

@@ -2,10 +2,10 @@
 {% block title %}ประเภทผลงาน{% endblock %}
 {% block content %}
 <h1>{% if trash %}ถังขยะ: ประเภทผลงาน{% else %}ประเภทผลงาน{% endif %}</h1>
-<p>
-  {% if trash %}<a href="/categories">กลับไปรายการ</a>
-  {% else %}<a href="/categories/new">+ เพิ่มประเภท</a> · <a href="/categories?trash=true">ถังขยะ</a>{% endif %}
-</p>
+<div class="toolbar">
+  {% if trash %}<a class="btn" href="/categories">← กลับไปรายการ</a>
+  {% else %}<a class="btn primary" href="/categories/new">+ เพิ่มประเภท</a><a class="btn" href="/categories?trash=true">ถังขยะ</a>{% endif %}
+</div>
 {% if rows %}
 <table>
   <thead><tr><th>ชื่อไทย</th><th>ชื่ออังกฤษ</th><th>สถานะ</th><th></th></tr></thead>
@@ -14,7 +14,7 @@
     <tr>
       <td>{{ r.name_th or '' }}{% if not r.name_th %}<span class="missing">ยังไม่ได้กรอก</span>{% endif %}</td>
       <td>{{ r.name_en or '' }}{% if not r.name_en %}<span class="missing">ยังไม่ได้กรอก</span>{% endif %}</td>
-      <td>{% if r.hidden %}ซ่อนอยู่{% else %}แสดง{% endif %}</td>
+      <td>{% if r.hidden %}<span class="badge">ซ่อนอยู่</span>{% else %}<span class="badge ok">แสดง</span>{% endif %}</td>
       <td class="row-actions">
         {% if trash %}
           <form method="post" action="/categories/{{ r.id }}/restore" class="inline">

@@ -2,10 +2,10 @@
 {% block title %}Tag เทคโนโลยี{% endblock %}
 {% block content %}
 <h1>{% if trash %}ถังขยะ: tag เทคโนโลยี{% else %}Tag เทคโนโลยี{% endif %}</h1>
-<p>
-  {% if trash %}<a href="/tags">กลับไปรายการ</a>
-  {% else %}<a href="/tags/new">+ เพิ่ม tag</a> · <a href="/tags?trash=true">ถังขยะ</a>{% endif %}
-</p>
+<div class="toolbar">
+  {% if trash %}<a class="btn" href="/tags">← กลับไปรายการ</a>
+  {% else %}<a class="btn primary" href="/tags/new">+ เพิ่ม tag</a><a class="btn" href="/tags?trash=true">ถังขยะ</a>{% endif %}
+</div>
 {% if rows %}
 <table>
   <thead><tr><th>ชื่อ</th><th>ชื่อย่อ / ชื่อเรียกอื่น</th><th></th></tr></thead>

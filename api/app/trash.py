@@ -11,6 +11,7 @@ from .models import (
     Article,
     Category,
     ContactLink,
+    EducationEntry,
     GlossaryEntry,
     Kind,
     Project,
@@ -41,6 +42,10 @@ ENTRIES: dict[str, Entry] = {
         "ประวัติการทำงาน", WorkEntry,
         lambda r: _first(r.position_th, r.position_en, f"#{r.id}") + (f" ({r.employer})" if r.employer else ""),
     ),
+    "education": Entry(
+        "ประวัติการศึกษา", EducationEntry,
+        lambda r: _first(r.institution_th, r.institution_en, f"#{r.id}") + (f" ({_first(r.field_th, r.field_en)})" if r.field_th or r.field_en else ""),
+    ),
     "article": Entry("บทความ", Article, lambda r: _first(r.title_th, r.title_en, f"#{r.id}")),
     "category": Entry("ประเภท", Category, lambda r: _first(r.name_th, r.name_en, f"#{r.id}")),
     "kind": Entry("ชนิด", Kind, lambda r: _first(r.name_th, r.name_en, f"#{r.id}")),
@@ -68,7 +73,7 @@ async def restore(db: AsyncSession, key: str, item_id: int) -> bool:
     row.deleted_at = None
     if key in ("project", "article"):
         row.status = "hidden"
-    elif key == "work":
+    elif key in ("work", "education"):
         row.hidden = True
     await db.flush()
     if key == "image":

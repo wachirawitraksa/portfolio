@@ -14,7 +14,7 @@
   </form>
   <form method="post" action="/rag/questions/purge" class="inline" onsubmit="return confirm('ลบล็อกคำถามทั้งหมดถาวร ยืนยัน?')">
     <input type="hidden" name="csrf_token" value="{{ csrf }}"><input type="hidden" name="scope" value="all">
-    <button>ลบล็อกทั้งหมด</button>
+    <button class="danger">ลบล็อกทั้งหมด</button>
   </form>
 </div>
 

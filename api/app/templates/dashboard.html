@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}ภาพรวม{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>ภาพรวม</h1>
+    <p class="muted">สถานะของเว็บและสิ่งที่ต้องดูแล</p>
+  </div>
+  <div class="toolbar" style="margin: 0">
+    <a class="btn primary" href="/projects/new">+ ผลงาน</a>
+    <a class="btn" href="/work/new">+ ประวัติการทำงาน</a>
+    <a class="btn" href="/articles/new">+ บทความ</a>
+  </div>
+</div>
+
+<div class="cols">
+  <section class="card">
+    <h2>สิ่งที่ต้องดูแล</h2>
+    {% macro items(list) %}
+    <ul class="todo">
+      {% for item in list %}
+      <li>
+        <span class="badge {{ 'warn' if item.level == 'warn' else 'info' }}">{{ 'ควรทำ' if item.level == 'warn' else 'แนะนำ' }}</span>
+        <span class="what">{{ item.text }}</span>
+        <a class="btn" href="{{ item.href }}">{{ item.cta }}</a>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endmacro %}
+    {% if todo %}
+    {# The first few are shown; a long list folds the rest away so the page stays scannable. #}
+    {{ items(todo[:6]) }}
+    {% if todo | length > 6 %}
+    <details class="todo-more">
+      <summary>ดูอีก {{ todo | length - 6 }} รายการ</summary>
+      {{ items(todo[6:]) }}
+    </details>
+    {% endif %}
+    {% else %}
+    <p class="empty">ไม่มีอะไรค้าง ทุกอย่างเรียบร้อย</p>
+    {% endif %}
+  </section>
+
+  <div>
+    <section class="card">
+      <h2>สถานะระบบ</h2>
+      <div class="health">
+        <span class="badge {{ 'ok' if health.database == 'ok' else 'bad' }}">ฐานข้อมูล {{ 'ปกติ' if health.database == 'ok' else 'ไม่ตอบสนอง' }}</span>
+        <span class="badge {{ 'ok' if health.storage == 'ok' else 'bad' }}">ที่เก็บไฟล์ {{ 'ปกติ' if health.storage == 'ok' else 'ไม่ตอบสนอง' }}</span>
+        <span class="badge {{ 'ok' if gemini else 'warn' }}">โมเดลตอบคำถาม {{ 'ตั้งค่าแล้ว' if gemini else 'ยังไม่ตั้งค่า' }}</span>
+        <span class="badge {{ 'ok' if github else '' }}">GitHub login {{ 'เปิด' if github else 'ปิด' }}</span>
+        <span class="badge {{ 'warn' if index.stale else 'ok' }}">ข้อมูลช่องถามตอบ {{ 'ล้าสมัย' if index.stale else ('ตรงกับเนื้อหา' if index.built else 'ยังไม่ได้สร้าง') }}</span>
+      </div>
+      {% if index.stale %}
+      <form method="post" action="/rag/rebuild" style="margin-top: 12px">
+        <input type="hidden" name="csrf_token" value="{{ csrf }}">
+        <button class="primary">สร้างข้อมูลช่องถามตอบใหม่</button>
+      </form>
+      {% endif %}
+    </section>
+
+    <section class="card">
+      <h2>ช่องถามตอบ 24 ชั่วโมงที่ผ่านมา</h2>
+      <p style="margin: 4px 0">ถาม <strong>{{ questions.asked }}</strong> ครั้ง · เรียกโมเดล <strong>{{ questions.model_calls }}</strong> ครั้ง</p>
+      <p class="muted" style="margin: 4px 0">ตอบไม่ได้ 7 วันนี้ {{ questions.unanswered }} ข้อ · <a href="/rag/questions">ดูคำถาม</a></p>
+    </section>
+  </div>
+</div>
+
+<h2 style="margin: 8px 0 10px">เนื้อหา</h2>
+<div class="stats">
+  <a class="stat" href="/projects">
+    <div class="num">{{ projects.get('published', 0) }}</div>
+    <div class="label">ผลงานที่เผยแพร่</div>
+    <div class="sub">ร่าง {{ projects.get('draft', 0) }} · ซ่อน {{ projects.get('hidden', 0) }}</div>
+  </a>
+  <a class="stat" href="/work">
+    <div class="num">{{ work.live }}</div>
+    <div class="label">ประวัติการทำงาน</div>
+    <div class="sub">ซ่อน {{ work.hidden }}</div>
+  </a>
+  <a class="stat" href="/education">
+    <div class="num">{{ education.live }}</div>
+    <div class="label">ประวัติการศึกษา</div>
+    <div class="sub">ซ่อน {{ education.hidden }}</div>
+  </a>
+  <a class="stat" href="/articles">
+    <div class="num">{{ articles.get('published', 0) }}</div>
+    <div class="label">บทความที่เผยแพร่</div>
+    <div class="sub">ร่าง {{ articles.get('draft', 0) }} · ซ่อน {{ articles.get('hidden', 0) }}</div>
+  </a>
+  <a class="stat" href="/projects">
+    <div class="num">{{ images }}</div>
+    <div class="label">รูปภาพทั้งหมด</div>
+  </a>
+  <a class="stat" href="/tags">
+    <div class="num">{{ counts.tags }}</div>
+    <div class="label">tag เทคโนโลยี</div>
+    <div class="sub">ประเภท {{ counts.categories }} · ชนิด {{ counts.kinds }}</div>
+  </a>
+  <a class="stat" href="/glossary">
+    <div class="num">{{ counts.glossary }}</div>
+    <div class="label">กลุ่มคำใน glossary</div>
+  </a>
+  <a class="stat" href="/trash">
+    <div class="num">{{ trashed }}</div>
+    <div class="label">ในถังขยะ</div>
+  </a>
+</div>
+{% endblock %}

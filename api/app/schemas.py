@@ -95,6 +95,25 @@ class WorkItem(BaseModel):
     tags: list[TagRef]
 
 
+class EducationItem(BaseModel):
+    id: int
+    institution_th: str
+    institution_en: str
+    level: str
+    level_th: str
+    level_en: str
+    degree_th: str
+    degree_en: str
+    field_th: str
+    field_en: str
+    grade: str
+    span: Literal["range", "ongoing"]
+    started_on: str  # "YYYY-MM"
+    ended_on: str | None  # null while ongoing
+    details_th: list[str]
+    details_en: list[str]
+
+
 class ArticleCard(BaseModel):
     id: int
     title_th: str
@@ -162,7 +181,7 @@ class AskIn(BaseModel):
 
 
 class AskSource(BaseModel):
-    type: Literal["project", "work", "article", "profile"]
+    type: Literal["project", "work", "education", "article", "profile"]
     id: int
     section: str
     title_th: str

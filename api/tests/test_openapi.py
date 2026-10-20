@@ -9,7 +9,7 @@ SNAPSHOT = Path(__file__).resolve().parents[2] / "web" / "openapi.json"
 PUBLIC_JSON = (
     ("get", "/api/categories"), ("get", "/api/kinds"), ("get", "/api/tags"), ("get", "/api/projects"),
     ("get", "/api/projects/featured"), ("get", "/api/projects/{project_id}"), ("get", "/api/how-i-work"),
-    ("get", "/api/experience"), ("get", "/api/articles"), ("get", "/api/articles/{article_id}"),
+    ("get", "/api/experience"), ("get", "/api/education"), ("get", "/api/articles"), ("get", "/api/articles/{article_id}"),
     ("get", "/api/profile"), ("get", "/api/settings"), ("post", "/api/ask"),
     ("get", "/api/health"), ("get", "/api/health/live"),
 )

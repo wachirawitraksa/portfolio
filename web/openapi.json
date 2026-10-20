@@ -268,6 +268,7 @@
             "enum": [
               "project",
               "work",
+              "education",
               "article",
               "profile"
             ],
@@ -329,6 +330,111 @@
           "url"
         ],
         "title": "ContactLinkOut",
+        "type": "object"
+      },
+      "EducationItem": {
+        "properties": {
+          "degree_en": {
+            "title": "Degree En",
+            "type": "string"
+          },
+          "degree_th": {
+            "title": "Degree Th",
+            "type": "string"
+          },
+          "details_en": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Details En",
+            "type": "array"
+          },
+          "details_th": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Details Th",
+            "type": "array"
+          },
+          "ended_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended On"
+          },
+          "field_en": {
+            "title": "Field En",
+            "type": "string"
+          },
+          "field_th": {
+            "title": "Field Th",
+            "type": "string"
+          },
+          "grade": {
+            "title": "Grade",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "institution_en": {
+            "title": "Institution En",
+            "type": "string"
+          },
+          "institution_th": {
+            "title": "Institution Th",
+            "type": "string"
+          },
+          "level": {
+            "title": "Level",
+            "type": "string"
+          },
+          "level_en": {
+            "title": "Level En",
+            "type": "string"
+          },
+          "level_th": {
+            "title": "Level Th",
+            "type": "string"
+          },
+          "span": {
+            "enum": [
+              "range",
+              "ongoing"
+            ],
+            "title": "Span",
+            "type": "string"
+          },
+          "started_on": {
+            "title": "Started On",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "institution_th",
+          "institution_en",
+          "level",
+          "level_th",
+          "level_en",
+          "degree_th",
+          "degree_en",
+          "field_th",
+          "field_en",
+          "grade",
+          "span",
+          "started_on",
+          "ended_on",
+          "details_th",
+          "details_en"
+        ],
+        "title": "EducationItem",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -1245,6 +1351,29 @@
           }
         },
         "summary": "Categories"
+      }
+    },
+    "/api/education": {
+      "get": {
+        "description": "Schools and degrees, newest first. Hidden and trashed entries stay out.",
+        "operationId": "education_api_education_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EducationItem"
+                  },
+                  "title": "Response Education Api Education Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Education"
       }
     },
     "/api/experience": {

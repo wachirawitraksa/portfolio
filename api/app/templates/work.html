@@ -2,10 +2,10 @@
 {% block title %}ประวัติการทำงาน{% endblock %}
 {% block content %}
 <h1>{% if trash %}ถังขยะ: ประวัติการทำงาน{% else %}ประวัติการทำงาน{% endif %}</h1>
-<p>
-  {% if trash %}<a href="/work">กลับไปรายการ</a>
-  {% else %}<a href="/work/new">+ เพิ่มรายการ</a> · <a href="/work?trash=true">ถังขยะ</a>{% endif %}
-</p>
+<div class="toolbar">
+  {% if trash %}<a class="btn" href="/work">← กลับไปรายการ</a>
+  {% else %}<a class="btn primary" href="/work/new">+ เพิ่มรายการ</a><a class="btn" href="/work?trash=true">ถังขยะ</a>{% endif %}
+</div>
 {% if rows %}
 <table>
   <thead><tr><th>ตำแหน่ง / หัวข้อ</th><th>ที่ทำงาน</th><th>ช่วงเวลา</th><th>รูปแบบ</th><th>สถานะ</th><th></th></tr></thead>
@@ -20,7 +20,7 @@
       <td>{{ r.employer }}</td>
       <td>{{ periods[r.id] }}{% if r.span == "moment" %} <span class="muted">(วันเดียว)</span>{% endif %}</td>
       <td>{{ type_labels[r.employment_type] }}</td>
-      <td>{% if r.hidden %}ซ่อน{% else %}แสดง{% endif %}</td>
+      <td>{% if r.hidden %}<span class="badge">ซ่อน</span>{% else %}<span class="badge ok">แสดง</span>{% endif %}</td>
       <td class="row-actions">
         {% if trash %}
           <form method="post" action="/work/{{ r.id }}/restore" class="inline">

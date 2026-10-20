@@ -6,11 +6,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_db
 from ..models import (
+    EDUCATION_LEVELS,
     EMPLOYMENT_TYPES,
     PROJECT_TEXT_FIELDS,
     Article,
     Category,
     ContactLink,
+    EducationEntry,
     Kind,
     Project,
     ProjectImage,
@@ -23,6 +25,7 @@ from ..schemas import (
     ArticleDetail,
     ArticleList,
     CategoryOut,
+    EducationItem,
     KindOut,
     ProfileOut,
     ProjectDetail,
@@ -256,6 +259,39 @@ async def experience(db: AsyncSession = Depends(get_db)):
             "tags": [{"id": t.id, "name": t.name} for t in w.tags if t.deleted_at is None],
         }
         for w in rows
+    ]
+
+
+@router.get("/education", response_model=list[EducationItem])
+async def education(db: AsyncSession = Depends(get_db)):
+    """Schools and degrees, newest first. Hidden and trashed entries stay out."""
+    rows = (
+        await db.execute(
+            select(EducationEntry)
+            .where(EducationEntry.hidden.is_(False), EducationEntry.deleted_at.is_(None))
+            .order_by(EducationEntry.started_on.desc(), EducationEntry.id.desc())
+        )
+    ).scalars().all()
+    return [
+        {
+            "id": e.id,
+            "institution_th": e.institution_th,
+            "institution_en": e.institution_en,
+            "level": e.level,
+            "level_th": EDUCATION_LEVELS[e.level][0],
+            "level_en": EDUCATION_LEVELS[e.level][1],
+            "degree_th": e.degree_th,
+            "degree_en": e.degree_en,
+            "field_th": e.field_th,
+            "field_en": e.field_en,
+            "grade": e.grade,
+            "span": e.span,
+            "started_on": e.started_on.strftime("%Y-%m"),
+            "ended_on": None if e.ongoing else e.ended_on.strftime("%Y-%m"),
+            "details_th": e.details_th.splitlines(),
+            "details_en": e.details_en.splitlines(),
+        }
+        for e in rows
     ]
 
 

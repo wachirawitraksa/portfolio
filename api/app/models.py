@@ -206,6 +206,46 @@ class WorkEntry(Base):
         return "moment" if self.ended_on is None or self.ended_on == self.started_on else "range"
 
 
+# key -> (Thai label, English label)
+EDUCATION_LEVELS = {
+    "high_school": ("มัธยมศึกษา", "High school"),
+    "vocational": ("อาชีวศึกษา (ปวช. / ปวส.)", "Vocational"),
+    "bachelor": ("ปริญญาตรี", "Bachelor's degree"),
+    "master": ("ปริญญาโท", "Master's degree"),
+    "doctorate": ("ปริญญาเอก", "Doctorate"),
+    "certificate": ("ประกาศนียบัตร / หลักสูตรระยะสั้น", "Certificate / short program"),
+    "other": ("อื่น ๆ", "Other"),
+}
+
+
+class EducationEntry(Base):
+    """One school, degree or formal program. Month precision; an unfinished one is marked ongoing."""
+
+    __tablename__ = "education_entry"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    institution_th: Mapped[str] = mapped_column(String(200), default="")
+    institution_en: Mapped[str] = mapped_column(String(200), default="")
+    level: Mapped[str] = mapped_column(String(20), default="bachelor")
+    degree_th: Mapped[str] = mapped_column(String(200), default="")  # e.g. วิทยาศาสตรบัณฑิต
+    degree_en: Mapped[str] = mapped_column(String(200), default="")  # e.g. B.Sc.
+    field_th: Mapped[str] = mapped_column(String(200), default="")  # major
+    field_en: Mapped[str] = mapped_column(String(200), default="")
+    grade: Mapped[str] = mapped_column(String(60), default="")  # "GPA 3.45", "เกียรตินิยมอันดับหนึ่ง"; only what a transcript shows
+    started_on: Mapped[date] = mapped_column(Date)  # always the first day of the month
+    ended_on: Mapped[date | None] = mapped_column(Date)
+    ongoing: Mapped[bool] = mapped_column(Boolean, default=False)
+    # One item per line: thesis, honors, activities.
+    details_th: Mapped[str] = mapped_column(Text, default="")
+    details_en: Mapped[str] = mapped_column(Text, default="")
+    hidden: Mapped[bool] = mapped_column(Boolean, default=False)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    @property
+    def span(self) -> str:
+        return "ongoing" if self.ongoing else "range"
+
+
 article_tag = Table(
     "article_tag",
     Base.metadata,
