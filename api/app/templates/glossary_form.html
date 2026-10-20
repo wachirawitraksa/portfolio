@@ -2,7 +2,7 @@
 {% block title %}{% if row and row.id %}แก้ไขกลุ่มคำ{% else %}เพิ่มกลุ่มคำ{% endif %}{% endblock %}
 {% block content %}
 <h1>{% if row and row.id %}แก้ไขกลุ่มคำ{% else %}เพิ่มกลุ่มคำ{% endif %}</h1>
-{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+{% if error %}<p class="error" role="alert">{{ error | tr }}</p>{% endif %}
 <form method="post" action="{% if row and row.id %}/glossary/{{ row.id }}{% else %}/glossary{% endif %}">
   <input type="hidden" name="csrf_token" value="{{ csrf }}">
   <section class="card">

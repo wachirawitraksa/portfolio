@@ -21,8 +21,8 @@
       {% for item in list %}
       <li>
         <span class="badge {{ 'warn' if item.level == 'warn' else 'info' }}">{{ 'ควรทำ' if item.level == 'warn' else 'แนะนำ' }}</span>
-        <span class="what">{{ item.text }}</span>
-        <a class="btn" href="{{ item.href }}">{{ item.cta }}</a>
+        <span class="what">{{ item.text | tr }}</span>
+        <a class="btn" href="{{ item.href }}">{{ item.cta | tr }}</a>
       </li>
       {% endfor %}
     </ul>
@@ -72,22 +72,22 @@
   <a class="stat" href="/projects">
     <div class="num">{{ projects.get('published', 0) }}</div>
     <div class="label">ผลงานที่เผยแพร่</div>
-    <div class="sub">ร่าง {{ projects.get('draft', 0) }} · ซ่อน {{ projects.get('hidden', 0) }}</div>
+    <div class="sub">ร่าง {{ projects.get('draft', 0) }} · ถูกซ่อน {{ projects.get('hidden', 0) }}</div>
   </a>
   <a class="stat" href="/work">
     <div class="num">{{ work.live }}</div>
     <div class="label">ประวัติการทำงาน</div>
-    <div class="sub">ซ่อน {{ work.hidden }}</div>
+    <div class="sub">ถูกซ่อน {{ work.hidden }}</div>
   </a>
   <a class="stat" href="/education">
     <div class="num">{{ education.live }}</div>
     <div class="label">ประวัติการศึกษา</div>
-    <div class="sub">ซ่อน {{ education.hidden }}</div>
+    <div class="sub">ถูกซ่อน {{ education.hidden }}</div>
   </a>
   <a class="stat" href="/articles">
     <div class="num">{{ articles.get('published', 0) }}</div>
     <div class="label">บทความที่เผยแพร่</div>
-    <div class="sub">ร่าง {{ articles.get('draft', 0) }} · ซ่อน {{ articles.get('hidden', 0) }}</div>
+    <div class="sub">ร่าง {{ articles.get('draft', 0) }} · ถูกซ่อน {{ articles.get('hidden', 0) }}</div>
   </a>
   <a class="stat" href="/projects">
     <div class="num">{{ images }}</div>

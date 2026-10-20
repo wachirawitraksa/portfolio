@@ -3,7 +3,7 @@
 {% from "_chips.html" import chips, chips_script %}
 {% block content %}
 <h1>{% if row and row.id %}แก้ไขประวัติการทำงาน{% else %}เพิ่มประวัติการทำงาน{% endif %}</h1>
-{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+{% if error %}<p class="error" role="alert">{{ error | tr }}</p>{% endif %}
 
 <form method="post" action="{% if row and row.id %}/work/{{ row.id }}{% else %}/work{% endif %}">
   <input type="hidden" name="csrf_token" value="{{ csrf }}">
@@ -21,7 +21,7 @@
     </div>
     <label for="employment_type">รูปแบบ</label>
     <select id="employment_type" name="employment_type" style="max-width: 280px">
-      {% for key, label in types %}<option value="{{ key }}" {% if (row.employment_type if row and row.employment_type else 'full_time') == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      {% for key, label in types %}<option value="{{ key }}" {% if (row.employment_type if row and row.employment_type else 'full_time') == key %}selected{% endif %}>{{ label | tr }}</option>{% endfor %}
     </select>
     <label for="employer">ที่ทำงาน / ผู้จัด <span class="muted">(เว้นว่างได้เฉพาะ "กิจกรรม / งานสั้น")</span></label>
     <input id="employer" name="employer" type="text" maxlength="200" value="{{ row.employer if row else '' }}">
@@ -31,7 +31,7 @@
     <h2>ช่วงเวลา</h2>
     <p class="muted">งานยาวเป็นปีเลือก "ช่วงเวลา" · กิจกรรมสั้นที่แทรกอยู่ระหว่างงานยาวเลือก "วันเดียว" ได้ ไทม์ไลน์เรียงตามวันที่เริ่ม</p>
     {% for key, label in spans %}
-    <label class="check"><input type="radio" name="span" value="{{ key }}" {% if span == key %}checked{% endif %}> {{ label }}</label>
+    <label class="check"><input type="radio" name="span" value="{{ key }}" {% if span == key %}checked{% endif %}> {{ label | tr }}</label>
     {% endfor %}
     <div class="pair">
       <div>

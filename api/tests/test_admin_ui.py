@@ -39,7 +39,7 @@ def test_nav_active_rules():
 
 async def test_every_menu_item_opens_a_real_admin_page(authed):
     for _group, items in NAV:
-        for label, href, _exact in items:
+        for label, href, _exact, _icon in items:
             resp = await authed.get(f"/admin{href}")
             assert resp.status_code == 200, (label, href, resp.status_code)
 
@@ -48,12 +48,13 @@ async def test_menu_is_grouped_marks_the_current_page_and_has_a_logout_form(auth
     page = await home(authed)
     for group in ("เนื้อหา", "จัดหมวด", "ช่องถามตอบ", "ระบบ"):
         assert f'<div class="nav-title">{group}</div>' in page
-    assert page.count('aria-current="page"') == 1 and 'href="/" aria-current="page"' in page
+    assert page.count('aria-current="page"') == 1 and re.search(r'<a href="/"[^>]*aria-current="page"', page)
     assert f'<input type="hidden" name="csrf_token" value="{authed.csrf}">' in page and 'action="/logout"' in page
     projects = (await authed.get("/admin/projects/new")).text
-    assert 'href="/projects" aria-current="page"' in projects and page != projects
+    assert re.search(r'<a href="/projects"[^>]*aria-current="page"', projects) and page != projects
     questions = (await authed.get("/admin/rag/questions")).text
-    assert 'href="/rag/questions" aria-current="page"' in questions and 'href="/rag" aria-current' not in questions
+    assert re.search(r'<a href="/rag/questions"[^>]*aria-current="page"', questions)
+    assert not re.search(r'<a href="/rag"[^>]*aria-current', questions)
 
 
 async def test_every_admin_page_has_the_menu(authed):
@@ -129,8 +130,8 @@ async def test_the_counts_follow_the_content(authed):
     await add_work(authed, hidden="on")
     await add_article(authed)
     page = await home(authed)
-    assert re.search(r'<div class="num">1</div>\s*<div class="label">ผลงานที่เผยแพร่</div>\s*<div class="sub">ร่าง 1 · ซ่อน 1</div>', page)
-    assert re.search(r'<div class="num">1</div>\s*<div class="label">ประวัติการทำงาน</div>\s*<div class="sub">ซ่อน 1</div>', page)
+    assert re.search(r'<div class="num">1</div>\s*<div class="label">ผลงานที่เผยแพร่</div>\s*<div class="sub">ร่าง 1 · ถูกซ่อน 1</div>', page)
+    assert re.search(r'<div class="num">1</div>\s*<div class="label">ประวัติการทำงาน</div>\s*<div class="sub">ถูกซ่อน 1</div>', page)
     assert re.search(r'<div class="num">1</div>\s*<div class="label">บทความที่เผยแพร่</div>', page)
     assert "มีผลงานฉบับร่าง 1 ชิ้น" in page
 

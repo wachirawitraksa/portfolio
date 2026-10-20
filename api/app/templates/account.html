@@ -3,8 +3,8 @@
 {% block content %}
 <h1>บัญชี</h1>
 <p class="muted">{{ user.email }}</p>
-{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
-{% if notice %}<p role="status">{{ notice }}</p>{% endif %}
+{% if error %}<p class="error" role="alert">{{ error | tr }}</p>{% endif %}
+{% if notice %}<p role="status">{{ notice | tr }}</p>{% endif %}
 
 <section class="card">
   <h2>เปลี่ยนรหัสผ่าน</h2>

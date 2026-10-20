@@ -2,7 +2,7 @@
 {% block title %}ข้อมูลส่วนตัว{% endblock %}
 {% block content %}
 <h1>ข้อมูลส่วนตัว (หน้าแรก)</h1>
-{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+{% if error %}<p class="error" role="alert">{{ error | tr }}</p>{% endif %}
 
 <form method="post" action="/profile">
   <input type="hidden" name="csrf_token" value="{{ csrf }}">
@@ -14,7 +14,7 @@
       {% for lang, lang_label in (("th", "ไทย"), ("en", "English")) %}
       {% set value = row | attr(name ~ "_" ~ lang) %}
       <div>
-        <label for="{{ name }}_{{ lang }}">{{ label }} · {{ lang_label }}{% if name in untranslated and not value %} <span class="missing">ยังไม่ได้กรอก</span>{% endif %}</label>
+        <label for="{{ name }}_{{ lang }}">{{ label | tr }} · {{ lang_label }}{% if name in untranslated and not value %} <span class="missing">ยังไม่ได้กรอก</span>{% endif %}</label>
         {% if multiline %}
         <textarea id="{{ name }}_{{ lang }}" name="{{ name }}_{{ lang }}" rows="5">{{ value }}</textarea>
         {% else %}

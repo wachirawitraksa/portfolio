@@ -2,7 +2,7 @@
 {% block title %}{% if row and row.id %}แก้ไข tag{% else %}เพิ่ม tag{% endif %}{% endblock %}
 {% block content %}
 <h1>{% if row and row.id %}แก้ไข tag{% else %}เพิ่ม tag{% endif %}</h1>
-{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+{% if error %}<p class="error" role="alert">{{ error | tr }}</p>{% endif %}
 <form method="post" action="{% if row and row.id %}/tags/{{ row.id }}{% else %}/tags{% endif %}" style="max-width: 420px">
   <input type="hidden" name="csrf_token" value="{{ csrf }}">
   <label for="name">ชื่อ (เช่น PostgreSQL)</label>

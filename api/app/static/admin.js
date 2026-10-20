@@ -1,17 +1,55 @@
 // Small helpers for the admin pages. Loaded once in <head>; everything listens on `document`, so it keeps
 // working after htmx swaps the page body (hx-boost) without any re-binding.
 (function () {
-  // Phone menu: the burger button opens the sidebar, a click anywhere else (or on a link) closes it.
+  var phone = window.matchMedia("(max-width: 860px)");
+  var YEAR = 31536000;
+
+  function setCookie(name, value) {
+    document.cookie = name + "=" + value + ";path=/;max-age=" + YEAR + ";samesite=lax";
+  }
+
+  function systemDark() {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+
   document.addEventListener("click", function (event) {
-    var toggle = event.target.closest("[data-menu-toggle]");
-    if (toggle) {
-      document.body.classList.toggle("menu-open");
+    // Sidebar button: on a phone it opens the drawer, on a wide screen it collapses to icons. The choice is
+    // kept in a cookie so the server draws the same layout on the next page.
+    if (event.target.closest("[data-menu-toggle]")) {
+      if (phone.matches) {
+        document.body.classList.toggle("menu-open");
+      } else {
+        var collapsed = document.body.classList.toggle("sidebar-collapsed");
+        setCookie("sidebar", collapsed ? "collapsed" : "open");
+      }
       return;
     }
-    if (document.body.classList.contains("menu-open") && !event.target.closest(".sidebar")) {
+
+    // Light / dark. The theme is written on <html> at once and in a cookie for the next page.
+    if (event.target.closest("[data-theme-toggle]")) {
+      var root = document.documentElement;
+      var current = root.getAttribute("data-theme") || (systemDark() ? "dark" : "light");
+      var next = current === "dark" ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      setCookie("theme", next);
+      return;
+    }
+
+    // Pop-up menus (the create menu, the account menu) close when you click anywhere else.
+    document.querySelectorAll("details.menu[open]").forEach(function (menu) {
+      if (!menu.contains(event.target) || event.target.closest(".menu-pop a")) {
+        menu.removeAttribute("open");
+      }
+    });
+
+    if (document.body.classList.contains("menu-open") && event.target.closest(".sidebar nav a")) {
       document.body.classList.remove("menu-open");
     }
-    if (event.target.closest(".sidebar nav a")) {
+  });
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+      document.querySelectorAll("details.menu[open]").forEach(function (menu) { menu.removeAttribute("open"); });
       document.body.classList.remove("menu-open");
     }
   });
@@ -29,8 +67,9 @@
     true
   );
 
-  // Close the phone menu after an htmx page swap.
+  // Close the phone drawer and any open pop-up after an htmx page swap.
   document.addEventListener("htmx:afterSwap", function () {
     document.body.classList.remove("menu-open");
+    document.querySelectorAll("details.menu[open]").forEach(function (menu) { menu.removeAttribute("open"); });
   });
 })();

@@ -18,9 +18,9 @@
         {% if untranslated[r.id] %}<div class="missing">ยังไม่ได้แปล {{ untranslated[r.id] | length }} ช่อง</div>{% endif %}
       </td>
       <td>{{ r.employer }}</td>
-      <td>{{ periods[r.id] }}{% if r.span == "moment" %} <span class="muted">(วันเดียว)</span>{% endif %}</td>
-      <td>{{ type_labels[r.employment_type] }}</td>
-      <td>{% if r.hidden %}<span class="badge">ซ่อน</span>{% else %}<span class="badge ok">แสดง</span>{% endif %}</td>
+      <td>{{ periods[r.id] | tr }}{% if r.span == "moment" %} <span class="muted">(วันเดียว)</span>{% endif %}</td>
+      <td>{{ type_labels[r.employment_type] | tr }}</td>
+      <td>{% if r.hidden %}<span class="badge">ถูกซ่อน</span>{% else %}<span class="badge ok">แสดง</span>{% endif %}</td>
       <td class="row-actions">
         {% if trash %}
           <form method="post" action="/work/{{ r.id }}/restore" class="inline">

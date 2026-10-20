@@ -18,9 +18,9 @@
         {% if r.field_th or r.field_en %}<div class="muted">{{ r.field_th or r.field_en }}</div>{% endif %}
         {% if untranslated[r.id] %}<div class="missing">ยังไม่ได้แปล {{ untranslated[r.id] | length }} ช่อง</div>{% endif %}
       </td>
-      <td>{{ level_labels[r.level] }}</td>
-      <td>{{ periods[r.id] }}</td>
-      <td>{% if r.hidden %}<span class="badge">ซ่อน</span>{% else %}<span class="badge ok">แสดง</span>{% endif %}</td>
+      <td>{{ level_labels[r.level] | tr }}</td>
+      <td>{{ periods[r.id] | tr }}</td>
+      <td>{% if r.hidden %}<span class="badge">ถูกซ่อน</span>{% else %}<span class="badge ok">แสดง</span>{% endif %}</td>
       <td class="row-actions">
         {% if trash %}
           <form method="post" action="/education/{{ r.id }}/restore" class="inline">

@@ -17,7 +17,7 @@
     <p class="muted">ตอนเพิ่มหรือแก้ไขรายการ ฟอร์มจะแสดงเฉพาะช่องที่ติ๊กไว้ตามชนิดที่เลือก (ชื่อ ประเภท ชื่อเรียกอื่น และสถานะแสดงเสมอ)
       ข้อมูลที่เคยกรอกในช่องที่ซ่อนจะไม่หาย</p>
     {% for key, label in groups.items() %}
-    <label class="check"><input type="checkbox" name="fields" value="{{ key }}" {% if not row or key in row.fields %}checked{% endif %}> {{ label }}</label>
+    <label class="check"><input type="checkbox" name="fields" value="{{ key }}" {% if not row or key in row.fields %}checked{% endif %}> {{ label | tr }}</label>
     {% endfor %}
   </section>
   <p><button>บันทึก</button> <a href="/kinds">ยกเลิก</a></p>

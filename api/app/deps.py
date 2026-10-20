@@ -19,6 +19,8 @@ async def current_session(request: Request, db: AsyncSession = Depends(get_db)) 
     now = datetime.now(timezone.utc)
     if row is None or row.revoked_at is not None or row.expires_at <= now:
         raise LoginRequired()
+    user = await db.get(User, row.user_id)
+    request.state.admin_email = user.email if user else ""  # drawn in the admin menu
     return row
 
 

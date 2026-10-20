@@ -133,8 +133,8 @@ async def overview(db: AsyncSession, storage: Storage) -> dict:
         failed = " และ ".join({"database": "ฐานข้อมูล", "storage": "ที่เก็บไฟล์"}[k] for k, v in status.items() if v == "fail")
         todo.append({"level": "warn", "text": f"{failed}ไม่ตอบสนอง", "href": "/", "cta": "ดูสถานะ"})
     if index["stale"]:
-        parts = [f"{label} {index[key]}" for label, key in (("เพิ่ม", "added"), ("แก้", "changed"), ("ลบ", "removed")) if index[key]]
-        todo.append({"level": "warn", "text": f"ข้อมูลช่องถามตอบล้าสมัย ({' · '.join(parts)} ชิ้น)", "href": "/rag", "cta": "สร้างใหม่"})
+        parts = [f"{label} {index[key]}" for label, key in (("เพิ่มใหม่", "added"), ("ถูกแก้", "changed"), ("ถูกลบ", "removed")) if index[key]]
+        todo.append({"level": "warn", "text": f"ข้อมูลช่องถามตอบล้าสมัย ({' · '.join(parts)} ชิ้น)", "href": "/rag", "cta": "สร้างข้อมูลใหม่"})
     if unanswered:
         todo.append({"level": "info", "text": f"มีคำถามที่ตอบไม่ได้ {unanswered} ข้อใน 7 วันนี้ (เอาไปเติมเนื้อหาได้)", "href": "/rag/questions", "cta": "ดูคำถาม"})
     if not projects.get("published") and not projects.get("draft") and not projects.get("hidden"):

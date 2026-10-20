@@ -36,7 +36,7 @@ FIELDS = (
     ("learned", "สิ่งที่ได้เรียน / ถ้าทำใหม่จะต่างไปอย่างไร", True),
     ("next_steps", "สิ่งที่ยังอยากทำต่อ", True),
 )
-STATUS_LABELS = {"draft": "ร่าง", "published": "เผยแพร่", "hidden": "ซ่อน"}
+STATUS_LABELS = {"draft": "ร่าง", "published": "เผยแพร่", "hidden": "ถูกซ่อน"}
 
 
 async def get_or_404(db: AsyncSession, project_id: int) -> Project:

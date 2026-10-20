@@ -15,13 +15,13 @@
 </form>
 {% for g in groups %}
 <section class="card">
-  <h2>{{ g.label }} <span class="muted">({{ g.rows | length }})</span></h2>
+  <h2>{{ g.label | tr }} <span class="muted">({{ g.rows | length }})</span></h2>
   <table>
     <tbody>
     {% for row, title in g.rows %}
       <tr>
         <td>
-          {% if g.key == "image" %}<img src="/media/{{ row.id }}" alt="" style="height: 40px; vertical-align: middle; margin-right: 8px">{% endif %}{{ title }}
+          {% if g.key == "image" %}<img src="/media/{{ row.id }}" alt="" style="height: 40px; vertical-align: middle; margin-right: 8px">รูป #{{ row.id }} ของรายการ #{{ row.project_id }}{% else %}{{ title }}{% endif %}
         </td>
         <td class="muted">{{ row.deleted_at.strftime('%Y-%m-%d %H:%M') }}</td>
         <td class="row-actions">
@@ -38,7 +38,7 @@
     {% endfor %}
     </tbody>
   </table>
-  <form method="post" action="/trash/empty" onsubmit="return confirm('ลบ{{ g.label }}ทั้งหมดในถังขยะถาวร ({{ g.rows | length }} รายการ) ยืนยัน?')">
+  <form method="post" action="/trash/empty" onsubmit="return confirm('ลบ{{ g.label | tr }}ทั้งหมดในถังขยะถาวร ({{ g.rows | length }} รายการ) ยืนยัน?')">
     <input type="hidden" name="csrf_token" value="{{ csrf }}"><input type="hidden" name="kind" value="{{ g.key }}">
     <button class="danger">ล้างเฉพาะหมวดนี้</button>
   </form>

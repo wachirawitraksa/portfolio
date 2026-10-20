@@ -127,7 +127,7 @@ async def test_mutations_need_csrf_and_login(authed):
 async def test_the_menu_dashboard_and_trash_know_about_education(authed):
     await add_edu(authed, degree_en="")
     page = (await authed.get("/admin/education")).text
-    assert 'href="/education" aria-current="page"' in page
+    assert re.search(r'<a href="/education"[^>]*aria-current="page"', page)
     home = (await authed.get("/admin/")).text
     assert re.search(r'<div class="num">1</div>\s*<div class="label">ประวัติการศึกษา</div>', home)
     assert "ประวัติการศึกษาที่ยังแปลไม่ครบสองภาษา 1 รายการ" in home

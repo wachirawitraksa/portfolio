@@ -17,9 +17,9 @@
         {% if r.title_th and r.title_en %}<div class="muted">{{ r.title_en }}</div>{% endif %}
         {% if untranslated[r.id] %}<div class="missing">ยังไม่ได้แปล {{ untranslated[r.id] | length }} ช่อง</div>{% endif %}
       </td>
-      <td>{{ source_labels[r.source] }}{% if r.platform %} · {{ r.platform }}{% endif %}</td>
+      <td>{{ source_labels[r.source] | tr }}{% if r.platform %} · {{ r.platform }}{% endif %}</td>
       <td>{{ r.published_on.isoformat() if r.published_on else '' }}</td>
-      <td><span class="badge {{ {'published': 'ok', 'draft': 'warn', 'hidden': ''}[r.status] }}">{{ status_labels[r.status] }}</span></td>
+      <td><span class="badge {{ {'published': 'ok', 'draft': 'warn', 'hidden': ''}[r.status] }}">{{ status_labels[r.status] | tr }}</span></td>
       <td class="row-actions">
         {% if trash %}
           <form method="post" action="/articles/{{ r.id }}/restore" class="inline">

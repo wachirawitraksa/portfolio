@@ -3,7 +3,7 @@
 {% from "_chips.html" import chips, chips_script %}
 {% block content %}
 <h1>{% if row and row.id %}แก้ไขบทความ{% else %}เพิ่มบทความ{% endif %}</h1>
-{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+{% if error %}<p class="error" role="alert">{{ error | tr }}</p>{% endif %}
 
 <form method="post" action="{% if row and row.id %}/articles/{{ row.id }}{% else %}/articles{% endif %}">
   <input type="hidden" name="csrf_token" value="{{ csrf }}">
@@ -21,7 +21,7 @@
     </div>
     <label for="source">ที่มา</label>
     <select id="source" name="source" style="max-width: 280px">
-      {% for key, label in sources %}<option value="{{ key }}" {% if (row.source if row and row.source else 'internal') == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      {% for key, label in sources %}<option value="{{ key }}" {% if (row.source if row and row.source else 'internal') == key %}selected{% endif %}>{{ label | tr }}</option>{% endfor %}
     </select>
     <label for="published_on">วันที่เผยแพร่</label>
     <input id="published_on" name="published_on" type="date" value="{{ row.published_on.isoformat() if row and row.published_on else '' }}" style="max-width: 200px">
@@ -62,7 +62,7 @@
     <h2>การแสดงผล</h2>
     <label for="status">สถานะ</label>
     <select id="status" name="status" style="max-width: 280px">
-      {% for value, text in statuses %}<option value="{{ value }}" {% if (row.status if row and row.status else 'draft') == value %}selected{% endif %}>{{ text }}</option>{% endfor %}
+      {% for value, text in statuses %}<option value="{{ value }}" {% if (row.status if row and row.status else 'draft') == value %}selected{% endif %}>{{ text | tr }}</option>{% endfor %}
     </select>
   </section>
 

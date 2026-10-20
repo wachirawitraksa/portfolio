@@ -7,13 +7,13 @@
   <h2>ข้อมูลที่ใช้ค้นหา</h2>
   {% if total %}
   <p>ทั้งหมด {{ total }} ชิ้น · สร้างเมื่อ {{ built_at.strftime('%Y-%m-%d %H:%M') }}</p>
-  <ul>{% for label, n in counts %}<li>{{ label }}: {{ n }}</li>{% endfor %}</ul>
+  <ul>{% for label, n in counts %}<li>{{ label | tr }}: {{ n }}</li>{% endfor %}</ul>
   {% else %}
   <p class="empty">ยังไม่มีข้อมูล กด "สร้างใหม่" เพื่อเริ่มต้น</p>
   {% endif %}
   {% if status.stale %}
   <p class="missing" role="status">เนื้อหาเปลี่ยนไปหลังสร้างครั้งล่าสุด
-    ({% if status.added %}เพิ่ม {{ status.added }}{% endif %}{% if status.changed %} แก้ {{ status.changed }}{% endif %}{% if status.removed %} ลบ {{ status.removed }}{% endif %} ชิ้น)
+    ({% if status.added %}เพิ่มใหม่ {{ status.added }}{% endif %}{% if status.changed %} ถูกแก้ {{ status.changed }}{% endif %}{% if status.removed %} ถูกลบ {{ status.removed }}{% endif %} ชิ้น)
     กดสร้างใหม่เพื่อให้ช่องถามตอบเห็นเนื้อหาล่าสุด</p>
   {% elif status.built %}
   <p role="status">ข้อมูลตรงกับเนื้อหาปัจจุบันแล้ว</p>

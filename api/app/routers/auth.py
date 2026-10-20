@@ -15,7 +15,7 @@ from ..models import AuthSession, User
 from ..netutil import client_ip
 from ..ratelimit import login_limiter
 from ..security import expiry, new_token, verify_password, verify_totp
-from ..templating import templates
+from ..templating import LANGS, templates
 
 router = APIRouter()
 
@@ -64,6 +64,18 @@ async def open_session(request: Request, db: AsyncSession, user: User) -> Redire
         max_age=settings.session_days * 86400,
     )
     resp.delete_cookie(LOGIN_CSRF)
+    return resp
+
+
+@router.get("/lang/{code}")
+async def switch_language(code: str, next: str = "/"):
+    """Remember the admin language in a cookie and go back where the visitor was."""
+    if code not in LANGS:
+        raise HTTPException(404)
+    # Only a path on this host: "//evil.example" or "https://..." would be an open redirect.
+    target = next if next.startswith("/") and not next.startswith("//") and "\\" not in next else "/"
+    resp = go(target)
+    resp.set_cookie("lang", code, max_age=365 * 86400, samesite="lax", secure=get_settings().cookie_secure)
     return resp
 
 

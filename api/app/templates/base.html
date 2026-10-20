@@ -1,5 +1,12 @@
 <!doctype html>
-<html lang="th">
+{% from "_icons.html" import icon %}
+{% set theme = ui_theme(request) %}
+{% set lang = ui_lang(request) %}
+{# The menu shows when logged in. The login page and the one-time TOTP page set hide_nav. #}
+{% set with_nav = csrf and not hide_nav %}
+{% set here = admin_path(request) %}
+{% set email = request.state.admin_email | default("") %}
+<html lang="{{ lang }}"{% if theme %} data-theme="{{ theme }}"{% endif %}>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,41 +16,77 @@
   <script src="/static/htmx.min.js" defer></script>
   <script src="/static/admin.js" defer></script>
 </head>
-{% set here = admin_path(request) %}
-{# The menu shows when logged in. The login page and the one-time TOTP page set hide_nav. #}
-{% set with_nav = csrf and not hide_nav %}
-<body hx-boost="true"{% if not with_nav %} class="bare"{% endif %}>
-  {% if with_nav %}
-  <div class="shell">
-    <aside class="sidebar" aria-label="เมนูหลังบ้าน">
-      <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">P</span> หลังบ้าน</a>
-      <nav>
-        {% for group, items in NAV %}
-        <div class="nav-group">
-          {% if group %}<div class="nav-title">{{ group }}</div>{% endif %}
-          {% for label, href, exact in items %}
-          <a href="{{ href }}"{% if nav_active(here, href, exact) %} aria-current="page"{% endif %}>{{ label }}</a>
-          {% endfor %}
-        </div>
-        {% endfor %}
-      </nav>
-      <div class="sidebar-foot">
-        <form method="post" action="/logout">
-          <input type="hidden" name="csrf_token" value="{{ csrf }}">
-          <button>ออกจากระบบ</button>
-        </form>
-      </div>
-    </aside>
-    <div class="content">
-      <div class="topbar">
-        <button type="button" class="menu-toggle" data-menu-toggle aria-label="เปิดเมนู">☰ เมนู</button>
-        <strong>หลังบ้าน</strong>
-      </div>
-  {% endif %}
-      <main>{% block content %}{% endblock %}</main>
-  {% if with_nav %}
-    </div>
+<body hx-boost="true" class="{% if not with_nav %}bare{% elif ui_sidebar(request) == 'collapsed' %}sidebar-collapsed{% endif %}">
+{# Language and theme switches, drawn twice: in the header when there is a menu, floating on the login page. #}
+{% macro switches() %}
+  <div class="lang" role="group" aria-label="ภาษา">
+    <a href="/lang/th?next={{ (here ~ ('?' ~ request.url.query if request.url.query else '')) | urlencode }}" hx-boost="false"{% if lang == 'th' %} aria-current="true"{% endif %}>&#3652;&#3607;&#3618;</a>
+    <a href="/lang/en?next={{ (here ~ ('?' ~ request.url.query if request.url.query else '')) | urlencode }}" hx-boost="false"{% if lang == 'en' %} aria-current="true"{% endif %}>EN</a>
   </div>
-  {% endif %}
+  <button type="button" class="icon-btn" data-theme-toggle aria-label="สลับธีมสว่าง/มืด" title="สลับธีมสว่าง/มืด">
+    <span class="i-moon">{{ icon("moon") }}</span><span class="i-sun">{{ icon("sun") }}</span>
+  </button>
+{% endmacro %}
+{% if with_nav %}
+{% set crumb = nav_current(here) %}
+<div class="shell">
+  <aside class="sidebar" aria-label="เมนูหลังบ้าน">
+    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">P</span><span class="label">หลังบ้าน</span></a>
+    <div class="quick-row">
+      <details class="menu quick">
+        <summary class="btn create-btn">{{ icon("plus") }}<span class="create-label">สร้างใหม่</span></summary>
+        <div class="menu-pop">
+          {% for label, href in QUICK_CREATE %}<a href="{{ href }}">{{ icon("plus", 16) }}{{ label | tr }}</a>{% endfor %}
+        </div>
+      </details>
+      <a class="mail-btn" href="/rag/questions" title="คำถามจากผู้เข้าชม" aria-label="คำถามจากผู้เข้าชม">{{ icon("inbox") }}</a>
+    </div>
+    <nav>
+      {% for group, items in NAV %}
+      <div class="nav-group">
+        {% if group %}<div class="nav-title">{{ group | tr }}</div>{% endif %}
+        {% for label, href, exact, icon_name in items %}
+        <a href="{{ href }}" title="{{ label | tr }}"{% if nav_active(here, href, exact) %} aria-current="page"{% endif %}>{{ icon(icon_name) }}<span class="nav-label">{{ label | tr }}</span></a>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </nav>
+    <div class="sidebar-foot">
+      <details class="menu">
+        <summary class="me">
+          <span class="avatar">{{ (email or "A")[0] }}</span>
+          <span class="me-text"><strong>ผู้ดูแลเว็บ</strong><span>{{ email }}</span></span>
+          {{ icon("dots") }}
+        </summary>
+        <div class="menu-pop">
+          <a href="/account">{{ icon("shield", 16) }}บัญชีและความปลอดภัย</a>
+          <a href="/sessions">{{ icon("monitor", 16) }}session ที่ล็อกอินอยู่</a>
+          <div class="sep"></div>
+          <form method="post" action="/logout">
+            <input type="hidden" name="csrf_token" value="{{ csrf }}">
+            <button>{{ icon("logout", 16) }}ออกจากระบบ</button>
+          </form>
+        </div>
+      </details>
+    </div>
+  </aside>
+  <div class="scrim" data-menu-toggle></div>
+  <div class="content">
+    <header class="topbar">
+      <button type="button" class="icon-btn" data-menu-toggle aria-label="ย่อ/ขยายเมนู" title="ย่อ/ขยายเมนู">{{ icon("panel") }}</button>
+      <span class="sep"></span>
+      <span class="crumb">{% if crumb[0] %}<span class="group">{{ crumb[0] | tr }}</span>{% endif %}<span>{{ (crumb[1] or "หลังบ้าน") | tr }}</span></span>
+      <span class="grow"></span>
+      {{ switches() }}
+      <a class="icon-btn accent" href="/settings" aria-label="ตั้งค่าการแสดงผล" title="ตั้งค่าการแสดงผล">{{ icon("sliders") }}</a>
+    </header>
+{% else %}
+<div class="bare-tools">{{ switches() }}</div>
+{% endif %}
+    <main>{% block content %}{% endblock %}</main>
+{% if with_nav %}
+  </div>
+</div>
+{% endif %}
 </body>
 </html>

@@ -35,7 +35,7 @@
 
 <p>
   {% for key, label in filters.items() %}
-    {% if key == show %}<strong>{{ label }}</strong>{% else %}<a href="/rag/questions?show={{ key }}">{{ label }}</a>{% endif %}{% if not loop.last %} · {% endif %}
+    {% if key == show %}<strong>{{ label | tr }}</strong>{% else %}<a href="/rag/questions?show={{ key }}">{{ label | tr }}</a>{% endif %}{% if not loop.last %} · {% endif %}
   {% endfor %}
 </p>
 {% if rows %}
@@ -46,7 +46,7 @@
     <tr>
       <td>{{ r.created_at.strftime('%m-%d %H:%M') }}</td>
       <td>{{ r.question }}{% if r.normalized and r.normalized != r.question.lower() %}<div class="muted">→ {{ r.normalized }}</div>{% endif %}</td>
-      <td>{{ mode_labels.get(r.mode, r.mode) }}{% if r.cached %} <span class="muted">(cache)</span>{% endif %}{% if r.tier %} <span class="muted">· {{ r.tier }}</span>{% endif %}</td>
+      <td>{{ mode_labels.get(r.mode, r.mode) | tr }}{% if r.cached %} <span class="muted">(cache)</span>{% endif %}{% if r.tier %} <span class="muted">· {{ r.tier }}</span>{% endif %}</td>
       <td>{{ "%.2f" | format(r.top_score) }}</td>
       <td>{% for s in r.sources %}{{ s.title_th or s.title_en }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
     </tr>

@@ -3,10 +3,10 @@
 {% from "_chips.html" import chips, chips_script %}
 {% block content %}
 <h1>{% if row and row.id %}แก้ไขรายการ{% else %}เพิ่มรายการ{% endif %}</h1>
-{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+{% if error %}<p class="error" role="alert">{{ error | tr }}</p>{% endif %}
 
 <form id="project-form" method="post" action="{% if row and row.id %}/projects/{{ row.id }}{% else %}/projects{% endif %}"
-      data-kind-fields='{{ kind_fields | tojson }}' data-filled='{{ filled_groups | tojson }}' data-labels='{{ groups | tojson }}'>
+      data-kind-fields='{{ kind_fields | tojson }}' data-filled='{{ filled_groups | tojson }}' data-labels='{{ groups | trmap | tojson }}'>
   <input type="hidden" name="csrf_token" value="{{ csrf }}">
 
   <section class="card">
@@ -26,7 +26,7 @@
       {% for lang, lang_label in (("th", "ไทย"), ("en", "English")) %}
       {% set value = (row | attr(name ~ "_" ~ lang)) if row else "" %}
       <div>
-        <label for="{{ name }}_{{ lang }}">{{ label }} · {{ lang_label }}{% if row and row.id and not value %} <span class="missing">ยังไม่ได้กรอก</span>{% endif %}</label>
+        <label for="{{ name }}_{{ lang }}">{{ label | tr }} · {{ lang_label }}{% if row and row.id and not value %} <span class="missing">ยังไม่ได้กรอก</span>{% endif %}</label>
         <input id="{{ name }}_{{ lang }}" name="{{ name }}_{{ lang }}" type="text" value="{{ value }}" {% if loop.first and not (row and row.id) %}autofocus{% endif %}>
       </div>
       {% endfor %}
@@ -44,7 +44,7 @@
     <h2>รายละเอียด <span class="muted">(กรอกทีหลังได้)</span></h2>
     {% for name, label, multiline in fields[1:] %}
     <fieldset>
-      <legend>{{ label }}</legend>
+      <legend>{{ label | tr }}</legend>
       <div class="pair">
         {% for lang, lang_label in (("th", "ไทย"), ("en", "English")) %}
         {% set value = (row | attr(name ~ "_" ~ lang)) if row else "" %}
@@ -94,7 +94,7 @@
     <h2>การแสดงผล</h2>
     <label for="status">สถานะ</label>
     <select id="status" name="status" style="max-width: 280px">
-      {% for value, text in statuses %}<option value="{{ value }}" {% if (row.status if row and row.status else 'draft') == value %}selected{% endif %}>{{ text }}</option>{% endfor %}
+      {% for value, text in statuses %}<option value="{{ value }}" {% if (row.status if row and row.status else 'draft') == value %}selected{% endif %}>{{ text | tr }}</option>{% endfor %}
     </select>
     <label class="check"><input type="checkbox" name="featured" {% if row and row.featured %}checked{% endif %}> ขึ้นหน้าแรก</label>
   </section>

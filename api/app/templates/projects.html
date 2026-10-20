@@ -20,7 +20,7 @@
       <td>{% if r.kind %}{{ r.kind.name_th or r.kind.name_en }}{% endif %}</td>
       <td>{{ r.year or '' }}</td>
       <td>{% for c in r.categories %}{{ c.name_th or c.name_en }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
-      <td><span class="badge {{ {'published': 'ok', 'draft': 'warn', 'hidden': ''}[r.status] }}">{{ status_labels[r.status] }}</span>{% if r.featured %} <span class="badge info">หน้าแรก</span>{% endif %}</td>
+      <td><span class="badge {{ {'published': 'ok', 'draft': 'warn', 'hidden': ''}[r.status] }}">{{ status_labels[r.status] | tr }}</span>{% if r.featured %} <span class="badge info">หน้าแรก</span>{% endif %}</td>
       <td class="row-actions">
         {% if trash %}
           <form method="post" action="/projects/{{ r.id }}/restore" class="inline">
