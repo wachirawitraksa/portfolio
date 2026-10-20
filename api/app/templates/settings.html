@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}ตั้งค่า{% endblock %}
+{% block content %}
+<h1>ตั้งค่าการแสดงผล</h1>
+{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+<form method="post" action="/settings">
+  <input type="hidden" name="csrf_token" value="{{ csrf }}">
+  <section class="card">
+    <h2>จำนวนที่แสดงในแต่ละส่วน</h2>
+    {% for field, label, hint in fields %}
+    <label for="{{ field }}">{{ label }} <span class="muted">({{ hint }} · {{ min }}–{{ max }})</span></label>
+    <input id="{{ field }}" name="{{ field }}" type="text" inputmode="numeric" value="{{ row | attr(field) }}" style="max-width: 120px">
+    {% endfor %}
+    <p><button>บันทึก</button></p>
+  </section>
+</form>
+{% endblock %}

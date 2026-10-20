@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}ข้อมูลส่วนตัว{% endblock %}
+{% block content %}
+<h1>ข้อมูลส่วนตัว (หน้าแรก)</h1>
+{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+
+<form method="post" action="/profile">
+  <input type="hidden" name="csrf_token" value="{{ csrf }}">
+
+  <section class="card">
+    <h2>ผมเป็นใคร</h2>
+    {% for name, label, multiline in (("name", "ชื่อ", False), ("intro", "แนะนำตัวสั้น ๆ", True), ("location", "ที่อยู่ / อยู่ที่ไหน", False)) %}
+    <div class="pair">
+      {% for lang, lang_label in (("th", "ไทย"), ("en", "English")) %}
+      {% set value = row | attr(name ~ "_" ~ lang) %}
+      <div>
+        <label for="{{ name }}_{{ lang }}">{{ label }} · {{ lang_label }}{% if name in untranslated and not value %} <span class="missing">ยังไม่ได้กรอก</span>{% endif %}</label>
+        {% if multiline %}
+        <textarea id="{{ name }}_{{ lang }}" name="{{ name }}_{{ lang }}" rows="5">{{ value }}</textarea>
+        {% else %}
+        <input id="{{ name }}_{{ lang }}" name="{{ name }}_{{ lang }}" type="text" value="{{ value }}">
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+    <label for="email">อีเมลติดต่อ</label>
+    <input id="email" name="email" type="text" inputmode="email" value="{{ row.email }}" style="max-width: 360px">
+    <p><button>บันทึก</button></p>
+  </section>
+</form>
+
+<section class="card">
+  <h2>รูปของผม</h2>
+  {% if saved.photo_key %}
+  <p><img src="/profile/photo?v={{ saved.photo_key }}" alt="รูปโปรไฟล์" style="max-width: 200px; max-height: 200px; border-radius: 8px"></p>
+  <form method="post" action="/profile/photo/remove" class="inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>เอารูปออก</button>
+  </form>
+  {% else %}
+  <p class="empty">ยังไม่มีรูป</p>
+  {% endif %}
+  <form method="post" action="/profile/photo" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf }}">
+    <label for="photo">{% if saved.photo_key %}เปลี่ยนรูป{% else %}อัปโหลดรูป{% endif %} <span class="muted">(JPEG, PNG, GIF, WebP)</span></label>
+    <input id="photo" name="file" type="file" accept="image/jpeg,image/png,image/gif,image/webp" required>
+    <p><button>อัปโหลด</button></p>
+  </form>
+</section>
+
+<section class="card">
+  <h2>CV (PDF)</h2>
+  {% for lang, lang_label, name, key in (("th", "ไทย", saved.cv_th_name, saved.cv_th_key), ("en", "English", saved.cv_en_name, saved.cv_en_key)) %}
+  <fieldset>
+    <legend>{{ lang_label }}</legend>
+    {% if key %}
+    <p><a href="/profile/cv/{{ lang }}" target="_blank" rel="noopener">{{ name or ("cv-" ~ lang ~ ".pdf") }}</a></p>
+    <form method="post" action="/profile/cv/{{ lang }}/remove" class="inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>เอาไฟล์ออก</button>
+    </form>
+    {% else %}
+    <p class="empty">ยังไม่มีไฟล์</p>
+    {% endif %}
+    <form method="post" action="/profile/cv/{{ lang }}" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf }}">
+      <label for="cv_{{ lang }}">{% if key %}เปลี่ยนไฟล์{% else %}อัปโหลดไฟล์{% endif %}</label>
+      <input id="cv_{{ lang }}" name="file" type="file" accept="application/pdf" required>
+      <p><button>อัปโหลด</button></p>
+    </form>
+  </fieldset>
+  {% endfor %}
+</section>
+
+<section class="card">
+  <h2>ช่องทางติดต่ออื่น <span class="muted">(GitHub, LinkedIn, Medium ...)</span></h2>
+  {% if links %}
+  <table>
+    <thead><tr><th>ชื่อ</th><th>ลิงก์</th><th></th></tr></thead>
+    <tbody>
+    {% for l in links %}
+      <tr>
+        <td colspan="2">
+          <form method="post" action="/profile/links/{{ l.id }}" class="pair">
+            <input type="hidden" name="csrf_token" value="{{ csrf }}">
+            <input name="label" type="text" maxlength="80" value="{{ l.label }}" aria-label="ชื่อช่องทาง">
+            <input name="url" type="text" maxlength="500" value="{{ l.url }}" aria-label="ลิงก์">
+            <span class="row-actions"><button>บันทึก</button></span>
+          </form>
+        </td>
+        <td class="row-actions">
+          {% for direction, text in (("up", "↑"), ("down", "↓")) %}
+          <form method="post" action="/profile/links/{{ l.id }}/move" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf }}">
+            <input type="hidden" name="direction" value="{{ direction }}">
+            <button aria-label="{{ 'เลื่อนขึ้น' if direction == 'up' else 'เลื่อนลง' }}">{{ text }}</button>
+          </form>
+          {% endfor %}
+          <form method="post" action="/profile/links/{{ l.id }}/trash" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>ลบ</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty">ยังไม่มีช่องทางติดต่อ</p>
+  {% endif %}
+
+  <form method="post" action="/profile/links">
+    <input type="hidden" name="csrf_token" value="{{ csrf }}">
+    <div class="pair">
+      <div><label for="new_label">ชื่อช่องทาง</label><input id="new_label" name="label" type="text" maxlength="80" placeholder="GitHub"></div>
+      <div><label for="new_url">ลิงก์</label><input id="new_url" name="url" type="text" maxlength="500" placeholder="https://github.com/..."></div>
+    </div>
+    <p><button>+ เพิ่มช่องทาง</button></p>
+  </form>
+
+  {% if trashed_links %}
+  <h3>ที่ลบแล้ว</h3>
+  <div class="row-actions">
+    {% for l in trashed_links %}
+    <form method="post" action="/profile/links/{{ l.id }}/restore" class="inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>กู้คืน {{ l.label }}</button>
+    </form>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

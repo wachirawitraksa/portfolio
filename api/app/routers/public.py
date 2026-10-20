@@ -10,6 +10,7 @@ from ..models import (
     PROJECT_TEXT_FIELDS,
     Article,
     Category,
+    ContactLink,
     Kind,
     Project,
     ProjectImage,
@@ -18,8 +19,10 @@ from ..models import (
     project_category,
     project_tag,
 )
+from ..site import get_profile, get_site_settings
 from ..storage import Storage, get_storage
 from .images import image_response
+from .profile import file_response, version
 
 router = APIRouter()
 
@@ -119,11 +122,13 @@ async def projects(
     category: int | None = None,
     kind: int | None = None,
     sort: Literal["order", "newest", "oldest"] = "order",
-    limit: Annotated[int, Query(ge=1, le=60)] = 12,
+    limit: Annotated[int | None, Query(ge=1, le=60)] = None,
     offset: Annotated[int, Query(ge=0)] = 0,
     db: AsyncSession = Depends(get_db),
 ):
-    """Public project list. Every tag given must match (narrowing, not widening)."""
+    """Public project list. Every tag given must match (narrowing, not widening).
+    Without `limit`, the page size set in the admin applies."""
+    limit = limit or (await get_site_settings(db)).projects_page_size
     where = visible()
     q = q.strip()
     if q:
@@ -176,7 +181,8 @@ async def projects(
 
 
 @router.get("/projects/featured")
-async def featured(limit: Annotated[int, Query(ge=1, le=60)] = 6, db: AsyncSession = Depends(get_db)):
+async def featured(limit: Annotated[int | None, Query(ge=1, le=60)] = None, db: AsyncSession = Depends(get_db)):
+    limit = limit or (await get_site_settings(db)).featured_limit
     rows = (
         await db.execute(
             select(Project)
@@ -255,10 +261,11 @@ def published_articles() -> list:
 
 @router.get("/articles")
 async def articles(
-    limit: Annotated[int, Query(ge=1, le=60)] = 12,
+    limit: Annotated[int | None, Query(ge=1, le=60)] = None,
     offset: Annotated[int, Query(ge=0)] = 0,
     db: AsyncSession = Depends(get_db),
 ):
+    limit = limit or (await get_site_settings(db)).articles_page_size
     where = published_articles()
     total = (await db.execute(select(func.count()).select_from(Article).where(*where))).scalar_one()
     rows = (
@@ -279,6 +286,62 @@ async def article(article_id: int, db: AsyncSession = Depends(get_db)):
     if row is None:
         raise HTTPException(404)
     return article_json(row, detail=True)
+
+
+@router.get("/profile")
+async def profile(db: AsyncSession = Depends(get_db)):
+    """Home page details. A missing photo or CV is null, never a broken URL."""
+    p = await get_profile(db)
+    contact_links = (
+        await db.execute(
+            select(ContactLink).where(ContactLink.deleted_at.is_(None)).order_by(ContactLink.sort_order, ContactLink.id)
+        )
+    ).scalars().all()
+    return {
+        "name_th": p.name_th,
+        "name_en": p.name_en,
+        "intro_th": p.intro_th,
+        "intro_en": p.intro_en,
+        "location_th": p.location_th,
+        "location_en": p.location_en,
+        "email": p.email,
+        "photo_url": f"/api/profile/photo?v={version(p.photo_key)}" if p.photo_key else None,
+        "cv_th_url": f"/api/profile/cv/th?v={version(p.cv_th_key)}" if p.cv_th_key else None,
+        "cv_en_url": f"/api/profile/cv/en?v={version(p.cv_en_key)}" if p.cv_en_key else None,
+        "links": [{"id": link.id, "label": link.label, "url": link.url} for link in contact_links],
+    }
+
+
+@router.get("/profile/photo")
+async def profile_photo(db: AsyncSession = Depends(get_db), storage: Storage = Depends(get_storage)):
+    p = await get_profile(db)
+    data = await storage.get(p.photo_key) if p.photo_key else None
+    if data is None:
+        raise HTTPException(404)
+    # The URL carries a version tag that changes with the file, so it may be cached for good.
+    return file_response(data, p.photo_content_type, "public, max-age=31536000, immutable")
+
+
+@router.get("/profile/cv/{lang}")
+async def profile_cv(lang: str, db: AsyncSession = Depends(get_db), storage: Storage = Depends(get_storage)):
+    if lang not in ("th", "en"):
+        raise HTTPException(404)
+    p = await get_profile(db)
+    key = getattr(p, f"cv_{lang}_key")
+    data = await storage.get(key) if key else None
+    if data is None:
+        raise HTTPException(404)
+    return file_response(data, "application/pdf", "public, max-age=31536000, immutable", f"cv-{lang}.pdf")
+
+
+@router.get("/settings")
+async def site_settings(db: AsyncSession = Depends(get_db)):
+    s = await get_site_settings(db)
+    return {
+        "featured_limit": s.featured_limit,
+        "projects_page_size": s.projects_page_size,
+        "articles_page_size": s.articles_page_size,
+    }
 
 
 @router.get("/media/{image_id}")

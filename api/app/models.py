@@ -224,6 +224,51 @@ class Article(Base):
     tags: Mapped[list[Tag]] = relationship(secondary=article_tag, lazy="selectin", order_by="Tag.name")
 
 
+class Profile(Base):
+    """The owner's details for the home page. One row, id 1."""
+
+    __tablename__ = "profile"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name_th: Mapped[str] = mapped_column(String(120), default="")
+    name_en: Mapped[str] = mapped_column(String(120), default="")
+    intro_th: Mapped[str] = mapped_column(Text, default="")
+    intro_en: Mapped[str] = mapped_column(Text, default="")
+    location_th: Mapped[str] = mapped_column(String(200), default="")
+    location_en: Mapped[str] = mapped_column(String(200), default="")
+    email: Mapped[str] = mapped_column(String(255), default="")
+    # Files live in object storage; an empty key means nothing uploaded.
+    photo_key: Mapped[str] = mapped_column(String(200), default="")
+    photo_content_type: Mapped[str] = mapped_column(String(50), default="")
+    cv_th_key: Mapped[str] = mapped_column(String(200), default="")
+    cv_th_name: Mapped[str] = mapped_column(String(200), default="")
+    cv_en_key: Mapped[str] = mapped_column(String(200), default="")
+    cv_en_name: Mapped[str] = mapped_column(String(200), default="")
+
+
+class ContactLink(Base):
+    """GitHub, LinkedIn, Medium, ... shown next to the email."""
+
+    __tablename__ = "contact_link"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    label: Mapped[str] = mapped_column(String(80))
+    url: Mapped[str] = mapped_column(String(500))
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class SiteSettings(Base):
+    """How many items each public section shows. One row, id 1."""
+
+    __tablename__ = "site_settings"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    featured_limit: Mapped[int] = mapped_column(Integer, default=6)
+    projects_page_size: Mapped[int] = mapped_column(Integer, default=12)
+    articles_page_size: Mapped[int] = mapped_column(Integer, default=12)
+
+
 class ProjectImage(Base):
     """A picture or screenshot of one entry. The file lives in object storage under `key`."""
 
