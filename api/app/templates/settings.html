@@ -11,7 +11,19 @@
     <label for="{{ field }}">{{ label }} <span class="muted">({{ hint }} · {{ min }}–{{ max }})</span></label>
     <input id="{{ field }}" name="{{ field }}" type="text" inputmode="numeric" value="{{ row | attr(field) }}" style="max-width: 120px">
     {% endfor %}
-    <p><button>บันทึก</button></p>
   </section>
+
+  <section class="card">
+    <h2>วิธีการทำงาน</h2>
+    <p class="muted">หน้าเว็บเล่าวิธีการทำงานของผมผ่านผลงานจริงหนึ่งชิ้น เลือกชิ้นที่อยากให้ใช้เล่า (ต้องเผยแพร่แล้วจึงจะขึ้นหน้าเว็บ) · ไม่เลือก = ไม่แสดงส่วนนี้</p>
+    <label for="how_i_work_project_id">ผลงานที่ใช้เล่า</label>
+    <select id="how_i_work_project_id" name="how_i_work_project_id" style="max-width: 420px">
+      <option value="">— ไม่แสดง —</option>
+      {% for p in projects %}
+      <option value="{{ p.id }}" {% if chosen == p.id %}selected{% endif %}>{{ p.title_th or p.title_en }}{% if p.status != "published" %} (ยังไม่เผยแพร่){% endif %}</option>
+      {% endfor %}
+    </select>
+  </section>
+  <p><button>บันทึก</button></p>
 </form>
 {% endblock %}

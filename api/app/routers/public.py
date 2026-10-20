@@ -19,6 +19,19 @@ from ..models import (
     project_category,
     project_tag,
 )
+from ..schemas import (
+    ArticleDetail,
+    ArticleList,
+    CategoryOut,
+    KindOut,
+    ProfileOut,
+    ProjectDetail,
+    ProjectList,
+    ProjectCard,
+    SettingsOut,
+    TagCount,
+    WorkItem,
+)
 from ..site import get_profile, get_site_settings
 from ..storage import Storage, get_storage
 from .images import image_response
@@ -74,7 +87,7 @@ def project_json(p: Project, fields: tuple[str, ...], detail: bool = False) -> d
     return data
 
 
-@router.get("/categories")
+@router.get("/categories", response_model=list[CategoryOut])
 async def categories(db: AsyncSession = Depends(get_db)):
     rows = (
         await db.execute(
@@ -86,7 +99,7 @@ async def categories(db: AsyncSession = Depends(get_db)):
     return [{"id": r.id, "name_th": r.name_th, "name_en": r.name_en} for r in rows]
 
 
-@router.get("/kinds")
+@router.get("/kinds", response_model=list[KindOut])
 async def kinds(db: AsyncSession = Depends(get_db)):
     rows = (
         await db.execute(
@@ -98,7 +111,7 @@ async def kinds(db: AsyncSession = Depends(get_db)):
     return [{"id": r.id, "name_th": r.name_th, "name_en": r.name_en} for r in rows]
 
 
-@router.get("/tags")
+@router.get("/tags", response_model=list[TagCount])
 async def tags(db: AsyncSession = Depends(get_db)):
     """Tags used by at least one public project, for the filter list."""
     count = func.count(Project.id)
@@ -115,7 +128,7 @@ async def tags(db: AsyncSession = Depends(get_db)):
     return [{"id": tag.id, "name": tag.name, "count": n} for tag, n in rows]
 
 
-@router.get("/projects")
+@router.get("/projects", response_model=ProjectList)
 async def projects(
     q: Annotated[str, Query(max_length=100)] = "",
     tag: Annotated[list[int], Query()] = [],
@@ -180,7 +193,7 @@ async def projects(
     return {"total": total, "items": [project_json(p, CARD_TEXT_FIELDS) for p in rows]}
 
 
-@router.get("/projects/featured")
+@router.get("/projects/featured", response_model=list[ProjectCard])
 async def featured(limit: Annotated[int | None, Query(ge=1, le=60)] = None, db: AsyncSession = Depends(get_db)):
     limit = limit or (await get_site_settings(db)).featured_limit
     rows = (
@@ -194,7 +207,7 @@ async def featured(limit: Annotated[int | None, Query(ge=1, le=60)] = None, db: 
     return [project_json(p, CARD_TEXT_FIELDS) for p in rows]
 
 
-@router.get("/projects/{project_id}")
+@router.get("/projects/{project_id}", response_model=ProjectDetail)
 async def project(project_id: int, db: AsyncSession = Depends(get_db)):
     row = (await db.execute(select(Project).where(Project.id == project_id, *visible()))).scalar_one_or_none()
     if row is None:
@@ -202,7 +215,18 @@ async def project(project_id: int, db: AsyncSession = Depends(get_db)):
     return project_json(row, PROJECT_TEXT_FIELDS, detail=True)
 
 
-@router.get("/experience")
+@router.get("/how-i-work", response_model=ProjectDetail | None)
+async def how_i_work(db: AsyncSession = Depends(get_db)):
+    """The project chosen in the admin to tell the "how I work" story, or null when none is chosen
+    (or the chosen one is not published), so the website simply leaves that section out."""
+    project_id = (await get_site_settings(db)).how_i_work_project_id
+    if project_id is None:
+        return None
+    row = (await db.execute(select(Project).where(Project.id == project_id, *visible()))).scalar_one_or_none()
+    return project_json(row, PROJECT_TEXT_FIELDS, detail=True) if row else None
+
+
+@router.get("/experience", response_model=list[WorkItem])
 async def experience(db: AsyncSession = Depends(get_db)):
     """Timeline items, newest start first. Long ranges, ongoing work and single days share one list;
     the front end nests a short item inside a long one by comparing dates.
@@ -259,7 +283,7 @@ def published_articles() -> list:
     return [Article.status == "published", Article.deleted_at.is_(None)]
 
 
-@router.get("/articles")
+@router.get("/articles", response_model=ArticleList)
 async def articles(
     limit: Annotated[int | None, Query(ge=1, le=60)] = None,
     offset: Annotated[int, Query(ge=0)] = 0,
@@ -280,7 +304,7 @@ async def articles(
     return {"total": total, "items": [article_json(a) for a in rows]}
 
 
-@router.get("/articles/{article_id}")
+@router.get("/articles/{article_id}", response_model=ArticleDetail)
 async def article(article_id: int, db: AsyncSession = Depends(get_db)):
     row = (await db.execute(select(Article).where(Article.id == article_id, *published_articles()))).scalar_one_or_none()
     if row is None:
@@ -288,7 +312,7 @@ async def article(article_id: int, db: AsyncSession = Depends(get_db)):
     return article_json(row, detail=True)
 
 
-@router.get("/profile")
+@router.get("/profile", response_model=ProfileOut)
 async def profile(db: AsyncSession = Depends(get_db)):
     """Home page details. A missing photo or CV is null, never a broken URL."""
     p = await get_profile(db)
@@ -334,13 +358,14 @@ async def profile_cv(lang: str, db: AsyncSession = Depends(get_db), storage: Sto
     return file_response(data, "application/pdf", "public, max-age=31536000, immutable", f"cv-{lang}.pdf")
 
 
-@router.get("/settings")
+@router.get("/settings", response_model=SettingsOut)
 async def site_settings(db: AsyncSession = Depends(get_db)):
     s = await get_site_settings(db)
     return {
         "featured_limit": s.featured_limit,
         "projects_page_size": s.projects_page_size,
         "articles_page_size": s.articles_page_size,
+        "how_i_work_project_id": s.how_i_work_project_id,
     }
 
 

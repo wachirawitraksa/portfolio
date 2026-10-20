@@ -3,6 +3,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "api:types": "openapi-typescript openapi.json -o api-types.ts",
+    "prebuild": "npm run api:types",
     "build": "next build",
     "start": "next start"
   },
@@ -14,6 +16,7 @@
   "devDependencies": {
     "@types/node": "22.18.6",
     "@types/react": "19.1.13",
+    "openapi-typescript": "7.13.0",
     "typescript": "5.9.2"
   }
 }

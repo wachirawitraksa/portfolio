@@ -49,7 +49,9 @@ async def home(_=Depends(current_session)):
     return RedirectResponse("/projects", status_code=303)
 
 
-app.include_router(admin)
+# The admin pages are HTML for one person: keep them out of the public OpenAPI document (/api/openapi.json),
+# which the website's TypeScript types are generated from.
+app.include_router(admin, include_in_schema=False)
 
 
 @app.exception_handler(LoginRequired)

@@ -282,6 +282,8 @@ class SiteSettings(Base):
     featured_limit: Mapped[int] = mapped_column(Integer, default=6)
     projects_page_size: Mapped[int] = mapped_column(Integer, default=12)
     articles_page_size: Mapped[int] = mapped_column(Integer, default=12)
+    # The one project the "how I work" section tells the story through. Empty: the section is hidden.
+    how_i_work_project_id: Mapped[int | None] = mapped_column(ForeignKey("project.id", ondelete="SET NULL"))
 
 
 class GlossaryEntry(Base):

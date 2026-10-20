@@ -1,0 +1,1646 @@
+{
+  "components": {
+    "schemas": {
+      "ArticleCard": {
+        "properties": {
+          "external_url": {
+            "title": "External Url",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "platform": {
+            "title": "Platform",
+            "type": "string"
+          },
+          "published_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published On"
+          },
+          "source": {
+            "enum": [
+              "internal",
+              "external"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "summary_en": {
+            "title": "Summary En",
+            "type": "string"
+          },
+          "summary_th": {
+            "title": "Summary Th",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "$ref": "#/components/schemas/TagRef"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "title_en": {
+            "title": "Title En",
+            "type": "string"
+          },
+          "title_th": {
+            "title": "Title Th",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title_th",
+          "title_en",
+          "summary_th",
+          "summary_en",
+          "source",
+          "platform",
+          "external_url",
+          "published_on",
+          "tags"
+        ],
+        "title": "ArticleCard",
+        "type": "object"
+      },
+      "ArticleDetail": {
+        "properties": {
+          "body_en": {
+            "title": "Body En",
+            "type": "string"
+          },
+          "body_th": {
+            "title": "Body Th",
+            "type": "string"
+          },
+          "external_url": {
+            "title": "External Url",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "platform": {
+            "title": "Platform",
+            "type": "string"
+          },
+          "published_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published On"
+          },
+          "source": {
+            "enum": [
+              "internal",
+              "external"
+            ],
+            "title": "Source",
+            "type": "string"
+          },
+          "summary_en": {
+            "title": "Summary En",
+            "type": "string"
+          },
+          "summary_th": {
+            "title": "Summary Th",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "$ref": "#/components/schemas/TagRef"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "title_en": {
+            "title": "Title En",
+            "type": "string"
+          },
+          "title_th": {
+            "title": "Title Th",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title_th",
+          "title_en",
+          "summary_th",
+          "summary_en",
+          "source",
+          "platform",
+          "external_url",
+          "published_on",
+          "tags",
+          "body_th",
+          "body_en"
+        ],
+        "title": "ArticleDetail",
+        "type": "object"
+      },
+      "ArticleList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ArticleCard"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total",
+          "items"
+        ],
+        "title": "ArticleList",
+        "type": "object"
+      },
+      "AskIn": {
+        "properties": {
+          "question": {
+            "maxLength": 1000,
+            "title": "Question",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question"
+        ],
+        "title": "AskIn",
+        "type": "object"
+      },
+      "AskOut": {
+        "properties": {
+          "answer": {
+            "title": "Answer",
+            "type": "string"
+          },
+          "cached": {
+            "title": "Cached",
+            "type": "boolean"
+          },
+          "confidence": {
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ],
+            "title": "Confidence",
+            "type": "string"
+          },
+          "contact_email": {
+            "title": "Contact Email",
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "answer",
+              "uncertain",
+              "no_answer",
+              "fallback",
+              "redirect",
+              "greeting",
+              "blocked",
+              "rate_limited"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/AskSource"
+            },
+            "title": "Sources",
+            "type": "array"
+          }
+        },
+        "required": [
+          "answer",
+          "mode",
+          "confidence",
+          "sources",
+          "cached",
+          "contact_email"
+        ],
+        "title": "AskOut",
+        "type": "object"
+      },
+      "AskSource": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "section": {
+            "title": "Section",
+            "type": "string"
+          },
+          "title_en": {
+            "title": "Title En",
+            "type": "string"
+          },
+          "title_th": {
+            "title": "Title Th",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "project",
+              "work",
+              "article",
+              "profile"
+            ],
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "section",
+          "title_th",
+          "title_en"
+        ],
+        "title": "AskSource",
+        "type": "object"
+      },
+      "CategoryOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name_en": {
+            "title": "Name En",
+            "type": "string"
+          },
+          "name_th": {
+            "title": "Name Th",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name_th",
+          "name_en"
+        ],
+        "title": "CategoryOut",
+        "type": "object"
+      },
+      "ContactLinkOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "url"
+        ],
+        "title": "ContactLinkOut",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "ImageOut": {
+        "properties": {
+          "caption_en": {
+            "title": "Caption En",
+            "type": "string"
+          },
+          "caption_th": {
+            "title": "Caption Th",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "is_cover": {
+            "title": "Is Cover",
+            "type": "boolean"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "url",
+          "caption_th",
+          "caption_en",
+          "is_cover"
+        ],
+        "title": "ImageOut",
+        "type": "object"
+      },
+      "KindOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name_en": {
+            "title": "Name En",
+            "type": "string"
+          },
+          "name_th": {
+            "title": "Name Th",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name_th",
+          "name_en"
+        ],
+        "title": "KindOut",
+        "type": "object"
+      },
+      "ProfileOut": {
+        "properties": {
+          "cv_en_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cv En Url"
+          },
+          "cv_th_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cv Th Url"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "intro_en": {
+            "title": "Intro En",
+            "type": "string"
+          },
+          "intro_th": {
+            "title": "Intro Th",
+            "type": "string"
+          },
+          "links": {
+            "items": {
+              "$ref": "#/components/schemas/ContactLinkOut"
+            },
+            "title": "Links",
+            "type": "array"
+          },
+          "location_en": {
+            "title": "Location En",
+            "type": "string"
+          },
+          "location_th": {
+            "title": "Location Th",
+            "type": "string"
+          },
+          "name_en": {
+            "title": "Name En",
+            "type": "string"
+          },
+          "name_th": {
+            "title": "Name Th",
+            "type": "string"
+          },
+          "photo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Photo Url"
+          }
+        },
+        "required": [
+          "name_th",
+          "name_en",
+          "intro_th",
+          "intro_en",
+          "location_th",
+          "location_en",
+          "email",
+          "photo_url",
+          "cv_th_url",
+          "cv_en_url",
+          "links"
+        ],
+        "title": "ProfileOut",
+        "type": "object"
+      },
+      "ProjectCard": {
+        "description": "What a card in a list needs.",
+        "properties": {
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryOut"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "cover_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cover Url"
+          },
+          "demo_url": {
+            "title": "Demo Url",
+            "type": "string"
+          },
+          "featured": {
+            "title": "Featured",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "issued_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issued On"
+          },
+          "issuer": {
+            "title": "Issuer",
+            "type": "string"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/KindOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "problem_en": {
+            "title": "Problem En",
+            "type": "string"
+          },
+          "problem_th": {
+            "title": "Problem Th",
+            "type": "string"
+          },
+          "repo_url": {
+            "title": "Repo Url",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "$ref": "#/components/schemas/TagRef"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "title_en": {
+            "title": "Title En",
+            "type": "string"
+          },
+          "title_th": {
+            "title": "Title Th",
+            "type": "string"
+          },
+          "verify_url": {
+            "title": "Verify Url",
+            "type": "string"
+          },
+          "year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Year"
+          }
+        },
+        "required": [
+          "id",
+          "title_th",
+          "title_en",
+          "problem_th",
+          "problem_en",
+          "year",
+          "cover_url",
+          "repo_url",
+          "demo_url",
+          "verify_url",
+          "issuer",
+          "issued_on",
+          "featured",
+          "kind",
+          "categories",
+          "tags"
+        ],
+        "title": "ProjectCard",
+        "type": "object"
+      },
+      "ProjectDetail": {
+        "properties": {
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryOut"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "cover_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cover Url"
+          },
+          "demo_url": {
+            "title": "Demo Url",
+            "type": "string"
+          },
+          "featured": {
+            "title": "Featured",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "images": {
+            "items": {
+              "$ref": "#/components/schemas/ImageOut"
+            },
+            "title": "Images",
+            "type": "array"
+          },
+          "issued_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issued On"
+          },
+          "issuer": {
+            "title": "Issuer",
+            "type": "string"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/KindOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "learned_en": {
+            "title": "Learned En",
+            "type": "string"
+          },
+          "learned_th": {
+            "title": "Learned Th",
+            "type": "string"
+          },
+          "next_steps_en": {
+            "title": "Next Steps En",
+            "type": "string"
+          },
+          "next_steps_th": {
+            "title": "Next Steps Th",
+            "type": "string"
+          },
+          "problem_en": {
+            "title": "Problem En",
+            "type": "string"
+          },
+          "problem_th": {
+            "title": "Problem Th",
+            "type": "string"
+          },
+          "repo_url": {
+            "title": "Repo Url",
+            "type": "string"
+          },
+          "result_en": {
+            "title": "Result En",
+            "type": "string"
+          },
+          "result_th": {
+            "title": "Result Th",
+            "type": "string"
+          },
+          "role_en": {
+            "title": "Role En",
+            "type": "string"
+          },
+          "role_th": {
+            "title": "Role Th",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "$ref": "#/components/schemas/TagRef"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "title_en": {
+            "title": "Title En",
+            "type": "string"
+          },
+          "title_th": {
+            "title": "Title Th",
+            "type": "string"
+          },
+          "verify_url": {
+            "title": "Verify Url",
+            "type": "string"
+          },
+          "work_en": {
+            "title": "Work En",
+            "type": "string"
+          },
+          "work_th": {
+            "title": "Work Th",
+            "type": "string"
+          },
+          "year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Year"
+          }
+        },
+        "required": [
+          "id",
+          "title_th",
+          "title_en",
+          "problem_th",
+          "problem_en",
+          "year",
+          "cover_url",
+          "repo_url",
+          "demo_url",
+          "verify_url",
+          "issuer",
+          "issued_on",
+          "featured",
+          "kind",
+          "categories",
+          "tags",
+          "work_th",
+          "work_en",
+          "role_th",
+          "role_en",
+          "result_th",
+          "result_en",
+          "learned_th",
+          "learned_en",
+          "next_steps_th",
+          "next_steps_en",
+          "images"
+        ],
+        "title": "ProjectDetail",
+        "type": "object"
+      },
+      "ProjectList": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProjectCard"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total",
+          "items"
+        ],
+        "title": "ProjectList",
+        "type": "object"
+      },
+      "SettingsOut": {
+        "properties": {
+          "articles_page_size": {
+            "title": "Articles Page Size",
+            "type": "integer"
+          },
+          "featured_limit": {
+            "title": "Featured Limit",
+            "type": "integer"
+          },
+          "how_i_work_project_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "How I Work Project Id"
+          },
+          "projects_page_size": {
+            "title": "Projects Page Size",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "featured_limit",
+          "projects_page_size",
+          "articles_page_size",
+          "how_i_work_project_id"
+        ],
+        "title": "SettingsOut",
+        "type": "object"
+      },
+      "TagCount": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "count"
+        ],
+        "title": "TagCount",
+        "type": "object"
+      },
+      "TagRef": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "TagRef",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "WorkItem": {
+        "description": "One item on the timeline: a long range, ongoing work, or a single day.",
+        "properties": {
+          "bullets_en": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Bullets En",
+            "type": "array"
+          },
+          "bullets_th": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Bullets Th",
+            "type": "array"
+          },
+          "employer": {
+            "title": "Employer",
+            "type": "string"
+          },
+          "employment_type": {
+            "title": "Employment Type",
+            "type": "string"
+          },
+          "employment_type_en": {
+            "title": "Employment Type En",
+            "type": "string"
+          },
+          "employment_type_th": {
+            "title": "Employment Type Th",
+            "type": "string"
+          },
+          "ended_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended On"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "position_en": {
+            "title": "Position En",
+            "type": "string"
+          },
+          "position_th": {
+            "title": "Position Th",
+            "type": "string"
+          },
+          "span": {
+            "enum": [
+              "range",
+              "ongoing",
+              "moment"
+            ],
+            "title": "Span",
+            "type": "string"
+          },
+          "started_on": {
+            "title": "Started On",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "$ref": "#/components/schemas/TagRef"
+            },
+            "title": "Tags",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "position_th",
+          "position_en",
+          "employer",
+          "employment_type",
+          "employment_type_th",
+          "employment_type_en",
+          "span",
+          "started_on",
+          "ended_on",
+          "bullets_th",
+          "bullets_en",
+          "tags"
+        ],
+        "title": "WorkItem",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "Portfolio API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/articles": {
+      "get": {
+        "operationId": "articles_api_articles_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 60,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Limit"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Articles"
+      }
+    },
+    "/api/articles/{article_id}": {
+      "get": {
+        "operationId": "article_api_articles__article_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "title": "Article Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Article"
+      }
+    },
+    "/api/ask": {
+      "post": {
+        "description": "Public question box. Always answers with JSON: `mode` says what kind of reply it is, `sources` lists the\nprojects, jobs and articles it came from, `contact_email` is where to go when the site has no answer.",
+        "operationId": "ask_question_api_ask_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AskIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AskOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AskOut"
+                }
+              }
+            },
+            "description": "Question limit reached"
+          }
+        },
+        "summary": "Ask Question"
+      }
+    },
+    "/api/categories": {
+      "get": {
+        "operationId": "categories_api_categories_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryOut"
+                  },
+                  "title": "Response Categories Api Categories Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Categories"
+      }
+    },
+    "/api/experience": {
+      "get": {
+        "description": "Timeline items, newest start first. Long ranges, ongoing work and single days share one list;\nthe front end nests a short item inside a long one by comparing dates.\nHidden and trashed entries stay out.",
+        "operationId": "experience_api_experience_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WorkItem"
+                  },
+                  "title": "Response Experience Api Experience Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Experience"
+      }
+    },
+    "/api/how-i-work": {
+      "get": {
+        "description": "The project chosen in the admin to tell the \"how I work\" story, or null when none is chosen\n(or the chosen one is not published), so the website simply leaves that section out.",
+        "operationId": "how_i_work_api_how_i_work_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ProjectDetail"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response How I Work Api How I Work Get"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "How I Work"
+      }
+    },
+    "/api/kinds": {
+      "get": {
+        "operationId": "kinds_api_kinds_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/KindOut"
+                  },
+                  "title": "Response Kinds Api Kinds Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Kinds"
+      }
+    },
+    "/api/media/{image_id}": {
+      "get": {
+        "description": "An image of a public project. Drafts, hidden and trashed entries do not leak their pictures.",
+        "operationId": "media_api_media__image_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "image_id",
+            "required": true,
+            "schema": {
+              "title": "Image Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Media"
+      }
+    },
+    "/api/profile": {
+      "get": {
+        "description": "Home page details. A missing photo or CV is null, never a broken URL.",
+        "operationId": "profile_api_profile_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Profile"
+      }
+    },
+    "/api/profile/cv/{lang}": {
+      "get": {
+        "operationId": "profile_cv_api_profile_cv__lang__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lang",
+            "required": true,
+            "schema": {
+              "title": "Lang",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Profile Cv"
+      }
+    },
+    "/api/profile/photo": {
+      "get": {
+        "operationId": "profile_photo_api_profile_photo_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Profile Photo"
+      }
+    },
+    "/api/projects": {
+      "get": {
+        "description": "Public project list. Every tag given must match (narrowing, not widening).\nWithout `limit`, the page size set in the admin applies.",
+        "operationId": "projects_api_projects_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "default": "",
+              "maxLength": 100,
+              "title": "Q",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tag",
+            "required": false,
+            "schema": {
+              "default": [],
+              "items": {
+                "type": "integer"
+              },
+              "title": "Tag",
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kind"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "order",
+              "enum": [
+                "order",
+                "newest",
+                "oldest"
+              ],
+              "title": "Sort",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 60,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Limit"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Projects"
+      }
+    },
+    "/api/projects/featured": {
+      "get": {
+        "operationId": "featured_api_projects_featured_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 60,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectCard"
+                  },
+                  "title": "Response Featured Api Projects Featured Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Featured"
+      }
+    },
+    "/api/projects/{project_id}": {
+      "get": {
+        "operationId": "project_api_projects__project_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Project"
+      }
+    },
+    "/api/settings": {
+      "get": {
+        "operationId": "site_settings_api_settings_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Site Settings"
+      }
+    },
+    "/api/tags": {
+      "get": {
+        "description": "Tags used by at least one public project, for the filter list.",
+        "operationId": "tags_api_tags_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TagCount"
+                  },
+                  "title": "Response Tags Api Tags Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Tags"
+      }
+    }
+  }
+}
