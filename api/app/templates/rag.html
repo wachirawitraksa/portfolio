@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}ช่องถามตอบ{% endblock %}
+{% block content %}
+<h1>ช่องถามตอบ (RAG)</h1>
+{% if done %}<p role="status">สร้างข้อมูลสำหรับค้นหาใหม่แล้ว</p>{% endif %}
+<section class="card">
+  <h2>ข้อมูลที่ใช้ค้นหา</h2>
+  {% if total %}
+  <p>ทั้งหมด {{ total }} ชิ้น · สร้างเมื่อ {{ built_at.strftime('%Y-%m-%d %H:%M') }}</p>
+  <ul>{% for label, n in counts %}<li>{{ label }}: {{ n }}</li>{% endfor %}</ul>
+  {% else %}
+  <p class="empty">ยังไม่มีข้อมูล กด "สร้างใหม่" เพื่อเริ่มต้น</p>
+  {% endif %}
+  <p class="muted">ช่องถามตอบอ่านเฉพาะผลงาน (เผยแพร่แล้ว), ประวัติการทำงาน (ไม่ซ่อน), บทความ (เผยแพร่แล้ว) และข้อมูลส่วนตัว หลังแก้เนื้อหาต้องกดสร้างใหม่ (glossary มีผลทันที ไม่ต้องสร้างใหม่)</p>
+  <form method="post" action="/rag/rebuild">
+    <input type="hidden" name="csrf_token" value="{{ csrf }}">
+    <button>สร้างข้อมูลสำหรับค้นหาใหม่</button>
+  </form>
+</section>
+<section class="card">
+  <h2>ลองถาม <span class="muted">(ดูว่าระบบหาเจออะไร มั่นใจแค่ไหน ยังไม่เรียกโมเดล)</span></h2>
+  <form method="get" action="/rag" hx-boost="false">
+    <label for="q">คำถาม</label>
+    <input id="q" name="q" type="text" maxlength="300" value="{{ q }}">
+    <p><button>ลองค้นหา</button></p>
+  </form>
+  {% if result %}
+  {% set p = result.prepared %}
+  <p>
+    ความมั่นใจ: <strong>{{ {"high": "สูง", "medium": "กลาง", "low": "ต่ำ / ไม่เจอ"}[result.band] }}</strong>
+    ({{ "%.2f" | format(result.top) }})
+    {% if p.keyboard_fixed %}· <span class="missing">แก้แป้นพิมพ์เป็น: {{ p.text }}</span>{% endif %}
+  </p>
+  <p class="muted">
+    คำที่ใช้ค้น: {{ p.concepts | map(attribute="terms") | map("join", " / ") | join(" · ") or "-" }}
+    {% if p.expansions %} · เพิ่มจาก glossary: {{ p.expansions | join(", ") }}{% endif %}
+    {% if p.sound %} · เสียง: {{ p.sound }}{% endif %}
+  </p>
+  {% if result.hits %}
+  <table>
+    <thead><tr><th>คะแนน</th><th>keyword</th><th>vector</th><th>trigram</th><th>เสียง</th><th>ที่มา</th></tr></thead>
+    <tbody>
+    {% for h in result.hits %}
+      <tr>
+        <td>{{ "%.2f" | format(h.score) }}</td><td>{{ "%.2f" | format(h.keyword) }}</td>
+        <td>{{ "%.2f" | format(h.vector) }}</td><td>{{ "%.2f" | format(h.trigram) }}</td><td>{{ "%.2f" | format(h.sound) }}</td>
+        <td>{{ h.chunk.source_type }}#{{ h.chunk.source_id }} · {{ h.chunk.section }}<br>{{ h.chunk.title_th or h.chunk.title_en }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty">ไม่พบข้อมูลที่ตรงกับคำถามนี้</p>
+  {% endif %}
+  {% endif %}
+</section>
+<p><a href="/glossary">จัดการ glossary →</a></p>
+{% endblock %}

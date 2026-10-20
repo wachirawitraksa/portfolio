@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}glossary{% endblock %}
+{% block content %}
+<h1>{% if trash %}ถังขยะ: glossary{% else %}glossary (คำที่มีความหมายเดียวกัน){% endif %}</h1>
+<p class="muted">ช่วยให้ช่องถามตอบหาเจอแม้ผู้ถามใช้คำคนละคำ เช่น สต็อก = stock = inventory · tag เทคโนโลยีและชื่อเรียกอื่นของผลงานเป็น glossary ให้อัตโนมัติอยู่แล้ว</p>
+<p>
+  {% if trash %}<a href="/glossary">กลับไปรายการ</a>
+  {% else %}<a href="/glossary/new">+ เพิ่มกลุ่มคำ</a> · <a href="/glossary?trash=true">ถังขยะ</a>{% endif %}
+</p>
+{% if rows %}
+<table>
+  <thead><tr><th>คำที่เท่ากัน</th><th>หมายเหตุ</th><th></th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>
+      <td>{{ r.terms | join(" = ") }}</td>
+      <td class="muted">{{ r.note }}</td>
+      <td class="row-actions">
+        {% if trash %}
+          <form method="post" action="/glossary/{{ r.id }}/restore" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>กู้คืน</button></form>
+        {% else %}
+          <a class="btn" href="/glossary/{{ r.id }}/edit">แก้ไข</a>
+          <form method="post" action="/glossary/{{ r.id }}/trash" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>ลบ</button></form>
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">{% if trash %}ถังขยะว่างอยู่{% else %}ยังไม่มีกลุ่มคำ{% endif %}</p>
+{% endif %}
+{% endblock %}

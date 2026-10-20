@@ -7,11 +7,13 @@ from .routers import (
     articles,
     auth,
     categories,
+    glossary,
     images,
     kinds,
     profile,
     projects,
     public,
+    rag_admin,
     settings,
     tags,
     work,
@@ -36,6 +38,8 @@ admin.include_router(articles.router, dependencies=[Depends(current_session)])
 admin.include_router(profile.router, dependencies=[Depends(current_session)])
 admin.include_router(settings.router, dependencies=[Depends(current_session)])
 admin.include_router(account.router, dependencies=[Depends(current_session)])
+admin.include_router(glossary.router, dependencies=[Depends(current_session)])
+admin.include_router(rag_admin.router, dependencies=[Depends(current_session)])
 
 
 @admin.get("/")

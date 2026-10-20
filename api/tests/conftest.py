@@ -13,6 +13,7 @@ from sqlalchemy import text
 from app.db import SessionLocal, engine
 from app.main import app
 from app.models import Base, User
+from app.rag import knowledge
 from app.ratelimit import login_limiter, password_limiter
 from app.security import hash_password
 from app.storage import get_storage
@@ -25,10 +26,13 @@ TOTP_SECRET = pyotp.random_base32()
 @pytest_asyncio.fixture(autouse=True)
 async def clean_db():
     async with engine.begin() as conn:
+        await conn.execute(text("create extension if not exists vector"))
+        await conn.execute(text("create extension if not exists pg_trgm"))
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
     login_limiter.reset()
     password_limiter.reset()
+    knowledge.invalidate()  # the search keeps its vocabulary in memory; each test starts empty
     async with SessionLocal() as db:
         db.add(User(email=EMAIL, password_hash=hash_password(PASSWORD), totp_secret=TOTP_SECRET))
         await db.commit()

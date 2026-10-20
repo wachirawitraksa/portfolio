@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{% if row and row.id %}แก้ไขกลุ่มคำ{% else %}เพิ่มกลุ่มคำ{% endif %}{% endblock %}
+{% block content %}
+<h1>{% if row and row.id %}แก้ไขกลุ่มคำ{% else %}เพิ่มกลุ่มคำ{% endif %}</h1>
+{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+<form method="post" action="{% if row and row.id %}/glossary/{{ row.id }}{% else %}/glossary{% endif %}">
+  <input type="hidden" name="csrf_token" value="{{ csrf }}">
+  <section class="card">
+    <label for="terms">คำที่มีความหมายเดียวกัน <span class="muted">(หนึ่งบรรทัดต่อหนึ่งคำ ไทยหรืออังกฤษก็ได้ อย่างน้อย 2 คำ)</span></label>
+    <textarea id="terms" name="terms" rows="6" autofocus>{{ (row.terms | join("\n")) if row else "" }}</textarea>
+    <label for="note">หมายเหตุ <span class="muted">(ไม่บังคับ)</span></label>
+    <input id="note" name="note" type="text" maxlength="200" value="{{ row.note if row else '' }}">
+  </section>
+  <p><button>บันทึก</button> <a href="/glossary">ยกเลิก</a></p>
+</form>
+{% endblock %}

@@ -1,6 +1,7 @@
 from datetime import date, datetime
 
-from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, String, Table, Text, func
+from pgvector.sqlalchemy import Vector
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Index, Integer, String, Table, Text, func
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -267,6 +268,46 @@ class SiteSettings(Base):
     featured_limit: Mapped[int] = mapped_column(Integer, default=6)
     projects_page_size: Mapped[int] = mapped_column(Integer, default=12)
     articles_page_size: Mapped[int] = mapped_column(Integer, default=12)
+
+
+class GlossaryEntry(Base):
+    """Words that mean the same thing (สต็อก, stock, inventory). A question using one finds text using another."""
+
+    __tablename__ = "glossary_entry"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    terms: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list)
+    note: Mapped[str] = mapped_column(String(200), default="")
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+EMBED_DIM = 384
+
+
+class RagChunk(Base):
+    """One searchable piece of the site: a project, or one section of it, a job, an article part, the profile.
+    Rebuilt from the content whenever the owner presses "rebuild"; nothing here is edited by hand."""
+
+    __tablename__ = "rag_chunk"
+    __table_args__ = (
+        Index("ix_rag_chunk_search_trgm", "search_text", postgresql_using="gin", postgresql_ops={"search_text": "gin_trgm_ops"}),
+        Index("ix_rag_chunk_sound_trgm", "sound", postgresql_using="gin", postgresql_ops={"sound": "gin_trgm_ops"}),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    source_type: Mapped[str] = mapped_column(String(16))  # project | work | article | profile
+    source_id: Mapped[int] = mapped_column(Integer, default=0)
+    section: Mapped[str] = mapped_column(String(24), default="")
+    title_th: Mapped[str] = mapped_column(String(300), default="")
+    title_en: Mapped[str] = mapped_column(String(300), default="")
+    # What the model is shown when it answers.
+    body_th: Mapped[str] = mapped_column(Text, default="")
+    body_en: Mapped[str] = mapped_column(Text, default="")
+    # What is searched: both languages, tags, aliases and glossary names, normalized.
+    search_text: Mapped[str] = mapped_column(Text, default="")
+    sound: Mapped[str] = mapped_column(Text, default="")  # phonetic key for Thai typed in Latin letters
+    embedding: Mapped[list[float]] = mapped_column(Vector(EMBED_DIM))
+    built_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
 class ProjectImage(Base):
