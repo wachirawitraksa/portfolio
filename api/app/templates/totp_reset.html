@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}รหัส TOTP ใหม่{% endblock %}
+{% block content %}
+<h1>รหัส TOTP ใหม่</h1>
+<p>ทุกเครื่องถูกออกจากระบบแล้ว เพิ่มรหัสลับนี้ในแอป authenticator ก่อนล็อกอินใหม่ <strong>หน้านี้แสดงครั้งเดียว</strong></p>
+<section class="card">
+  <h2>รหัสลับ</h2>
+  <p><code>{{ secret }}</code></p>
+  <h2>URI (สำหรับแอปที่นำเข้าจากลิงก์)</h2>
+  <p><code style="word-break: break-all">{{ uri }}</code></p>
+</section>
+<p><a class="btn" href="/login" hx-boost="false">ไปหน้าเข้าสู่ระบบ</a></p>
+{% endblock %}

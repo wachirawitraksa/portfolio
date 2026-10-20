@@ -14,4 +14,7 @@
   <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code">
   <p><button>เข้าสู่ระบบ</button></p>
 </form>
+{% if github %}
+<p><a class="btn" href="/login/github" hx-boost="false">เข้าสู่ระบบด้วย GitHub</a></p>
+{% endif %}
 {% endblock %}

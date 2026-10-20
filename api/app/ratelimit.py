@@ -23,3 +23,5 @@ class LoginLimiter:
 
 
 login_limiter = LoginLimiter()
+# Password checks on the account page: a stolen session must not be able to guess the password.
+password_limiter = LoginLimiter()
