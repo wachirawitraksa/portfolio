@@ -60,7 +60,7 @@ services:
     volumes:
       - storage-data:/data
     # Dev only: S3 API for debugging. Localhost only. Images reach browsers through the API, not directly.
-    ports: ["127.0.0.1:${S3_PORT:-9000}:9000"]
+    ports: ["127.0.0.1:${S3_PORT:-9100}:9000"]
 
 volumes:
   db-data:

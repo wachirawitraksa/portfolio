@@ -5,7 +5,18 @@ from sqlalchemy import exists, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_db
-from ..models import PROJECT_TEXT_FIELDS, Category, Kind, Project, ProjectImage, Tag, project_category, project_tag
+from ..models import (
+    EMPLOYMENT_TYPES,
+    PROJECT_TEXT_FIELDS,
+    Category,
+    Kind,
+    Project,
+    ProjectImage,
+    Tag,
+    WorkEntry,
+    project_category,
+    project_tag,
+)
 from ..storage import Storage, get_storage
 from .images import image_response
 
@@ -182,6 +193,39 @@ async def project(project_id: int, db: AsyncSession = Depends(get_db)):
     if row is None:
         raise HTTPException(404)
     return project_json(row, PROJECT_TEXT_FIELDS, detail=True)
+
+
+@router.get("/experience")
+async def experience(db: AsyncSession = Depends(get_db)):
+    """Timeline items, newest start first. Long ranges, ongoing work and single days share one list;
+    the front end nests a short item inside a long one by comparing dates.
+    Hidden and trashed entries stay out."""
+    rows = (
+        await db.execute(
+            select(WorkEntry)
+            .where(WorkEntry.hidden.is_(False), WorkEntry.deleted_at.is_(None))
+            .order_by(WorkEntry.started_on.desc(), WorkEntry.id.desc())
+        )
+    ).scalars().all()
+    return [
+        {
+            "id": w.id,
+            "position_th": w.position_th,
+            "position_en": w.position_en,
+            "employer": w.employer,
+            "employment_type": w.employment_type,
+            "employment_type_th": EMPLOYMENT_TYPES[w.employment_type][0],
+            "employment_type_en": EMPLOYMENT_TYPES[w.employment_type][1],
+            "span": w.span,  # range | ongoing | moment
+            "started_on": w.started_on.isoformat(),
+            # ongoing: null. moment: same day as started_on.
+            "ended_on": None if w.span == "ongoing" else (w.ended_on or w.started_on).isoformat(),
+            "bullets_th": w.bullets_th.splitlines(),
+            "bullets_en": w.bullets_en.splitlines(),
+            "tags": [{"id": t.id, "name": t.name} for t in w.tags if t.deleted_at is None],
+        }
+        for w in rows
+    ]
 
 
 @router.get("/media/{image_id}")

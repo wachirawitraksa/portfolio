@@ -139,6 +139,58 @@ class Project(Base):
     )
 
 
+work_tag = Table(
+    "work_tag",
+    Base.metadata,
+    Column("work_entry_id", ForeignKey("work_entry.id", ondelete="CASCADE"), primary_key=True),
+    Column("tag_id", ForeignKey("tag.id", ondelete="CASCADE"), primary_key=True),
+)
+
+# key -> (Thai label, English label). "event" is a short activity placed on the timeline.
+EMPLOYMENT_TYPES = {
+    "full_time": ("งานประจำ", "Full-time"),
+    "part_time": ("พาร์ทไทม์", "Part-time"),
+    "contract": ("สัญญาจ้าง", "Contract"),
+    "freelance": ("ฟรีแลนซ์", "Freelance"),
+    "internship": ("ฝึกงาน", "Internship"),
+    "event": ("กิจกรรม / งานสั้น", "Event / short gig"),
+    "other": ("อื่น ๆ", "Other"),
+}
+# How an entry spans time. Derived from the dates, never stored.
+SPANS = ("range", "ongoing", "moment")
+
+
+class WorkEntry(Base):
+    """One item on the timeline. A long job, a job still running, or a single day.
+    Role, place and dates only; no confidential company detail."""
+
+    __tablename__ = "work_entry"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    position_th: Mapped[str] = mapped_column(String(200), default="")
+    position_en: Mapped[str] = mapped_column(String(200), default="")
+    # Employer, or the organizer for an event. May be empty for an event.
+    employer: Mapped[str] = mapped_column(String(200), default="")
+    employment_type: Mapped[str] = mapped_column(String(20), default="full_time")
+    started_on: Mapped[date] = mapped_column(Date)
+    # Set: a range, or a single day when equal to started_on. Empty and ongoing: still running.
+    ended_on: Mapped[date | None] = mapped_column(Date)
+    ongoing: Mapped[bool] = mapped_column(Boolean, default=False)
+    # One bullet per line.
+    bullets_th: Mapped[str] = mapped_column(Text, default="")
+    bullets_en: Mapped[str] = mapped_column(Text, default="")
+    hidden: Mapped[bool] = mapped_column(Boolean, default=False)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    tags: Mapped[list[Tag]] = relationship(secondary=work_tag, lazy="selectin", order_by="Tag.name")
+
+    @property
+    def span(self) -> str:
+        if self.ongoing:
+            return "ongoing"
+        return "moment" if self.ended_on is None or self.ended_on == self.started_on else "range"
+
+
 class ProjectImage(Base):
     """A picture or screenshot of one entry. The file lives in object storage under `key`."""
 
