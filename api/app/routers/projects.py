@@ -9,7 +9,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..db import get_db
 from ..deps import current_session, require_csrf
 from ..forms import is_http_url, split_lines, untranslated
-from ..models import MAX_CATEGORIES, PROJECT_TEXT_FIELDS, STATUSES, AuthSession, Category, Kind, Project, Tag
+from ..models import (
+    MAX_CATEGORIES,
+    PROJECT_TEXT_FIELDS,
+    STATUSES,
+    AuthSession,
+    Category,
+    Kind,
+    Project,
+    ProjectImage,
+    Tag,
+)
 from ..templating import templates
 from .auth import go
 
@@ -51,7 +61,20 @@ async def choices(db: AsyncSession):
 async def form_page(request, session, db, row, category_ids, tag_ids, error=None, status=200, new=None):
     categories, tags, kinds = await choices(db)
     new = new or {"tags": [], "categories": []}
+    images = trashed_images = []
+    if row is not None and row.id:
+        every = (
+            await db.execute(
+                select(ProjectImage)
+                .where(ProjectImage.project_id == row.id)
+                .order_by(ProjectImage.sort_order, ProjectImage.id)
+            )
+        ).scalars().all()
+        images = [i for i in every if i.deleted_at is None]
+        trashed_images = [i for i in every if i.deleted_at is not None]
     context = {
+        "images": images,
+        "trashed_images": trashed_images,
         "row": row,
         "fields": FIELDS,
         "statuses": [(s, STATUS_LABELS[s]) for s in STATUSES],

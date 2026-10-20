@@ -5,7 +5,9 @@ from sqlalchemy import exists, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_db
-from ..models import PROJECT_TEXT_FIELDS, Category, Kind, Project, Tag, project_category, project_tag
+from ..models import PROJECT_TEXT_FIELDS, Category, Kind, Project, ProjectImage, Tag, project_category, project_tag
+from ..storage import Storage, get_storage
+from .images import image_response
 
 router = APIRouter()
 
@@ -17,8 +19,20 @@ def visible() -> list:
     return [Project.status == "published", Project.deleted_at.is_(None)]
 
 
-def project_json(p: Project, fields: tuple[str, ...]) -> dict:
+def image_json(i: ProjectImage) -> dict:
+    return {
+        "id": i.id,
+        "url": f"/api/media/{i.id}",
+        "caption_th": i.caption_th,
+        "caption_en": i.caption_en,
+        "is_cover": i.is_cover,
+    }
+
+
+def project_json(p: Project, fields: tuple[str, ...], detail: bool = False) -> dict:
+    cover = next((i for i in p.images if i.is_cover), p.images[0] if p.images else None)
     data: dict = {
+        "cover_url": f"/api/media/{cover.id}" if cover else None,
         "id": p.id,
         "year": p.year,
         "repo_url": p.repo_url,
@@ -40,6 +54,8 @@ def project_json(p: Project, fields: tuple[str, ...]) -> dict:
         if not c.hidden and c.deleted_at is None
     ]
     data["tags"] = [{"id": t.id, "name": t.name} for t in p.tags if t.deleted_at is None]
+    if detail:
+        data["images"] = [image_json(i) for i in p.images]
     return data
 
 
@@ -165,4 +181,20 @@ async def project(project_id: int, db: AsyncSession = Depends(get_db)):
     row = (await db.execute(select(Project).where(Project.id == project_id, *visible()))).scalar_one_or_none()
     if row is None:
         raise HTTPException(404)
-    return project_json(row, PROJECT_TEXT_FIELDS)
+    return project_json(row, PROJECT_TEXT_FIELDS, detail=True)
+
+
+@router.get("/media/{image_id}")
+async def media(image_id: int, db: AsyncSession = Depends(get_db), storage: Storage = Depends(get_storage)):
+    """An image of a public project. Drafts, hidden and trashed entries do not leak their pictures."""
+    row = (
+        await db.execute(
+            select(ProjectImage)
+            .join(Project, Project.id == ProjectImage.project_id)
+            .where(ProjectImage.id == image_id, ProjectImage.deleted_at.is_(None), *visible())
+        )
+    ).scalar_one_or_none()
+    data = await storage.get(row.key) if row else None
+    if row is None or data is None:
+        raise HTTPException(404)
+    return image_response(data, row.content_type, "public, max-age=86400")

@@ -111,6 +111,72 @@
   <p><button>บันทึก</button> <a href="/projects">ยกเลิก</a></p>
 </form>
 
+<section class="card" id="images">
+  <h2>รูปภาพ / ภาพหน้าจอ</h2>
+  {% if not (row and row.id) %}
+  <p class="empty">บันทึกรายการก่อน แล้วจึงเพิ่มรูปได้</p>
+  {% else %}
+  {% if images %}
+  <div class="gallery">
+    {% for img in images %}
+    <figure class="shot">
+      <img src="/media/{{ img.id }}" alt="{{ img.caption_th or img.caption_en }}" loading="lazy">
+      {% if img.is_cover %}<span class="cover-badge">รูปปก</span>{% endif %}
+      <form method="post" action="/projects/{{ row.id }}/images/{{ img.id }}/caption">
+        <input type="hidden" name="csrf_token" value="{{ csrf }}">
+        <label for="cap_th_{{ img.id }}">คำบรรยาย · ไทย</label>
+        <input id="cap_th_{{ img.id }}" name="caption_th" type="text" maxlength="300" value="{{ img.caption_th }}">
+        <label for="cap_en_{{ img.id }}">Caption · English</label>
+        <input id="cap_en_{{ img.id }}" name="caption_en" type="text" maxlength="300" value="{{ img.caption_en }}">
+        <p class="row-actions"><button>บันทึกคำบรรยาย</button></p>
+      </form>
+      <div class="row-actions">
+        {% for direction, text in (("up", "↑"), ("down", "↓")) %}
+        <form method="post" action="/projects/{{ row.id }}/images/{{ img.id }}/move" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf }}">
+          <input type="hidden" name="direction" value="{{ direction }}">
+          <button aria-label="{{ 'เลื่อนขึ้น' if direction == 'up' else 'เลื่อนลง' }}">{{ text }}</button>
+        </form>
+        {% endfor %}
+        {% if not img.is_cover %}
+        <form method="post" action="/projects/{{ row.id }}/images/{{ img.id }}/cover" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf }}">
+          <button>ตั้งเป็นรูปปก</button>
+        </form>
+        {% endif %}
+        <form method="post" action="/projects/{{ row.id }}/images/{{ img.id }}/trash" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf }}">
+          <button>ลบ</button>
+        </form>
+      </div>
+    </figure>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="empty">ยังไม่มีรูป</p>
+  {% endif %}
+
+  <form method="post" action="/projects/{{ row.id }}/images" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf }}">
+    <label for="files">เพิ่มรูป <span class="muted">(JPEG, PNG, GIF, WebP · เลือกได้หลายไฟล์)</span></label>
+    <input id="files" name="files" type="file" accept="image/jpeg,image/png,image/gif,image/webp" multiple required>
+    <p><button>อัปโหลด</button></p>
+  </form>
+
+  {% if trashed_images %}
+  <h3>รูปที่ลบแล้ว</h3>
+  <div class="row-actions">
+    {% for img in trashed_images %}
+    <form method="post" action="/projects/{{ row.id }}/images/{{ img.id }}/restore" class="inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf }}">
+      <button>กู้คืนรูป #{{ img.id }}</button>
+    </form>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endif %}
+</section>
+
 <script>
   // Chips: type a name, press Enter or "+ เพิ่ม". A name that matches an existing
   // item picks it; anything else is sent as a new one and created when the form is saved.

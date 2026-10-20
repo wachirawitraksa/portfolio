@@ -130,3 +130,28 @@ class Project(Base):
         secondary=project_category, lazy="selectin", order_by="(Category.sort_order, Category.id)"
     )
     tags: Mapped[list[Tag]] = relationship(secondary=project_tag, lazy="selectin", order_by="Tag.name")
+    # Live images only, cover first by sort order. Trashed ones are queried directly in the admin.
+    images: Mapped[list["ProjectImage"]] = relationship(
+        lazy="selectin",
+        order_by="(ProjectImage.sort_order, ProjectImage.id)",
+        primaryjoin="and_(Project.id == ProjectImage.project_id, ProjectImage.deleted_at.is_(None))",
+        viewonly=True,
+    )
+
+
+class ProjectImage(Base):
+    """A picture or screenshot of one entry. The file lives in object storage under `key`."""
+
+    __tablename__ = "project_image"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    project_id: Mapped[int] = mapped_column(ForeignKey("project.id", ondelete="CASCADE"), index=True)
+    key: Mapped[str] = mapped_column(String(200), unique=True)
+    content_type: Mapped[str] = mapped_column(String(50))
+    size: Mapped[int] = mapped_column(Integer)
+    caption_th: Mapped[str] = mapped_column(String(300), default="")
+    caption_en: Mapped[str] = mapped_column(String(300), default="")
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    is_cover: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Set when moved to the trash; the file stays in storage.
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
