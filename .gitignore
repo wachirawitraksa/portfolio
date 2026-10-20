@@ -1,6 +1,5 @@
 # Docs (local only)
 PLAN.md
-README.md
 
 # Secrets (keep .env.example)
 .env
