@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}ถังขยะ{% endblock %}
+{% block content %}
+<h1>ถังขยะ</h1>
+{% if restored %}<p role="status">กู้คืนแล้ว (รายการที่เผยแพร่ให้ผู้เข้าชมจะกลับมาเป็น "ซ่อน" ให้ตรวจก่อน)</p>{% endif %}
+{% if deleted or skipped %}
+<p role="status">ลบถาวรแล้ว {{ deleted }} รายการ{% if skipped %} · ข้าม {{ skipped }} รายการที่ยังมีของอื่นใช้อยู่{% endif %}</p>
+{% endif %}
+<p class="muted">ของที่ลบจะมาอยู่ที่นี่ก่อน กู้คืนได้ · "ลบถาวร" ลบทั้งข้อมูลและไฟล์ในที่เก็บไฟล์ กู้คืนไม่ได้อีก</p>
+
+{% if groups %}
+<form method="post" action="/trash/empty" onsubmit="return confirm('ลบทุกอย่างในถังขยะถาวร ({{ total }} รายการ) กู้คืนไม่ได้ ยืนยัน?')">
+  <input type="hidden" name="csrf_token" value="{{ csrf }}"><input type="hidden" name="kind" value="all">
+  <button>ล้างถังขยะทั้งหมด ({{ total }})</button>
+</form>
+{% for g in groups %}
+<section class="card">
+  <h2>{{ g.label }} <span class="muted">({{ g.rows | length }})</span></h2>
+  <table>
+    <tbody>
+    {% for row, title in g.rows %}
+      <tr>
+        <td>
+          {% if g.key == "image" %}<img src="/media/{{ row.id }}" alt="" style="height: 40px; vertical-align: middle; margin-right: 8px">{% endif %}{{ title }}
+        </td>
+        <td class="muted">{{ row.deleted_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td class="row-actions">
+          <form method="post" action="/trash/restore" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf }}"><input type="hidden" name="kind" value="{{ g.key }}"><input type="hidden" name="item_id" value="{{ row.id }}">
+            <button>กู้คืน</button>
+          </form>
+          <form method="post" action="/trash/delete" class="inline" onsubmit="return confirm('ลบรายการนี้ถาวร กู้คืนไม่ได้ ยืนยัน?')">
+            <input type="hidden" name="csrf_token" value="{{ csrf }}"><input type="hidden" name="kind" value="{{ g.key }}"><input type="hidden" name="item_id" value="{{ row.id }}">
+            <button>ลบถาวร</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <form method="post" action="/trash/empty" onsubmit="return confirm('ลบ{{ g.label }}ทั้งหมดในถังขยะถาวร ({{ g.rows | length }} รายการ) ยืนยัน?')">
+    <input type="hidden" name="csrf_token" value="{{ csrf }}"><input type="hidden" name="kind" value="{{ g.key }}">
+    <button>ล้างเฉพาะหมวดนี้</button>
+  </form>
+</section>
+{% endfor %}
+{% else %}
+<p class="empty">ถังขยะว่างอยู่</p>
+{% endif %}
+{% endblock %}

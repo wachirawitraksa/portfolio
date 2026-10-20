@@ -17,6 +17,7 @@ from .routers import (
     rag_admin,
     settings,
     tags,
+    trash,
     work,
 )
 
@@ -42,6 +43,7 @@ admin.include_router(settings.router, dependencies=[Depends(current_session)])
 admin.include_router(account.router, dependencies=[Depends(current_session)])
 admin.include_router(glossary.router, dependencies=[Depends(current_session)])
 admin.include_router(rag_admin.router, dependencies=[Depends(current_session)])
+admin.include_router(trash.router, dependencies=[Depends(current_session)])
 
 
 @admin.get("/")

@@ -9,10 +9,11 @@
   7. model down or over quota -> point to the matching parts of the site instead
 Every outcome is logged, so the owner sees what visitors want that the site does not answer yet."""
 import hashlib
+import random
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..config import get_settings
@@ -114,6 +115,17 @@ def build_prompt(question: str, prepared: Prepared, hits: list[Hit], owner: str,
     return system, user
 
 
+PURGE_CHANCE = 0.02  # about one question in fifty also sweeps out the old log
+
+
+async def purge_old_queries(db: AsyncSession, days: int | None = None) -> int:
+    """Delete logged questions older than `days` (the setting by default). Returns how many went."""
+    cutoff = datetime.now(timezone.utc) - timedelta(days=get_settings().ask_log_days if days is None else days)
+    result = await db.execute(delete(RagQuery).where(RagQuery.created_at < cutoff))
+    await db.commit()
+    return result.rowcount or 0
+
+
 async def record(db, *, hashed: str, question: str, prepared: Prepared, band: str, top: float, answer: Answer, tier: str = "", key: str = ""):
     db.add(
         RagQuery(
@@ -132,6 +144,8 @@ async def record(db, *, hashed: str, question: str, prepared: Prepared, band: st
         )
     )
     await db.commit()
+    if random.random() < PURGE_CHANCE:
+        await purge_old_queries(db)
 
 
 async def cached_answer(db: AsyncSession, key: str) -> RagQuery | None:

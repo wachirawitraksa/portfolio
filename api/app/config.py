@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     ask_per_ip_per_day: int = 30
     ask_per_minute: int = 6
     ask_cache_days: int = 7
+    ask_log_days: int = 90  # questions older than this are deleted
     ask_ip_salt: str = "portfolio"  # asks are logged with a salted hash of the IP, never the IP itself
     # Behind the Caddy proxy the real visitor is in X-Forwarded-For. Set false if the api is ever exposed directly.
     trust_forwarded_for: bool = True

@@ -5,6 +5,18 @@
 <p class="muted">24 ชั่วโมงที่ผ่านมา: ถาม {{ asked_today }} ครั้ง · เรียกโมเดล {{ model_calls_today }} ครั้ง · ตอบจาก cache {{ cached_today }} ครั้ง
   · บันทึกคำถามพร้อมค่าแฮชของ IP (ไม่เก็บ IP จริง)</p>
 <p><a href="/rag">← กลับไปหน้าช่องถามตอบ</a></p>
+{% if purged is not none %}<p role="status">ลบล็อกแล้ว {{ purged }} รายการ</p>{% endif %}
+<p class="muted">เก็บล็อก {{ log_days }} วัน (ตั้งที่ ASK_LOG_DAYS) แล้วลบเองเป็นระยะ · ตอนนี้มี {{ total_logged }} รายการ</p>
+<div class="row-actions">
+  <form method="post" action="/rag/questions/purge" class="inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf }}"><input type="hidden" name="scope" value="old">
+    <button>ลบล็อกที่เก่ากว่า {{ log_days }} วัน</button>
+  </form>
+  <form method="post" action="/rag/questions/purge" class="inline" onsubmit="return confirm('ลบล็อกคำถามทั้งหมดถาวร ยืนยัน?')">
+    <input type="hidden" name="csrf_token" value="{{ csrf }}"><input type="hidden" name="scope" value="all">
+    <button>ลบล็อกทั้งหมด</button>
+  </form>
+</div>
 
 {% if repeated %}
 <section class="card">

@@ -1,4 +1,5 @@
 """Turn the site's published content into searchable chunks. Run by the "rebuild" button."""
+from contextvars import ContextVar
 from itertools import zip_longest
 
 from sqlalchemy import delete, select
@@ -34,8 +35,18 @@ def lines(*items: tuple[str, str]) -> str:
     return "\n".join(f"{label}: {value}" if label else value for label, value in items if str(value).strip())
 
 
+# While comparing the index with the content (index_status) the slow parts, word cutting, phonetic keys and
+# vectors, are skipped: the text itself is enough to tell whether something changed.
+_comparing: ContextVar[bool] = ContextVar("rag_comparing", default=False)
+
+
 def make_chunk(source_type, source_id, section, title_th, title_en, body_th, body_en, extra=()) -> RagChunk:
     search_text = normalize(" ".join([title_th, title_en, body_th, body_en, *extra, *TYPE_WORDS[source_type]]), limit=None)
+    if _comparing.get():
+        return RagChunk(
+            source_type=source_type, source_id=source_id, section=section, title_th=title_th, title_en=title_en,
+            body_th=body_th, body_en=body_en, search_text=search_text, sound="", embedding=[],
+        )
     tokens = tokenize(search_text)
     return RagChunk(
         source_type=source_type,
@@ -163,8 +174,8 @@ async def profile_chunk(db: AsyncSession) -> RagChunk | None:
     )
 
 
-async def rebuild(db: AsyncSession) -> dict[str, int]:
-    """Replace every chunk with ones built from today's content. Returns the chunk count per source type."""
+async def collect(db: AsyncSession) -> list[RagChunk]:
+    """The chunks today's public content produces, not yet stored."""
     chunks: list[RagChunk] = []
     projects = (
         await db.execute(
@@ -186,7 +197,35 @@ async def rebuild(db: AsyncSession) -> dict[str, int]:
         chunks.extend(article_chunks(article))
     if (about := await profile_chunk(db)) is not None:
         chunks.append(about)
+    return chunks
 
+
+def content_of(chunk: RagChunk) -> tuple:
+    return (chunk.title_th, chunk.title_en, chunk.body_th, chunk.body_en, chunk.search_text)
+
+
+async def index_status(db: AsyncSession) -> dict:
+    """Has the content changed since the last rebuild? Compares what is stored with what the content
+    would produce now. `stale` is True when anything was added, edited or removed."""
+    token = _comparing.set(True)
+    try:
+        fresh = {(c.source_type, c.source_id, c.section): content_of(c) for c in await collect(db)}
+    finally:
+        _comparing.reset(token)
+    stored = {
+        (c.source_type, c.source_id, c.section): content_of(c)
+        for c in (await db.execute(select(RagChunk))).scalars()
+    }
+    added = len(fresh.keys() - stored.keys())
+    removed = len(stored.keys() - fresh.keys())
+    changed = sum(1 for key in fresh.keys() & stored.keys() if fresh[key] != stored[key])
+    return {"stale": bool(added or removed or changed), "added": added, "removed": removed, "changed": changed,
+            "built": bool(stored)}
+
+
+async def rebuild(db: AsyncSession) -> dict[str, int]:
+    """Replace every chunk with ones built from today's content. Returns the chunk count per source type."""
+    chunks = await collect(db)
     await db.execute(delete(RagChunk))
     db.add_all(chunks)
     await db.commit()

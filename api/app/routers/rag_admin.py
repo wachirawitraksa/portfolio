@@ -1,14 +1,16 @@
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..config import get_settings
 from ..db import get_db
 from ..deps import current_session, require_csrf
 from ..models import AuthSession, RagChunk, RagQuery
-from ..rag.index import rebuild
+from ..rag.ask import purge_old_queries
+from ..rag.index import index_status, rebuild
 from ..rag.search import retrieve
 from ..templating import templates
 from .auth import go
@@ -33,6 +35,7 @@ async def status_page(
         "total": sum(n for _, n in rows),
         "built_at": built_at,
         "done": done,
+        "status": await index_status(db),
         "q": q,
         # Try a question: shows what the search finds and how sure it is, without calling any model.
         "result": await retrieve(db, q) if q.strip() else None,
@@ -62,6 +65,7 @@ MODE_LABELS = {
 async def questions_page(
     request: Request,
     show: str = "unanswered",
+    purged: int | None = None,
     session: AuthSession = Depends(current_session),
     db: AsyncSession = Depends(get_db),
 ):
@@ -98,9 +102,21 @@ async def questions_page(
         "asked_today": sum(n for _, _, n in today),
         "model_calls_today": sum(n for tier, cached, n in today if tier and not cached),
         "cached_today": sum(n for _, cached, n in today if cached),
+        "log_days": get_settings().ask_log_days,
+        "total_logged": (await db.execute(select(func.count()).select_from(RagQuery))).scalar_one(),
+        "purged": purged,
         "csrf": session.csrf_token,
     }
     return templates.TemplateResponse(request, "rag_questions.html", context)
+
+
+@router.post("/questions/purge")
+async def purge_questions(
+    scope: str = Form("old"), _: None = Depends(require_csrf), db: AsyncSession = Depends(get_db)
+):
+    """Delete logged questions: the ones past the retention period, or all of them."""
+    removed = await purge_old_queries(db, days=0 if scope == "all" else None)
+    return go(f"/rag/questions?purged={removed}")
 
 
 @router.post("/rebuild")

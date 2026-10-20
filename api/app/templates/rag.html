@@ -11,6 +11,13 @@
   {% else %}
   <p class="empty">ยังไม่มีข้อมูล กด "สร้างใหม่" เพื่อเริ่มต้น</p>
   {% endif %}
+  {% if status.stale %}
+  <p class="missing" role="status">เนื้อหาเปลี่ยนไปหลังสร้างครั้งล่าสุด
+    ({% if status.added %}เพิ่ม {{ status.added }}{% endif %}{% if status.changed %} แก้ {{ status.changed }}{% endif %}{% if status.removed %} ลบ {{ status.removed }}{% endif %} ชิ้น)
+    กดสร้างใหม่เพื่อให้ช่องถามตอบเห็นเนื้อหาล่าสุด</p>
+  {% elif status.built %}
+  <p role="status">ข้อมูลตรงกับเนื้อหาปัจจุบันแล้ว</p>
+  {% endif %}
   <p class="muted">ช่องถามตอบอ่านเฉพาะผลงาน (เผยแพร่แล้ว), ประวัติการทำงาน (ไม่ซ่อน), บทความ (เผยแพร่แล้ว) และข้อมูลส่วนตัว หลังแก้เนื้อหาต้องกดสร้างใหม่ (glossary มีผลทันที ไม่ต้องสร้างใหม่)</p>
   <form method="post" action="/rag/rebuild">
     <input type="hidden" name="csrf_token" value="{{ csrf }}">
