@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}ผลงาน{% endblock %}
+{% block content %}
+<h1>{% if trash %}ถังขยะ: รายการ{% else %}รายการทั้งหมด{% endif %}</h1>
+<p>
+  {% if trash %}<a href="/projects">กลับไปรายการ</a>
+  {% else %}<a href="/projects/new">+ เพิ่มรายการ</a> · <a href="/projects?trash=true">ถังขยะ</a>{% endif %}
+</p>
+{% if rows %}
+<table>
+  <thead><tr><th>ชื่อ</th><th>ชนิด</th><th>ปี</th><th>ประเภท</th><th>สถานะ</th><th></th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>
+      <td>
+        {{ r.title_th or r.title_en }}
+        {% if r.title_th and r.title_en %}<div class="muted">{{ r.title_en }}</div>{% endif %}
+        {% if untranslated[r.id] %}<div class="missing">ยังไม่ได้แปล {{ untranslated[r.id] | length }} ช่อง</div>{% endif %}
+      </td>
+      <td>{% if r.kind %}{{ r.kind.name_th or r.kind.name_en }}{% endif %}</td>
+      <td>{{ r.year or '' }}</td>
+      <td>{% for c in r.categories %}{{ c.name_th or c.name_en }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
+      <td>{{ status_labels[r.status] }}{% if r.featured %} · หน้าแรก{% endif %}</td>
+      <td class="row-actions">
+        {% if trash %}
+          <form method="post" action="/projects/{{ r.id }}/restore" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>กู้คืน</button></form>
+        {% else %}
+          <form method="post" action="/projects/{{ r.id }}/move" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf }}">
+            <button name="direction" value="up" aria-label="ขยับขึ้น">↑</button>
+            <button name="direction" value="down" aria-label="ขยับลง">↓</button></form>
+          <a class="btn" href="/projects/{{ r.id }}/edit">แก้ไข</a>
+          <form method="post" action="/projects/{{ r.id }}/feature" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf }}">
+            <button>{% if r.featured %}เอาออกจากหน้าแรก{% else %}ขึ้นหน้าแรก{% endif %}</button></form>
+          <form method="post" action="/projects/{{ r.id }}/trash" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>ลบ</button></form>
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">{% if trash %}ถังขยะว่างอยู่{% else %}ยังไม่มีรายการ กด "เพิ่มรายการ" เพื่อเริ่มต้น{% endif %}</p>
+{% endif %}
+{% endblock %}

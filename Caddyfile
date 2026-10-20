@@ -1,0 +1,17 @@
+# Public site: / -> Next.js, /api -> FastAPI (read-only public API).
+# The admin pages are reachable only on the admin host. They are never
+# routed from the main domain.
+http://{$SITE_DOMAIN} {
+	handle /api/* {
+		reverse_proxy api:8000
+	}
+	handle {
+		reverse_proxy web:3000
+	}
+}
+
+# FastAPI mounts its admin routes under /admin; the host name replaces that prefix.
+http://{$ADMIN_DOMAIN} {
+	rewrite * /admin{uri}
+	reverse_proxy api:8000
+}

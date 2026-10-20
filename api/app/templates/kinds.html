@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}ชนิดของรายการ{% endblock %}
+{% block content %}
+<h1>{% if trash %}ถังขยะ: ชนิดของรายการ{% else %}ชนิดของรายการ{% endif %}</h1>
+<p>
+  {% if trash %}<a href="/kinds">กลับไปรายการ</a>
+  {% else %}<a href="/kinds/new">+ เพิ่มชนิด</a> · <a href="/kinds?trash=true">ถังขยะ</a>{% endif %}
+</p>
+{% if rows %}
+<table>
+  <thead><tr><th>ชื่อไทย</th><th>ชื่ออังกฤษ</th><th>สถานะ</th><th></th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>
+      <td>{{ r.name_th or '' }}{% if not r.name_th %}<span class="missing">ยังไม่ได้กรอก</span>{% endif %}</td>
+      <td>{{ r.name_en or '' }}{% if not r.name_en %}<span class="missing">ยังไม่ได้กรอก</span>{% endif %}</td>
+      <td>{% if r.hidden %}ซ่อนอยู่{% else %}แสดง{% endif %}</td>
+      <td class="row-actions">
+        {% if trash %}
+          <form method="post" action="/kinds/{{ r.id }}/restore" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>กู้คืน</button></form>
+        {% else %}
+          <form method="post" action="/kinds/{{ r.id }}/move" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf }}">
+            <button name="direction" value="up" aria-label="ขยับขึ้น">↑</button>
+            <button name="direction" value="down" aria-label="ขยับลง">↓</button></form>
+          <a class="btn" href="/kinds/{{ r.id }}/edit">แก้ไข</a>
+          <form method="post" action="/kinds/{{ r.id }}/hide" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf }}">
+            <button>{% if r.hidden %}แสดง{% else %}ซ่อน{% endif %}</button></form>
+          <form method="post" action="/kinds/{{ r.id }}/trash" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>ลบ</button></form>
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="empty">{% if trash %}ถังขยะว่างอยู่{% else %}ยังไม่มีชนิด กด "เพิ่มชนิด" เพื่อเริ่มต้น (เช่น ผลงาน ใบเซอร์ รางวัล คอร์ส กิจกรรม){% endif %}</p>
+{% endif %}
+{% endblock %}

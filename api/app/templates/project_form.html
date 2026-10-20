@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}{% if row and row.id %}แก้ไขรายการ{% else %}เพิ่มรายการ{% endif %}{% endblock %}
+{% block content %}
+<h1>{% if row and row.id %}แก้ไขรายการ{% else %}เพิ่มรายการ{% endif %}</h1>
+{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+
+{% macro chips(id, label, hint, ids_name, new_name, chosen, options, limit) %}
+<div class="chips" id="{{ id }}" data-ids-name="{{ ids_name }}" data-new-name="{{ new_name }}" data-limit="{{ limit }}" data-options='{{ options | tojson }}'>
+  <label for="{{ id }}-input">{{ label }} <span class="muted">{{ hint }}</span></label>
+  <div class="chip-list">
+    {% for c in chosen %}
+    <span class="chip{% if c.new %} chip-new{% endif %}">{{ c.label }}{% if c.new %} <small>ใหม่</small>{% endif %}
+      <input type="hidden" name="{{ new_name if c.new else ids_name }}" value="{{ c.value }}">
+      <button type="button" class="chip-remove" aria-label="เอาออก">×</button></span>
+    {% endfor %}
+  </div>
+  <div class="chip-add">
+    <input id="{{ id }}-input" type="text" list="{{ id }}-list" autocomplete="off" placeholder="พิมพ์ชื่อ แล้วกด Enter หรือ + เพิ่ม">
+    <datalist id="{{ id }}-list">{% for o in options %}<option value="{{ o.label }}"{% if o.also %} label="{{ o.also }}"{% endif %}>{% endfor %}</datalist>
+    <button type="button" class="chip-add-btn">+ เพิ่ม</button>
+  </div>
+</div>
+{% endmacro %}
+
+<form method="post" action="{% if row and row.id %}/projects/{{ row.id }}{% else %}/projects{% endif %}">
+  <input type="hidden" name="csrf_token" value="{{ csrf }}">
+
+  <section class="card">
+    <h2>พิมพ์ชื่อก่อน</h2>
+    {% if kinds %}
+    <label for="kind_id">ชนิด</label>
+    <select id="kind_id" name="kind_id" style="max-width: 280px">
+      {% for k in kinds %}<option value="{{ k.id }}" {% if (row.kind_id if row and row.kind_id else kinds[0].id) == k.id %}selected{% endif %}>{{ k.name_th or k.name_en }}</option>{% endfor %}
+    </select>
+    {% else %}
+    <p class="empty">ยังไม่มีชนิด <a href="/kinds/new">เพิ่มชนิดก่อน</a> (เช่น ผลงาน ใบเซอร์ รางวัล)</p>
+    {% endif %}
+
+    {% for name, label, multiline in fields[:1] %}
+    <div class="pair">
+      {% for lang, lang_label in (("th", "ไทย"), ("en", "English")) %}
+      {% set value = (row | attr(name ~ "_" ~ lang)) if row else "" %}
+      <div>
+        <label for="{{ name }}_{{ lang }}">{{ label }} · {{ lang_label }}{% if row and row.id and not value %} <span class="missing">ยังไม่ได้กรอก</span>{% endif %}</label>
+        <input id="{{ name }}_{{ lang }}" name="{{ name }}_{{ lang }}" type="text" value="{{ value }}" {% if loop.first and not (row and row.id) %}autofocus{% endif %}>
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+
+    {{ chips("cat", "ประเภท", "(ไม่เกิน " ~ max_categories ~ " พิมพ์ชื่อใหม่แล้วกดเพิ่มได้เลย)", "category_ids", "new_categories",
+             chosen_categories, category_options, max_categories) }}
+    {{ chips("tag", "เทคโนโลยี / tag", "(พิมพ์ชื่อใหม่แล้วกดเพิ่มได้เลย)", "tag_ids", "new_tags", chosen_tags, tag_options, 0) }}
+  </section>
+
+  <section class="card">
+    <h2>รายละเอียด <span class="muted">(กรอกทีหลังได้)</span></h2>
+    {% for name, label, multiline in fields[1:] %}
+    <fieldset>
+      <legend>{{ label }}</legend>
+      <div class="pair">
+        {% for lang, lang_label in (("th", "ไทย"), ("en", "English")) %}
+        {% set value = (row | attr(name ~ "_" ~ lang)) if row else "" %}
+        <div>
+          <label for="{{ name }}_{{ lang }}">{{ lang_label }}{% if row and row.id and not value %} <span class="missing">ยังไม่ได้กรอก</span>{% endif %}</label>
+          <textarea id="{{ name }}_{{ lang }}" name="{{ name }}_{{ lang }}" rows="4">{{ value }}</textarea>
+        </div>
+        {% endfor %}
+      </div>
+    </fieldset>
+    {% endfor %}
+  </section>
+
+  <section class="card">
+    <h2>ใบเซอร์ / รางวัล / คอร์ส <span class="muted">(เว้นว่างได้ถ้าไม่ใช่)</span></h2>
+    <div class="pair">
+      <div>
+        <label for="issuer">ผู้ออก</label>
+        <input id="issuer" name="issuer" type="text" value="{{ row.issuer if row else '' }}">
+      </div>
+      <div>
+        <label for="issued_on">วันที่ได้รับ</label>
+        <input id="issued_on" name="issued_on" type="date" value="{{ row.issued_on.isoformat() if row and row.issued_on else '' }}">
+      </div>
+    </div>
+    <label for="verify_url">ลิงก์ตรวจสอบ</label>
+    <input id="verify_url" name="verify_url" type="text" value="{{ row.verify_url if row else '' }}">
+  </section>
+
+  <section class="card">
+    <h2>ลิงก์และข้อมูลอื่น</h2>
+    <label for="year">ปี</label>
+    <input id="year" name="year" type="text" inputmode="numeric" value="{{ row.year if row and row.year else '' }}" style="max-width: 120px">
+    <label for="repo_url">ลิงก์ repo</label>
+    <input id="repo_url" name="repo_url" type="text" value="{{ row.repo_url if row else '' }}">
+    <label for="demo_url">ลิงก์ demo ที่กดใช้ได้จริง</label>
+    <input id="demo_url" name="demo_url" type="text" value="{{ row.demo_url if row else '' }}">
+    <label for="aliases">ชื่อเรียกอื่น (หนึ่งบรรทัดต่อหนึ่งชื่อ ใช้เป็น glossary ให้ระบบถามตอบหาเจอ)</label>
+    <textarea id="aliases" name="aliases" rows="3">{{ (row.aliases | join("\n")) if row else '' }}</textarea>
+  </section>
+
+  <section class="card">
+    <h2>การแสดงผล</h2>
+    <label for="status">สถานะ</label>
+    <select id="status" name="status" style="max-width: 280px">
+      {% for value, text in statuses %}<option value="{{ value }}" {% if (row.status if row and row.status else 'draft') == value %}selected{% endif %}>{{ text }}</option>{% endfor %}
+    </select>
+    <label class="check"><input type="checkbox" name="featured" {% if row and row.featured %}checked{% endif %}> ขึ้นหน้าแรก</label>
+  </section>
+
+  <p><button>บันทึก</button> <a href="/projects">ยกเลิก</a></p>
+</form>
+
+<script>
+  // Chips: type a name, press Enter or "+ เพิ่ม". A name that matches an existing
+  // item picks it; anything else is sent as a new one and created when the form is saved.
+  document.querySelectorAll(".chips").forEach(function (box) {
+    var options = JSON.parse(box.dataset.options);
+    var limit = parseInt(box.dataset.limit, 10);
+    var list = box.querySelector(".chip-list");
+    var input = box.querySelector(".chip-add input[type=text]");
+    var addButton = box.querySelector(".chip-add-btn");
+
+    function refresh() {
+      var full = limit > 0 && list.children.length >= limit;
+      input.disabled = full;
+      addButton.disabled = full;
+      input.placeholder = full ? "ครบ " + limit + " แล้ว" : "พิมพ์ชื่อ แล้วกด Enter หรือ + เพิ่ม";
+    }
+
+    function has(label) {
+      return Array.prototype.some.call(list.children, function (chip) {
+        return chip.dataset.label.toLowerCase() === label.toLowerCase();
+      });
+    }
+
+    function add() {
+      var text = input.value.trim();
+      input.value = "";
+      if (!text || has(text)) { return; }
+      var match = options.find(function (o) {
+        return o.names.some(function (n) { return n.toLowerCase() === text.toLowerCase(); });
+      });
+      var chip = document.createElement("span");
+      chip.className = "chip" + (match ? "" : " chip-new");
+      chip.dataset.label = match ? match.label : text;
+      chip.append(chip.dataset.label + (match ? "" : " "));
+      if (!match) { var small = document.createElement("small"); small.textContent = "ใหม่"; chip.append(small); }
+      var hidden = document.createElement("input");
+      hidden.type = "hidden";
+      hidden.name = match ? box.dataset.idsName : box.dataset.newName;
+      hidden.value = match ? match.id : text;
+      var remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "chip-remove";
+      remove.setAttribute("aria-label", "เอาออก");
+      remove.textContent = "×";
+      chip.append(hidden, remove);
+      list.append(chip);
+      refresh();
+    }
+
+    // Chips drawn by the server carry their label in the text; copy it for the duplicate check.
+    Array.prototype.forEach.call(list.children, function (chip) {
+      chip.dataset.label = chip.firstChild.textContent.trim();
+    });
+    addButton.addEventListener("click", add);
+    input.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") { event.preventDefault(); add(); }
+    });
+    list.addEventListener("click", function (event) {
+      if (event.target.classList.contains("chip-remove")) { event.target.parentElement.remove(); refresh(); }
+    });
+    refresh();
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{% if row and row.id %}แก้ไข tag{% else %}เพิ่ม tag{% endif %}{% endblock %}
+{% block content %}
+<h1>{% if row and row.id %}แก้ไข tag{% else %}เพิ่ม tag{% endif %}</h1>
+{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+<form method="post" action="{% if row and row.id %}/tags/{{ row.id }}{% else %}/tags{% endif %}" style="max-width: 420px">
+  <input type="hidden" name="csrf_token" value="{{ csrf }}">
+  <label for="name">ชื่อ (เช่น PostgreSQL)</label>
+  <input id="name" name="name" type="text" value="{{ row.name if row else '' }}">
+  <label for="aliases">ชื่อย่อ / ชื่อเรียกอื่น (หนึ่งบรรทัดต่อหนึ่งชื่อ เช่น pg, postgres)</label>
+  <textarea id="aliases" name="aliases" rows="4">{{ (row.aliases | join("\n")) if row else '' }}</textarea>
+  <p class="muted">ระบบถามตอบ (RAG) ใช้ชื่อเหล่านี้ช่วยหาผลงานที่เกี่ยวข้อง</p>
+  <p><button>บันทึก</button> <a href="/tags">ยกเลิก</a></p>
+</form>
+{% endblock %}
