@@ -14,7 +14,11 @@ export type ShellApi = {
   copyEmail: () => void;
   toast: (message: string) => void;
   goTo: (id: SectionId) => void;
+  // A detail page lists its own headings in the sidebar outline (null = back to the home outline).
+  setOutline: (items: OutlineItem[] | null) => void;
 };
+
+export type OutlineItem = { id: string; label: string };
 
 export const ShellContext = createContext<ShellApi | null>(null);
 

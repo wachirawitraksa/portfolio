@@ -9,7 +9,8 @@ import { fileInfo } from "./files";
 import { FileIcon, GithubIcon, MailIcon } from "./icons";
 import { ResumeDialog } from "./ResumeDialog";
 import { Sidebar } from "./Sidebar";
-import { ShellContext, type ShellApi } from "./shell-context";
+import Link from "next/link";
+import { ShellContext, type OutlineItem, type ShellApi } from "./shell-context";
 import { TitleBar, type Menu } from "./TitleBar";
 import { useLangSwitch, useTheme } from "./Toggles";
 
@@ -23,6 +24,9 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const onHome = pathname === `/${lang}`;
+  // /th/projects/4 -> a second tab "project-04.md" next to home.tsx, like an opened file in an editor.
+  const detail = pathname.match(/^\/(?:th|en)\/(project|article)s\/(\d+)/);
+  const detailName = detail ? `${detail[1]}-${detail[2].padStart(2, "0")}.md` : null;
   const { theme, toggle: toggleTheme } = useTheme(initialTheme);
   const switchLang = useLangSwitch(lang);
 
@@ -32,6 +36,7 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
   const [resume, setResume] = useState(false);
   const [message, setMessage] = useState("");
   const [active, setActive] = useState<SectionId>("home");
+  const [pageOutline, setPageOutline] = useState<OutlineItem[] | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -128,8 +133,8 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
     ];
   }, [t, data, hasCv, lang, openResume, copyEmail, toggleSidebar, toggleTheme, switchLang, goTo, toast]);
 
-  const api: ShellApi = { lang, t, data, openResume, copyEmail, toast, goTo };
-  const activeName = onHome ? fileInfo(active, data).name : (data.kinds[0]?.file ?? "home.tsx");
+  const api: ShellApi = { lang, t, data, openResume, copyEmail, toast, goTo, setOutline: setPageOutline };
+  const activeName = detailName ?? fileInfo(active, data).name;
   const act = "flex size-11 cursor-pointer items-center justify-center rounded-md text-[#bdbdbd] hover:bg-hover";
   const bar = "h-[22px] cursor-pointer rounded-[3px] border-0 bg-transparent px-2 text-white hover:bg-white/15";
 
@@ -171,7 +176,8 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
           <Sidebar
             data={data}
             t={t}
-            active={active}
+            active={onHome ? active : null}
+            pageOutline={pageOutline}
             hasCv={hasCv}
             goTo={goTo}
             openResume={openResume}
@@ -180,9 +186,21 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
 
           <main className="flex min-w-0 flex-1 flex-col">
             <div role="tablist" className="flex h-9 shrink-0 overflow-x-auto border-b border-line bg-side">
-              <div role="tab" aria-selected="true" className="flex items-center border-t-2 border-brand bg-bg px-4 font-mono text-[13px] whitespace-nowrap text-strong">
-                {activeName}
-              </div>
+              {detailName ? (
+                <>
+                  <Link href={`/${lang}`} role="tab" aria-selected="false" className="flex items-center border-t-2 border-transparent px-4 font-mono text-[13px] whitespace-nowrap text-muted no-underline hover:text-strong">
+                    home.tsx
+                  </Link>
+                  <div role="tab" aria-selected="true" className="flex items-center gap-1 border-t-2 border-brand bg-bg pr-1.5 pl-4 font-mono text-[13px] whitespace-nowrap text-strong">
+                    {detailName}
+                    <Link href={`/${lang}`} aria-label={t.closeTab} className="flex size-7 items-center justify-center rounded-md text-base text-fg no-underline hover:bg-hover">×</Link>
+                  </div>
+                </>
+              ) : (
+                <div role="tab" aria-selected="true" className="flex items-center border-t-2 border-brand bg-bg px-4 font-mono text-[13px] whitespace-nowrap text-strong">
+                  {activeName}
+                </div>
+              )}
             </div>
             <div ref={scroller} className="relative min-h-0 flex-1 scroll-smooth overflow-x-hidden overflow-y-auto">
               {children}

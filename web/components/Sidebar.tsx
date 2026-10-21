@@ -3,12 +3,14 @@
 import { useState } from "react";
 import type { Dict } from "../i18n";
 import type { SectionId, ShellData } from "../shell-data";
+import type { OutlineItem } from "./shell-context";
 import { fileInfo, RESUME_FILE } from "./files";
 
 type Props = {
   data: ShellData;
   t: Dict;
-  active: SectionId;
+  active: SectionId | null;
+  pageOutline: OutlineItem[] | null;
   hasCv: boolean;
   className: string;
   goTo: (id: SectionId) => void;
@@ -19,13 +21,18 @@ function Chevron({ open }: { open: boolean }) {
   return <span className={`inline-block w-3 transition-transform ${open ? "rotate-90" : ""}`}>›</span>;
 }
 
-export function Sidebar({ data, t, active, hasCv, className, goTo, openResume }: Props) {
+export function Sidebar({ data, t, active, pageOutline, hasCv, className, goTo, openResume }: Props) {
   const [filesOpen, setFilesOpen] = useState(true);
-  const [outlineOpen, setOutlineOpen] = useState(false);
+  const [outlineToggled, setOutlineOpen] = useState<boolean | null>(null);
+  // Closed on the home page like the mockup; a detail page opens it because its headings are the point.
+  const outlineOpen = outlineToggled ?? Boolean(pageOutline);
 
   const row = "flex w-full items-center gap-2 rounded-none px-3 py-[5px] text-left text-[13px] text-fg hover:bg-hover";
-  const outline: { label: string; id: SectionId; pad: number; sub?: string }[] = [];
-  for (const id of data.sections) {
+  type Row = { label: string; id: string; pad: number; sub?: string; page?: boolean };
+  const outline: Row[] = [];
+  // On a detail page the outline lists that page's own headings instead of the home sections.
+  for (const item of pageOutline ?? []) outline.push({ label: item.label, id: item.id, pad: 14, page: true });
+  for (const id of pageOutline ? [] : data.sections) {
     const kind = data.kinds.find((k) => k.id === id);
     const label = kind ? kind.title : id === "home" ? "home" : id === "experience" ? t.career : id === "contact" ? t.contact : id === "about" ? t.about : id === "articles" ? t.articles : t.skills;
     outline.push({ label, id, pad: 14, sub: kind ? String(kind.count) : undefined });
@@ -84,8 +91,8 @@ export function Sidebar({ data, t, active, hasCv, className, goTo, openResume }:
           {outlineOpen && (
             <div className="max-h-[200px] overflow-y-auto pb-1.5">
               {outline.map((o, i) => (
-                <button key={`${o.id}-${i}`} type="button" onClick={() => goTo(o.id)} className={row} style={{ paddingLeft: o.pad }}>
-                  <span className="w-4 shrink-0 font-mono text-[11px] font-bold" style={{ color: o.pad === 14 ? "#b180d7" : "#75beff" }}>{o.pad === 14 ? "◆" : "▪"}</span>
+                <button key={`${o.id}-${i}`} type="button" onClick={() => (o.page ? document.getElementById(o.id)?.scrollIntoView({ behavior: "smooth", block: "start" }) : goTo(o.id as SectionId))} className={row} style={{ paddingLeft: o.pad }}>
+                  <span className="w-4 shrink-0 font-mono text-[11px] font-bold" style={{ color: o.pad === 14 && !o.page ? "#b180d7" : "#75beff" }}>{o.pad === 14 && !o.page ? "◆" : "▪"}</span>
                   <span className="min-w-0 flex-1 truncate">{o.label}</span>
                   {o.sub && <span className="font-mono text-[11px] text-muted">{o.sub}</span>}
                 </button>
