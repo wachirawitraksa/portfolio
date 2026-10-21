@@ -3,7 +3,7 @@
 import { useState } from "react";
 import type { Dict } from "../i18n";
 import type { SectionId, ShellData } from "../shell-data";
-import { FILES, RESUME_FILE } from "./files";
+import { fileInfo, RESUME_FILE } from "./files";
 
 type Props = {
   data: ShellData;
@@ -26,8 +26,9 @@ export function Sidebar({ data, t, active, hasCv, className, goTo, openResume }:
   const row = "flex w-full items-center gap-2 rounded-none px-3 py-[5px] text-left text-[13px] text-fg hover:bg-hover";
   const outline: { label: string; id: SectionId; pad: number; sub?: string }[] = [];
   for (const id of data.sections) {
-    const label = id === "home" ? "home" : id === "experience" ? t.career : id === "contact" ? t.contact : t[id];
-    outline.push({ label, id, pad: 14, sub: id === "projects" ? String(data.projectCount) : undefined });
+    const kind = data.kinds.find((k) => k.id === id);
+    const label = kind ? kind.title : id === "home" ? "home" : id === "experience" ? t.career : id === "contact" ? t.contact : id === "about" ? t.about : id === "articles" ? t.articles : t.skills;
+    outline.push({ label, id, pad: 14, sub: kind ? String(kind.count) : undefined });
     if (id === "experience") for (const job of data.jobs) outline.push({ label: job, id, pad: 30 });
   }
 
@@ -46,7 +47,7 @@ export function Sidebar({ data, t, active, hasCv, className, goTo, openResume }:
       {filesOpen && (
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
           {data.sections.map((id) => {
-            const f = FILES[id];
+            const f = fileInfo(id, data);
             const on = id === active;
             return (
               <button

@@ -1,8 +1,9 @@
 // What the IDE shell needs to know about the site, built on the server from the real API.
 // A section appears in the explorer / outline / menus only when it has content, and the page sections use the same rule.
-import { getArticles, getExperience, getProfile, getProjects, getTags, pick, type Lang } from "./lib";
+import { getKindSections, type KindSection } from "./kind-sections";
+import { getArticles, getExperience, getProfile, getTags, pick, type Lang } from "./lib";
 
-export type SectionId = "home" | "about" | "experience" | "projects" | "articles" | "skills" | "contact";
+export type SectionId = "home" | "about" | "experience" | KindSection["id"] | "articles" | "skills" | "contact";
 
 export type ShellData = {
   name: string;
@@ -12,15 +13,15 @@ export type ShellData = {
   cvTh: string | null;
   cvEn: string | null;
   sections: SectionId[];
-  projectCount: number;
+  kinds: { id: SectionId; file: string; title: string; count: number }[];
   jobs: string[];
 };
 
 export async function getShellData(lang: Lang): Promise<ShellData> {
-  const [profile, experience, projects, articles, tags] = await Promise.all([
+  const [profile, experience, kinds, articles, tags] = await Promise.all([
     getProfile(),
     getExperience(),
-    getProjects({ limit: 1 }),
+    getKindSections(lang),
     getArticles({ limit: 1 }),
     getTags(),
   ]);
@@ -33,7 +34,7 @@ export async function getShellData(lang: Lang): Promise<ShellData> {
   const sections: SectionId[] = ["home"];
   if (profile && pick(lang, profile.intro_th, profile.intro_en)) sections.push("about");
   if (experience.length) sections.push("experience");
-  if (projects.total) sections.push("projects");
+  sections.push(...kinds.map((k) => k.id));
   if (articles.total) sections.push("articles");
   if (tags.length) sections.push("skills");
   sections.push("contact");
@@ -46,7 +47,7 @@ export async function getShellData(lang: Lang): Promise<ShellData> {
     cvTh: profile?.cv_th_url ?? null,
     cvEn: profile?.cv_en_url ?? null,
     sections,
-    projectCount: projects.total,
+    kinds: kinds.map((k) => ({ id: k.id, file: k.file, title: k.title, count: k.list.total })),
     jobs: experience.map((j) => pick(lang, j.position_th, j.position_en)).filter(Boolean),
   };
 }

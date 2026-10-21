@@ -17,7 +17,6 @@ const th = {
   about: "เกี่ยวกับ",
   career: "ประวัติการทำงาน",
   present: "ปัจจุบัน",
-  projects: "ผลงาน",
   filter: "กรองตามหมวด",
   all: "ทั้งหมด",
   more: "ดูเพิ่ม",
@@ -46,6 +45,9 @@ const th = {
   viewGithub: "ดูโค้ดบน GitHub",
   closeTab: "ปิดแท็บ",
   explorer: "แถบไฟล์",
+  contactBody: "สนใจร่วมงาน หรืออยากคุยเรื่องผลงาน ติดต่อได้เลย",
+  loadFailed: "โหลดไม่สำเร็จ ลองอีกครั้ง",
+  retry: "ลองอีกครั้ง",
 };
 
 const en: typeof th = {
@@ -61,7 +63,6 @@ const en: typeof th = {
   about: "About",
   career: "Experience",
   present: "Present",
-  projects: "Projects",
   filter: "Filter by category",
   all: "All",
   more: "Show more",
@@ -90,6 +91,9 @@ const en: typeof th = {
   viewGithub: "View on GitHub",
   closeTab: "Close tab",
   explorer: "File sidebar",
+  contactBody: "Interested in working together, or want to talk about the work? Get in touch.",
+  loadFailed: "Could not load. Try again.",
+  retry: "Try again",
 };
 
 export type Dict = typeof th;

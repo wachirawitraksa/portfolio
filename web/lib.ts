@@ -82,3 +82,14 @@ export async function askQuestion(question: string): Promise<AskAnswer> {
 export function pick(lang: Lang, th: string, en: string): string {
   return (lang === "th" ? th || en : en || th) || "";
 }
+
+// For the browser: the project list behind the category filter and "show more". Relative URL, same proxy as the page.
+export async function fetchProjects(query: ProjectQuery): Promise<ProjectList> {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(query)) {
+    if (value !== undefined && value !== null && value !== "") params.append(key, String(value));
+  }
+  const res = await fetch(`/api/projects?${params}`);
+  if (!res.ok) throw new Error(`projects failed: ${res.status}`);
+  return (await res.json()) as ProjectList;
+}

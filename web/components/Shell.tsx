@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import type { Dict } from "../i18n";
 import type { Lang } from "../lib";
 import type { SectionId, ShellData } from "../shell-data";
-import { FILES } from "./files";
+import { fileInfo } from "./files";
 import { FileIcon, GithubIcon, MailIcon } from "./icons";
 import { ResumeDialog } from "./ResumeDialog";
 import { Sidebar } from "./Sidebar";
@@ -116,7 +116,7 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
       { label: t.themeBtn, run: close(toggleTheme) },
       { label: t.switchLang, run: close(() => switchLang(lang === "th" ? "en" : "th")) },
     ];
-    const go: Menu["items"] = data.sections.map((id) => ({ label: FILES[id].name, run: () => goTo(id) }));
+    const go: Menu["items"] = data.sections.map((id) => ({ label: fileInfo(id, data).name, run: () => goTo(id) }));
     const help: Menu["items"] = [{ label: t.shortcuts, run: close(() => toast("Ctrl+B · Esc")) }];
     if (data.github) help.push({ label: t.viewGithub, key: "↗", run: close(() => window.open(data.github!, "_blank", "noopener")) });
 
@@ -129,7 +129,7 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
   }, [t, data, hasCv, lang, openResume, copyEmail, toggleSidebar, toggleTheme, switchLang, goTo, toast]);
 
   const api: ShellApi = { lang, t, data, openResume, copyEmail, toast, goTo };
-  const activeName = FILES[onHome ? active : "projects"].name;
+  const activeName = onHome ? fileInfo(active, data).name : (data.kinds[0]?.file ?? "home.tsx");
   const act = "flex size-11 cursor-pointer items-center justify-center rounded-md text-[#bdbdbd] hover:bg-hover";
   const bar = "h-[22px] cursor-pointer rounded-[3px] border-0 bg-transparent px-2 text-white hover:bg-white/15";
 
