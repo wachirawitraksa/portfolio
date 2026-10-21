@@ -15,13 +15,14 @@ type Props = {
   className: string;
   goTo: (id: SectionId) => void;
   openResume: () => void;
+  onChat: () => void;
 };
 
 function Chevron({ open }: { open: boolean }) {
   return <span className={`inline-block w-3 transition-transform ${open ? "rotate-90" : ""}`}>›</span>;
 }
 
-export function Sidebar({ data, t, active, pageOutline, hasCv, className, goTo, openResume }: Props) {
+export function Sidebar({ data, t, active, pageOutline, hasCv, className, goTo, openResume, onChat }: Props) {
   const [filesOpen, setFilesOpen] = useState(true);
   const [outlineToggled, setOutlineOpen] = useState<boolean | null>(null);
   // Closed on the home page like the mockup; a detail page opens it because its headings are the point.
@@ -103,6 +104,7 @@ export function Sidebar({ data, t, active, pageOutline, hasCv, className, goTo, 
       </div>
       {data.github && (
         <div className="flex flex-col gap-2 border-t border-line p-3 sm:hidden">
+          <button type="button" onClick={onChat} className="cursor-pointer rounded-md border border-line px-3 py-2.5 text-left font-mono text-[13px] text-fg hover:bg-hover">&gt; openChat()</button>
           <a href={data.github} target="_blank" rel="noopener" className="rounded-md border border-line px-3 py-2.5 font-mono text-[13px] text-fg no-underline">GitHub ↗</a>
         </div>
       )}

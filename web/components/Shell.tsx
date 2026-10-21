@@ -6,9 +6,11 @@ import type { Dict } from "../i18n";
 import type { Lang } from "../lib";
 import type { SectionId, ShellData } from "../shell-data";
 import { fileInfo } from "./files";
-import { FileIcon, GithubIcon, MailIcon } from "./icons";
+import { AskMe } from "./AskMe";
+import { ChatIcon, FileIcon, GithubIcon, MailIcon, TerminalIcon } from "./icons";
 import { ResumeDialog } from "./ResumeDialog";
 import { Splash } from "./Splash";
+import { Terminal } from "./Terminal";
 import { Sidebar } from "./Sidebar";
 import Link from "next/link";
 import { ShellContext, type OutlineItem, type ShellApi } from "./shell-context";
@@ -28,7 +30,7 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
   // /th/projects/4 -> a second tab "project-04.md" next to home.tsx, like an opened file in an editor.
   const detail = pathname.match(/^\/(?:th|en)\/(project|article)s\/(\d+)/);
   const detailName = detail ? `${detail[1]}-${detail[2].padStart(2, "0")}.md` : null;
-  const { theme, toggle: toggleTheme } = useTheme(initialTheme);
+  const { theme, toggle: toggleTheme, set: setTheme } = useTheme(initialTheme);
   const switchLang = useLangSwitch(lang);
 
   const [sidebarWide, setSidebarWide] = useState(true);
@@ -37,6 +39,11 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
   const [resume, setResume] = useState(false);
   const [message, setMessage] = useState("");
   const [replay, setReplay] = useState(0);
+  const [terminal, setTerminal] = useState(false);
+  const [bootKey, setBootKey] = useState(0);
+  const termStarted = useRef(false);
+  const [chat, setChat] = useState(false);
+  const [askRequest, setAskRequest] = useState<{ id: number; text?: string } | null>(null);
   const [active, setActive] = useState<SectionId>("home");
   const [pageOutline, setPageOutline] = useState<OutlineItem[] | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
@@ -53,6 +60,28 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
   const toggleSidebar = useCallback(() => {
     if (window.matchMedia(WIDE).matches) setSidebarWide((v) => !v);
     else setDrawer((v) => !v);
+  }, []);
+
+  // The first time the terminal opens it runs `npm run boot`; later it just shows again.
+  const toggleTerminal = useCallback(() => {
+    if (!terminal && !termStarted.current) {
+      termStarted.current = true;
+      setBootKey((k) => k + 1);
+    }
+    setTerminal(!terminal);
+  }, [terminal]);
+
+  const runBootAgain = useCallback(() => {
+    termStarted.current = true;
+    setTerminal(true);
+    setBootKey((k) => k + 1);
+  }, []);
+
+  const askAi = useCallback((question?: string) => {
+    setMenu(null);
+    setDrawer(false);
+    setChat(true);
+    if (question) setAskRequest({ id: Date.now(), text: question });
   }, []);
 
   const goTo = useCallback(
@@ -82,7 +111,11 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
         e.preventDefault();
         toggleSidebar();
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "j") {
+        e.preventDefault();
+        toggleTerminal();
       } else if (e.key === "Escape") {
+        setChat(false);
         setMenu(null);
         setResume(false);
         setDrawer(false);
@@ -90,7 +123,7 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [toggleSidebar]);
+  }, [toggleSidebar, toggleTerminal]);
 
   // Highlight the explorer entry for the section being read.
   useEffect(() => {
@@ -131,9 +164,14 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
       ...(file.length ? [{ id: "file", label: "File", items: file }] : []),
       { id: "view", label: "View", items: view },
       { id: "go", label: "Go", items: go },
+      { id: "terminal", label: "Terminal", items: [
+        { label: t.toggleTerminal, key: "Ctrl+J", run: close(toggleTerminal) },
+        { label: t.runBoot, run: close(runBootAgain) },
+        { label: t.askMenu, run: () => askAi() },
+      ] },
       { id: "help", label: "Help", items: help },
     ];
-  }, [t, data, hasCv, lang, openResume, copyEmail, toggleSidebar, toggleTheme, switchLang, goTo, toast]);
+  }, [t, data, hasCv, lang, openResume, copyEmail, toggleSidebar, toggleTheme, switchLang, goTo, toast, toggleTerminal, runBootAgain, askAi]);
 
   const api: ShellApi = { lang, t, data, openResume, copyEmail, toast, goTo, setOutline: setPageOutline };
   const activeName = detailName ?? fileInfo(active, data).name;
@@ -172,6 +210,12 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
             <button type="button" onClick={() => goTo("contact")} aria-label={t.contact} title={t.contact} className={act}>
               <MailIcon />
             </button>
+            <button type="button" onClick={toggleTerminal} aria-label={t.terminalBtn} title={t.terminalBtn} aria-pressed={terminal} className={`${act} ${terminal ? "text-[#e5e5e5]" : ""}`}>
+              <TerminalIcon />
+            </button>
+            <button type="button" onClick={() => askAi()} aria-label={t.askBtn} title={t.askBtn} className={`${act} mt-auto mb-1.5`}>
+              <ChatIcon />
+            </button>
           </nav>
 
           {drawer && <button type="button" onClick={() => setDrawer(false)} aria-label={t.close} className="absolute inset-0 z-[7] cursor-default border-0 bg-scrim ide:hidden" />}
@@ -183,6 +227,7 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
             hasCv={hasCv}
             goTo={goTo}
             openResume={openResume}
+            onChat={() => askAi()}
             className={`${drawer ? "absolute top-0 bottom-0 left-0 z-[8] flex w-[min(280px,85vw)] shadow-2xl sm:left-12 sm:w-[220px]" : "hidden"} ${sidebarWide ? "ide:static ide:flex ide:shadow-none" : "ide:hidden"}`}
           />
 
@@ -207,6 +252,7 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
             <div ref={scroller} className="relative min-h-0 flex-1 scroll-smooth overflow-x-hidden overflow-y-auto">
               {children}
             </div>
+            <Terminal open={terminal} bootKey={bootKey} onClose={() => setTerminal(false)} setTheme={setTheme} switchLang={switchLang} askAi={askAi} />
           </main>
 
           {resume && hasCv && <ResumeDialog data={data} t={t} onClose={() => setResume(false)} />}
@@ -221,6 +267,9 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
           <button type="button" onClick={toggleSidebar} className={`${bar} hidden sm:block`}>
             Ctrl+B {t.sidebarShort}
           </button>
+          <button type="button" onClick={toggleTerminal} className={`${bar} hidden sm:block`}>
+            Ctrl+J {t.terminalShort}
+          </button>
           <button type="button" onClick={() => switchLang(lang === "th" ? "en" : "th")} className={`${bar} ml-auto`}>
             {t.langLabel}
           </button>
@@ -228,6 +277,8 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
             {theme === "dark" ? t.themeDark : t.themeLight}
           </button>
         </footer>
+
+        <AskMe open={chat} onOpen={() => setChat(true)} onClose={() => setChat(false)} lift={terminal} request={askRequest} />
 
         <Splash name={data.name} fallback={data.slug} skip={t.skip} replay={replay} />
       </div>

@@ -41,3 +41,14 @@ export const MoonIcon = () => (
     <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
   </Svg>
 );
+export const TerminalIcon = () => (
+  <Svg size={22}>
+    <rect x="3" y="4" width="18" height="16" rx="2" />
+    <path d="m7 9 3 3-3 3M13 15h4" />
+  </Svg>
+);
+export const ChatIcon = () => (
+  <Svg>
+    <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" />
+  </Svg>
+);
