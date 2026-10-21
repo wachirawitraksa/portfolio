@@ -70,8 +70,8 @@
   --color-term: var(--term);
   --color-chip: var(--chip);
   --color-scrim: var(--scrim);
-  --font-sans: var(--font-poppins), var(--font-plex-thai), system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  --font-sans: "Poppins", "IBM Plex Sans Thai", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
 html,
