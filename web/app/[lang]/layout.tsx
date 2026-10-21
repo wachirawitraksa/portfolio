@@ -3,8 +3,10 @@ import { IBM_Plex_Sans_Thai, JetBrains_Mono, Poppins } from "next/font/google";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import { isLang } from "../../i18n";
+import { Shell } from "../../components/Shell";
+import { getDict, isLang } from "../../i18n";
 import { getProfile, pick } from "../../lib";
+import { getShellData } from "../../shell-data";
 import "../globals.css";
 
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800"], variable: "--font-poppins", display: "swap" });
@@ -23,11 +25,16 @@ export default async function RootLayout({ children, params }: { children: React
   const { lang } = await params;
   if (!isLang(lang)) notFound();
   // Theme comes from a cookie so the server renders the right colours on the first paint (no flash).
+  const data = await getShellData(lang);
   const theme = (await cookies()).get("theme")?.value === "light" ? "light" : "dark";
 
   return (
     <html lang={lang} data-theme={theme} className={`${poppins.variable} ${jetbrains.variable} ${plexThai.variable}`}>
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased">
+        <Shell lang={lang} t={getDict(lang)} data={data} initialTheme={theme}>
+          {children}
+        </Shell>
+      </body>
     </html>
   );
 }

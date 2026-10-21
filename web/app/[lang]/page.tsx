@@ -1,29 +1,21 @@
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import { Setup } from "../../components/Setup";
-import { getDict, isLang } from "../../i18n";
-import { getCategories, getProfile, pick } from "../../lib";
+import { FILES } from "../../components/files";
+import { isLang } from "../../i18n";
+import { getShellData } from "../../shell-data";
 
-// Temporary page for checking step 1 (Tailwind, fonts, themes, language). Replaced by the real shell in step 2.
+// Temporary: one empty block per section so the shell's navigation can be checked. Step 3 replaces it with the real sections.
 export default async function Home({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   if (!isLang(lang)) notFound();
-  const [categories, profile] = await Promise.all([getCategories(), getProfile()]);
-  const t = getDict(lang);
-  const theme = (await cookies()).get("theme")?.value === "light" ? "light" : "dark";
+  const { sections } = await getShellData(lang);
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-3xl flex-col gap-6 px-5 py-10">
-      <Setup lang={lang} initialTheme={theme} labels={{ theme: t.themeBtn, lang: t.langGroup }} />
-      <div className="font-mono text-sm text-cmt">// {t.projects}</div>
-      <h1 className="text-4xl font-bold text-strong">{profile ? pick(lang, profile.name_th, profile.name_en) || t.empty : t.empty}</h1>
-      <ul className="flex flex-wrap gap-2 font-mono text-sm">
-        {categories.map((c) => (
-          <li key={c.id} className="rounded-full bg-chip px-3 py-1 text-fg">
-            {pick(lang, c.name_th, c.name_en)}
-          </li>
-        ))}
-      </ul>
-    </main>
+    <div className="mx-auto max-w-[1000px] px-5 pb-40 sm:px-10 ide:px-14">
+      {sections.map((id) => (
+        <section key={id} id={id} className="flex min-h-[70vh] flex-col gap-3 pt-16">
+          <div className="font-mono text-[13px] text-cmt">// {FILES[id].name}</div>
+        </section>
+      ))}
+    </div>
   );
 }

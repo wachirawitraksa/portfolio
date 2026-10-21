@@ -33,6 +33,19 @@ const th = {
   fLearned: "สิ่งที่ได้เรียนรู้",
   fNext: "ถ้าทำต่อจะทำอะไร",
   empty: "ยังไม่มีข้อมูล",
+  langLabel: "ภาษา: ไทย",
+  themeDark: "ธีม: มืด",
+  themeLight: "ธีม: สว่าง",
+  sidebarShort: "แถบไฟล์",
+  openResume: "เปิด resume.pdf",
+  downloadCvTh: "ดาวน์โหลด CV ภาษาไทย",
+  downloadCvEn: "ดาวน์โหลด CV English",
+  resumeHint: "เลือกภาษาของ CV ที่ต้องการดาวน์โหลด",
+  switchLang: "Switch to English",
+  shortcuts: "คีย์ลัดทั้งหมด",
+  viewGithub: "ดูโค้ดบน GitHub",
+  closeTab: "ปิดแท็บ",
+  explorer: "แถบไฟล์",
 };
 
 const en: typeof th = {
@@ -64,6 +77,19 @@ const en: typeof th = {
   fLearned: "What I learned",
   fNext: "Next steps",
   empty: "Nothing here yet",
+  langLabel: "Language: EN",
+  themeDark: "Theme: dark",
+  themeLight: "Theme: light",
+  sidebarShort: "Sidebar",
+  openResume: "Open resume.pdf",
+  downloadCvTh: "Download CV (Thai)",
+  downloadCvEn: "Download CV (English)",
+  resumeHint: "Pick which CV language to download",
+  switchLang: "เปลี่ยนเป็นภาษาไทย",
+  shortcuts: "Keyboard shortcuts",
+  viewGithub: "View on GitHub",
+  closeTab: "Close tab",
+  explorer: "File sidebar",
 };
 
 export type Dict = typeof th;

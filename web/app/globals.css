@@ -50,6 +50,7 @@
 }
 
 @theme inline {
+  --breakpoint-ide: 901px; /* the mockup's ">900 = full IDE" cut-off */
   --color-bg: var(--bg);
   --color-side: var(--side);
   --color-title: var(--title);
