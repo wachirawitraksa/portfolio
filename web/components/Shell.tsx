@@ -8,6 +8,7 @@ import type { SectionId, ShellData } from "../shell-data";
 import { fileInfo } from "./files";
 import { FileIcon, GithubIcon, MailIcon } from "./icons";
 import { ResumeDialog } from "./ResumeDialog";
+import { Splash } from "./Splash";
 import { Sidebar } from "./Sidebar";
 import Link from "next/link";
 import { ShellContext, type OutlineItem, type ShellApi } from "./shell-context";
@@ -35,6 +36,7 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
   const [menu, setMenu] = useState<string | null>(null);
   const [resume, setResume] = useState(false);
   const [message, setMessage] = useState("");
+  const [replay, setReplay] = useState(0);
   const [active, setActive] = useState<SectionId>("home");
   const [pageOutline, setPageOutline] = useState<OutlineItem[] | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
@@ -122,7 +124,7 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
       { label: t.switchLang, run: close(() => switchLang(lang === "th" ? "en" : "th")) },
     ];
     const go: Menu["items"] = data.sections.map((id) => ({ label: fileInfo(id, data).name, run: () => goTo(id) }));
-    const help: Menu["items"] = [{ label: t.shortcuts, run: close(() => toast("Ctrl+B · Esc")) }];
+    const help: Menu["items"] = [{ label: t.replayIntro, run: close(() => setReplay((n) => n + 1)) }, { label: t.shortcuts, run: close(() => toast("Ctrl+B · Esc")) }];
     if (data.github) help.push({ label: t.viewGithub, key: "↗", run: close(() => window.open(data.github!, "_blank", "noopener")) });
 
     return [
@@ -226,6 +228,8 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
             {theme === "dark" ? t.themeDark : t.themeLight}
           </button>
         </footer>
+
+        <Splash name={data.name} fallback={data.slug} skip={t.skip} replay={replay} />
       </div>
     </ShellContext.Provider>
   );

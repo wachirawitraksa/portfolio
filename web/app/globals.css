@@ -108,3 +108,14 @@ body {
   .reveal { animation: row-in linear both; animation-timeline: view(); animation-range: entry 0% entry 60%; }
   .tl-fill { transform-origin: top; animation: fill linear both; animation-timeline: view(); animation-range: cover 10% cover 70%; }
 }
+
+/* Boot splash. Hidden unless the layout's inline script marks <html data-boot> before first paint (once per
+   browser session, never with reduced motion), so there is no flash of the page and no repeat for returning visits. */
+.splash { display: none; }
+html[data-boot] .splash { display: flex; }
+@keyframes ring-spin { to { transform: rotate(360deg); } }
+@keyframes bar-load { from { width: 0; } to { width: 100%; } }
+@keyframes splash-out { to { opacity: 0; visibility: hidden; } }
+.splash-fade { animation: splash-out 0.5s ease 2.6s both; }
+.splash-ring { position: absolute; border-radius: 50%; border: 1px solid rgb(55 148 255 / 0.25); animation: ring-spin linear infinite; }
+.splash-bar { animation: bar-load 2.8s cubic-bezier(0.65, 0, 0.35, 1) both; }

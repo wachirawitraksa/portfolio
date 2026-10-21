@@ -9,6 +9,10 @@ import { getShellData } from "../../shell-data";
 import "../fonts";
 import "../globals.css";
 
+// Runs before the first paint: show the splash only on the first visit of a browser session, and not for
+// people who ask for reduced motion.
+const BOOT_SCRIPT = `try{if(!matchMedia("(prefers-reduced-motion: reduce)").matches&&!sessionStorage.getItem("boot"))document.documentElement.dataset.boot="1"}catch(e){}`;
+
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;
   if (!isLang(lang)) return {};
@@ -25,8 +29,9 @@ export default async function RootLayout({ children, params }: { children: React
   const theme = (await cookies()).get("theme")?.value === "light" ? "light" : "dark";
 
   return (
-    <html lang={lang} data-theme={theme}>
+    <html lang={lang} data-theme={theme} suppressHydrationWarning>
       <body className="font-sans antialiased">
+        <script dangerouslySetInnerHTML={{ __html: BOOT_SCRIPT }} />
         <Shell lang={lang} t={getDict(lang)} data={data} initialTheme={theme}>
           {children}
         </Shell>
