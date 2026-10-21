@@ -13,11 +13,11 @@ NAV = [
     (
         "เนื้อหา",
         [
-            ("ผลงาน / รายการ", "/projects", False, "folder"),
+            ("ข้อมูลส่วนตัว", "/profile", False, "user"),
             ("ประวัติการทำงาน", "/work", False, "briefcase"),
             ("ประวัติการศึกษา", "/education", False, "cap"),
+            ("ผลงาน / รายการ", "/projects", False, "folder"),
             ("บทความ", "/articles", False, "file"),
-            ("ข้อมูลส่วนตัว", "/profile", False, "user"),
         ],
     ),
     (
@@ -40,18 +40,18 @@ NAV = [
         "ระบบ",
         [
             ("ตั้งค่าการแสดงผล", "/settings", False, "sliders"),
-            ("ถังขยะ", "/trash", False, "trash"),
             ("บัญชีและความปลอดภัย", "/account", False, "shield"),
             ("session ที่ล็อกอินอยู่", "/sessions", False, "monitor"),
+            ("ถังขยะ", "/trash", False, "trash"),
         ],
     ),
 ]
 
 # The "create" menu at the top of the sidebar: (label, path).
 QUICK_CREATE = [
-    ("ผลงาน / รายการ", "/projects/new"),
     ("ประวัติการทำงาน", "/work/new"),
     ("ประวัติการศึกษา", "/education/new"),
+    ("ผลงาน / รายการ", "/projects/new"),
     ("บทความ", "/articles/new"),
     ("กลุ่มคำ glossary", "/glossary/new"),
     ("tag เทคโนโลยี", "/tags/new"),
