@@ -35,3 +35,6 @@ Thumbs.db
 .vscode/
 .idea/
 .claude/
+
+# Docs (not committed yet)
+docs/
