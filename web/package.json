@@ -1,6 +1,7 @@
 {
   "name": "portfolio-web",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "api:types": "openapi-typescript openapi.json -o api-types.ts",

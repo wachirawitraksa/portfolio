@@ -820,3 +820,5 @@ The stack is built so that moving to a server changes configuration, not code. B
 ## 18. License
 
 [MIT](LICENSE) © 2026 Wachirawit Raksa
+
+Third-party code and fonts that ship in this repository keep their own licenses; see [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
