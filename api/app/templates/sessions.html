@@ -1,21 +1,25 @@
 {% extends "base.html" %}
+{% import "_ui.html" as ui %}
+{% set tw = true %}
 {% block title %}session ที่ล็อกอินอยู่{% endblock %}
 {% block content %}
-<h1>session ที่ล็อกอินอยู่</h1>
-<table>
-  <thead><tr><th>เริ่มเมื่อ</th><th>IP</th><th>เบราว์เซอร์</th><th></th></tr></thead>
-  <tbody>
-  {% for r in rows %}
-    <tr>
-      <td>{{ r.created_at.strftime('%Y-%m-%d %H:%M') }}{% if r.id == current.id %} <strong>(เครื่องนี้)</strong>{% endif %}</td>
-      <td>{{ r.ip or '' }}</td>
-      <td>{{ (r.user_agent or '')[:60] }}</td>
-      <td>
-        <form method="post" action="/sessions/{{ r.id }}/revoke" class="inline">
-          <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>เพิกถอน</button></form>
-      </td>
-    </tr>
-  {% endfor %}
-  </tbody>
-</table>
+<h1 class="{{ ui.h1 }} mb-3.5">session ที่ล็อกอินอยู่</h1>
+<div class="{{ ui.table_box }}">
+  <table class="{{ ui.table }}">
+    <thead><tr><th>เริ่มเมื่อ</th><th>IP</th><th>เบราว์เซอร์</th><th></th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr>
+        <td class="whitespace-nowrap">{{ r.created_at.strftime('%Y-%m-%d %H:%M') }}{% if r.id == current.id %} <strong>(เครื่องนี้)</strong>{% endif %}</td>
+        <td>{{ r.ip or '' }}</td>
+        <td class="break-all">{{ (r.user_agent or '')[:60] }}</td>
+        <td class="{{ ui.actions }}">
+          <form method="post" action="/sessions/{{ r.id }}/revoke" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf }}"><button class="{{ ui.btn_sm_danger }}">เพิกถอน</button></form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}

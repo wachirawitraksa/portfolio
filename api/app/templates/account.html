@@ -1,50 +1,52 @@
 {% extends "base.html" %}
+{% import "_ui.html" as ui %}
+{% set tw = true %}
 {% block title %}บัญชี{% endblock %}
 {% block content %}
-<h1>บัญชี</h1>
-<p class="muted">{{ user.email }}</p>
-{% if error %}<p class="error" role="alert">{{ error | tr }}</p>{% endif %}
-{% if notice %}<p role="status">{{ notice | tr }}</p>{% endif %}
+<h1 class="{{ ui.h1 }}">บัญชี</h1>
+<p class="{{ ui.muted }} mb-4">{{ user.email }}</p>
+{% if error %}{% call ui.alert("error") %}{{ error | tr }}{% endcall %}{% endif %}
+{% if notice %}{% call ui.alert("ok") %}{{ notice | tr }}{% endcall %}{% endif %}
 
-<section class="card">
-  <h2>เปลี่ยนรหัสผ่าน</h2>
-  <p class="muted">เปลี่ยนแล้วทุกเครื่องที่ล็อกอินอยู่ (รวมเครื่องนี้) จะถูกออกจากระบบ ต้องล็อกอินใหม่</p>
-  <form method="post" action="/account/password" hx-boost="false" style="max-width: 360px">
+<section class="{{ ui.card }}">
+  <h2 class="{{ ui.h2 }}">เปลี่ยนรหัสผ่าน</h2>
+  <p class="{{ ui.muted }} mb-2">เปลี่ยนแล้วทุกเครื่องที่ล็อกอินอยู่ (รวมเครื่องนี้) จะถูกออกจากระบบ ต้องล็อกอินใหม่</p>
+  <form method="post" action="/account/password" hx-boost="false" class="max-w-sm">
     <input type="hidden" name="csrf_token" value="{{ csrf }}">
-    <label for="current_password">รหัสผ่านปัจจุบัน</label>
-    <input id="current_password" name="current_password" type="password" autocomplete="current-password" required>
-    <label for="new_password">รหัสผ่านใหม่ <span class="muted">(อย่างน้อย {{ min_password }} ตัวอักษร)</span></label>
-    <input id="new_password" name="new_password" type="password" autocomplete="new-password" minlength="{{ min_password }}" required>
-    <label for="confirm_password">พิมพ์รหัสผ่านใหม่อีกครั้ง</label>
-    <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" required>
-    <p><button>เปลี่ยนรหัสผ่าน</button></p>
+    <label class="{{ ui.label }}" for="current_password">รหัสผ่านปัจจุบัน</label>
+    <input class="{{ ui.input }}" id="current_password" name="current_password" type="password" autocomplete="current-password" required>
+    <label class="{{ ui.label }}" for="new_password">รหัสผ่านใหม่ <span class="font-normal {{ ui.muted }}">(อย่างน้อย {{ min_password }} ตัวอักษร)</span></label>
+    <input class="{{ ui.input }}" id="new_password" name="new_password" type="password" autocomplete="new-password" minlength="{{ min_password }}" required>
+    <label class="{{ ui.label }}" for="confirm_password">พิมพ์รหัสผ่านใหม่อีกครั้ง</label>
+    <input class="{{ ui.input }}" id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" required>
+    <button class="{{ ui.btn_primary }} mt-4">เปลี่ยนรหัสผ่าน</button>
   </form>
 </section>
 
-<section class="card">
-  <h2>รหัส TOTP</h2>
-  <p class="muted">{% if has_totp %}เปิดใช้อยู่{% else %}ยังไม่ได้เปิดใช้{% endif %} · การรีเซ็ตจะสร้างรหัสลับใหม่ (รหัสเดิมใช้ไม่ได้) และให้ทุกเครื่องออกจากระบบ</p>
-  <form method="post" action="/account/totp/reset" hx-boost="false" style="max-width: 360px">
+<section class="{{ ui.card }}">
+  <h2 class="{{ ui.h2 }}">รหัส TOTP</h2>
+  <p class="{{ ui.muted }} mb-2">{% if has_totp %}เปิดใช้อยู่{% else %}ยังไม่ได้เปิดใช้{% endif %} · การรีเซ็ตจะสร้างรหัสลับใหม่ (รหัสเดิมใช้ไม่ได้) และให้ทุกเครื่องออกจากระบบ</p>
+  <form method="post" action="/account/totp/reset" hx-boost="false" class="max-w-sm">
     <input type="hidden" name="csrf_token" value="{{ csrf }}">
-    <label for="totp_password">รหัสผ่านปัจจุบัน</label>
-    <input id="totp_password" name="current_password" type="password" autocomplete="current-password" required>
-    <p><button>{% if has_totp %}รีเซ็ต TOTP{% else %}เปิดใช้ TOTP{% endif %}</button></p>
+    <label class="{{ ui.label }}" for="totp_password">รหัสผ่านปัจจุบัน</label>
+    <input class="{{ ui.input }}" id="totp_password" name="current_password" type="password" autocomplete="current-password" required>
+    <button class="{{ ui.btn_primary }} mt-4">{% if has_totp %}รีเซ็ต TOTP{% else %}เปิดใช้ TOTP{% endif %}</button>
   </form>
 </section>
 
-<section class="card">
-  <h2>GitHub</h2>
+<section class="{{ ui.card }}">
+  <h2 class="{{ ui.h2 }}">GitHub</h2>
   {% if not github_enabled %}
-  <p class="empty">ยังไม่ได้ตั้งค่า GitHub OAuth (GITHUB_CLIENT_ID / GITHUB_CLIENT_SECRET / GITHUB_REDIRECT_URI)</p>
+  <p class="{{ ui.empty }}">ยังไม่ได้ตั้งค่า GitHub OAuth (GITHUB_CLIENT_ID / GITHUB_CLIENT_SECRET / GITHUB_REDIRECT_URI)</p>
   {% elif github_linked %}
   <p>เชื่อมกับบัญชี GitHub แล้ว ล็อกอินด้วยปุ่ม GitHub ได้</p>
   <form method="post" action="/account/github/unlink" class="inline">
-    <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>ยกเลิกการเชื่อม</button>
+    <input type="hidden" name="csrf_token" value="{{ csrf }}"><button class="{{ ui.btn }}">ยกเลิกการเชื่อม</button>
   </form>
   {% else %}
   <p>เชื่อมบัญชี GitHub ของคุณ เพื่อล็อกอินด้วยปุ่ม GitHub ได้ (ใช้ได้เฉพาะบัญชีที่เชื่อมไว้ ระบบไม่สร้างบัญชีใหม่ให้ใคร)</p>
   <form method="post" action="/account/github/link" hx-boost="false" class="inline">
-    <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>เชื่อมบัญชี GitHub</button>
+    <input type="hidden" name="csrf_token" value="{{ csrf }}"><button class="{{ ui.btn_primary }}">เชื่อมบัญชี GitHub</button>
   </form>
   {% endif %}
 </section>

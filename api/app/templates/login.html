@@ -1,22 +1,24 @@
 {% extends "base.html" %}
+{% import "_ui.html" as ui %}
 {% set hide_nav = true %}
+{% set tw = true %}
 {% block title %}เข้าสู่ระบบ{% endblock %}
 {% block content %}
-<section class="card" style="padding: 22px 26px 26px">
-  <h1 style="margin-bottom: 14px">เข้าสู่ระบบหลังบ้าน</h1>
-  {% if error %}<p class="error" role="alert">{{ error | tr }}</p>{% endif %}
+<section class="{{ ui.card }} px-6 pt-6 pb-7">
+  <h1 class="{{ ui.h1 }} mb-3.5">เข้าสู่ระบบหลังบ้าน</h1>
+  {% if error %}{% call ui.alert("error") %}{{ error | tr }}{% endcall %}{% endif %}
   <form method="post" action="/login" hx-boost="false">
     <input type="hidden" name="csrf_token" value="{{ csrf }}">
-    <label for="email">อีเมล</label>
-    <input id="email" name="email" type="email" autocomplete="username" required autofocus>
-    <label for="password">รหัสผ่าน</label>
-    <input id="password" name="password" type="password" autocomplete="current-password" required>
-    <label for="code">รหัส TOTP 6 หลัก</label>
-    <input id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code">
-    <p style="margin-top: 18px"><button style="width: 100%">เข้าสู่ระบบ</button></p>
+    <label class="{{ ui.label }}" for="email">อีเมล</label>
+    <input class="{{ ui.input }}" id="email" name="email" type="email" autocomplete="username" required autofocus>
+    <label class="{{ ui.label }}" for="password">รหัสผ่าน</label>
+    <input class="{{ ui.input }}" id="password" name="password" type="password" autocomplete="current-password" required>
+    <label class="{{ ui.label }}" for="code">รหัส TOTP 6 หลัก</label>
+    <input class="{{ ui.input }}" id="code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code">
+    <button class="{{ ui.btn_primary }} mt-5 w-full">เข้าสู่ระบบ</button>
   </form>
   {% if github %}
-  <p style="text-align: center; margin: 4px 0 0"><a class="btn" style="width: 100%" href="/login/github" hx-boost="false">เข้าสู่ระบบด้วย GitHub</a></p>
+  <a class="{{ ui.btn }} mt-3 w-full" href="/login/github" hx-boost="false">เข้าสู่ระบบด้วย GitHub</a>
   {% endif %}
 </section>
 {% endblock %}
