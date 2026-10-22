@@ -788,15 +788,17 @@ flowchart LR
 
 ## 16. Going to production
 
-The stack is built so that moving to a server changes configuration, not code. Before exposing it:
+The stack is built so that moving to a server changes configuration, not code. The repository includes a production kit:
 
-1. Point DNS for `SITE_DOMAIN` and `ADMIN_DOMAIN` at the host, and replace the `http://` site addresses in the
-   `Caddyfile` with plain host names so Caddy obtains HTTPS certificates automatically (publish ports 80 and 443).
-2. In `.env`: real domains, `COOKIE_SECURE=true`, `SITE_URL=https://...`, strong database and S3 credentials, a random
-   `ASK_IP_SALT`.
-3. Create the admin user, then **set up backups** of the `db-data` and `storage-data` volumes before relying on it.
-4. Optionally restrict the admin host to an IP range or VPN in the Caddyfile, and add an **external** uptime check
-   (Uptime Kuma on the same host cannot alert if the whole host is down).
+- `docker-compose.prod.yml` - restart policy, log rotation, ports 80/443, certificate volumes; only the proxy is exposed.
+- `Caddyfile.prod` - automatic HTTPS for the two host names, security headers, optional admin IP restriction.
+- `.env.production.example` - template for the server's `.env`; `ops/gen-secrets.sh` fills in random secrets.
+- `ops/backup.sh`, `ops/verify-backup.sh`, `ops/restore.sh` - backups of the database and uploaded files, a check that a
+  backup really restores, and the restore itself.
+
+**[DEPLOY.md](DEPLOY.md)** is the step-by-step procedure (DNS, server, first start, backups, updates, checklist) and
+says exactly what was verified locally and what can only be verified with a real domain. Add an **external** uptime
+check as well: Uptime Kuma on the same host cannot alert if the whole host is down.
 
 ---
 

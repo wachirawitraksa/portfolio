@@ -1,0 +1,58 @@
+# Production proxy. Used by docker-compose.prod.yml (the development Caddyfile stays plain HTTP).
+#
+# A site address WITHOUT "http://" makes Caddy serve HTTPS: it obtains a certificate from Let's Encrypt for each
+# host name, renews it, and redirects http:// to https:// by itself. It needs (1) DNS records pointing both host
+# names at this machine and (2) ports 80 and 443 open. With SITE_DOMAIN=localhost it uses a local test certificate.
+{
+	# Where Let's Encrypt writes about problems with the certificates (required, set ACME_EMAIL in .env).
+	email {$ACME_EMAIL}
+}
+
+# Headers for every response.
+(common) {
+	encode zstd gzip
+	header {
+		# Browsers must use HTTPS for this host from now on (one year).
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		-Server
+	}
+}
+
+# --- the public site ------------------------------------------------------------------------------------
+{$SITE_DOMAIN} {
+	import common
+	header {
+		# The site may not be shown inside another site's frame. (Next.js writes inline scripts, so a strict
+		# script policy is not used here.)
+		Content-Security-Policy "frame-ancestors 'none'; base-uri 'self'; object-src 'none'"
+	}
+
+	handle /api/* {
+		reverse_proxy api:8000
+	}
+	handle {
+		reverse_proxy web:3000
+	}
+}
+
+# --- the admin ------------------------------------------------------------------------------------------
+# FastAPI mounts its admin routes under /admin; the host name replaces that prefix.
+{$ADMIN_DOMAIN} {
+	import common
+	header {
+		# The admin loads only its own files (it uses no third-party code), may not be framed, and its forms
+		# post only to itself. Its pages carry small inline scripts, hence 'unsafe-inline' for scripts.
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
+		Cache-Control "no-store"
+	}
+
+	# Optional: only these addresses may open the admin (ADMIN_ALLOWED_IPS in .env). Everyone else gets 403.
+	@outside not remote_ip {$ADMIN_ALLOWED_IPS}
+	respond @outside "Forbidden" 403
+
+	rewrite * /admin{uri}
+	reverse_proxy api:8000
+}

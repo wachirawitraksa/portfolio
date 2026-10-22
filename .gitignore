@@ -1,11 +1,14 @@
 # Docs (local only)
 PLAN.md
 reference/
+*.th.md
+DEPLOY.md
 
 # Secrets (keep .env.example)
 .env
 .env.*
 !.env.example
+!.env.production.example
 
 # Python
 __pycache__/

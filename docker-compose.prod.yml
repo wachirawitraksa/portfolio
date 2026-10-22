@@ -1,0 +1,70 @@
+# Production overrides. Use it together with docker-compose.yml:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+# or set it once in .env so plain `docker compose ...` does the same (see .env.production.example):
+#
+#   COMPOSE_PATH_SEPARATOR=:
+#   COMPOSE_FILE=docker-compose.yml:docker-compose.prod.yml
+#
+# What changes compared with development:
+#   - every service restarts by itself (after a crash or a reboot of the machine)
+#   - container logs are capped, so they cannot fill the disk
+#   - Caddy serves HTTPS on 443 with certificates it obtains and renews by itself, using Caddyfile.prod
+#   - the debug ports that development publishes on 127.0.0.1 are not published at all
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  caddy:
+    restart: unless-stopped
+    logging: *logging
+    # `!override` replaces the list from docker-compose.yml instead of adding to it.
+    ports: !override
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+      - "${HTTPS_PORT:-443}:443/udp" # HTTP/3
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN}
+      ADMIN_DOMAIN: ${ADMIN_DOMAIN}
+      # Required: Let's Encrypt uses it to warn you if a certificate cannot be renewed.
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL in .env (an address Let's Encrypt can write to)}
+      # Who may open the admin host. Empty = everyone (the login is still password + TOTP).
+      # Example: ADMIN_ALLOWED_IPS="203.0.113.7 198.51.100.0/24"
+      ADMIN_ALLOWED_IPS: ${ADMIN_ALLOWED_IPS:-0.0.0.0/0 ::/0}
+    volumes:
+      - ./Caddyfile.prod:/etc/caddy/Caddyfile:ro
+      # The certificates. Losing this volume only means they are requested again.
+      - caddy-data:/data
+      - caddy-config:/config
+
+  web:
+    restart: unless-stopped
+    logging: *logging
+    ports: !reset []
+
+  api:
+    restart: unless-stopped
+    logging: *logging
+    ports: !reset []
+
+  db:
+    restart: unless-stopped
+    logging: *logging
+    ports: !reset []
+
+  storage:
+    restart: unless-stopped
+    logging: *logging
+    ports: !reset []
+
+  monitor:
+    logging: *logging
+
+volumes:
+  caddy-data:
+  caddy-config:

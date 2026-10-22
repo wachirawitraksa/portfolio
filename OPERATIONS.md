@@ -1,4 +1,4 @@
-# Operations: monitoring, alerting and CI
+# Operations: monitoring, alerting, CI and backups
 
 How to tell when something is broken, how to get told automatically, and what to do when CI fails.
 For the system itself, see the [README](README.md).
@@ -94,3 +94,11 @@ When CI fails:
 - **npm audit**: a high-severity vulnerability in a package that runs in production. Upgrade that package.
 
 To require a green CI before merging, enable branch protection once under GitHub → Settings → Branches.
+
+---
+
+## 5. Backups and deployment
+
+Backups, restore and the server procedure are in [DEPLOY.md](DEPLOY.md). In short: `sh ops/backup.sh` every night from
+cron, `sh ops/verify-backup.sh` after setting it up and now and then (it restores into a throw-away database and
+compares row counts), and `sh ops/restore.sh <backup>` to recover. Keep a copy of the backups on another machine.
