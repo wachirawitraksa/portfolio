@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% import "_ui.html" as ui %}
-{% set tw = true %}
 {% block title %}บัญชี{% endblock %}
 {% block content %}
 <h1 class="{{ ui.h1 }}">บัญชี</h1>
@@ -39,12 +38,12 @@
   {% if not github_enabled %}
   <p class="{{ ui.empty }}">ยังไม่ได้ตั้งค่า GitHub OAuth (GITHUB_CLIENT_ID / GITHUB_CLIENT_SECRET / GITHUB_REDIRECT_URI)</p>
   {% elif github_linked %}
-  <p>เชื่อมกับบัญชี GitHub แล้ว ล็อกอินด้วยปุ่ม GitHub ได้</p>
+  <p class="my-2">เชื่อมกับบัญชี GitHub แล้ว ล็อกอินด้วยปุ่ม GitHub ได้</p>
   <form method="post" action="/account/github/unlink" class="inline">
     <input type="hidden" name="csrf_token" value="{{ csrf }}"><button class="{{ ui.btn }}">ยกเลิกการเชื่อม</button>
   </form>
   {% else %}
-  <p>เชื่อมบัญชี GitHub ของคุณ เพื่อล็อกอินด้วยปุ่ม GitHub ได้ (ใช้ได้เฉพาะบัญชีที่เชื่อมไว้ ระบบไม่สร้างบัญชีใหม่ให้ใคร)</p>
+  <p class="my-2">เชื่อมบัญชี GitHub ของคุณ เพื่อล็อกอินด้วยปุ่ม GitHub ได้ (ใช้ได้เฉพาะบัญชีที่เชื่อมไว้ ระบบไม่สร้างบัญชีใหม่ให้ใคร)</p>
   <form method="post" action="/account/github/link" hx-boost="false" class="inline">
     <input type="hidden" name="csrf_token" value="{{ csrf }}"><button class="{{ ui.btn_primary }}">เชื่อมบัญชี GitHub</button>
   </form>

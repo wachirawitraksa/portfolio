@@ -87,8 +87,9 @@ async def test_headline_is_saved_and_public(authed):
 async def test_a_headline_in_one_language_is_flagged(authed):
     await post(authed, "/admin/profile", headline_en="Software Engineer")
     page = (await authed.get("/admin/profile")).text
-    assert re.search(r'for="headline_th">[^<]*<span class="missing">', page)  # the Thai half is flagged
-    assert not re.search(r'for="headline_en">[^<]*<span class="missing">', page)
+    flag = r'[^<]*<span class="[^"]*text-warning[^"]*">'  # the "not filled in" note
+    assert re.search(r'for="headline_th">' + flag, page)  # the Thai half is flagged
+    assert not re.search(r'for="headline_en">' + flag, page)
 
 
 async def test_tag_group_is_saved_and_public(authed):

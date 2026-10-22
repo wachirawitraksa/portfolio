@@ -4,8 +4,6 @@
    <html data-theme="light|dark"> from a cookie, and with no choice made the system setting decides, so none of
    that logic changes. Colours follow the public site (VS Code Dark+ / Light+). */
 @import "tailwindcss";
-/* TEMPORARY: the old stylesheet for templates not yet converted. Removed with the last conversion. */
-@import "./legacy.css" layer(components);
 
 /* Every class the admin uses is found here. Class names must be written out whole in the templates
    (no "btn-" ~ name): Tailwind cannot see names that are put together at run time. */
@@ -13,8 +11,9 @@
 @source "../app/static/admin.js";
 
 /* Only the daisyUI components the admin uses, which keeps the file small. Add a name here when a template needs another. */
-/* daisyUI classes carry a "d-" prefix (d-btn, d-card, ...) while the old stylesheet is still around, because
-   both define .btn, .card and .badge. */
+/* daisyUI classes carry a "d-" prefix (d-btn, d-card, ...) on purpose: base.html and the templates also use plain
+   class names as hooks for admin.js and the tests (menu, label, stat, sidebar), and daisyUI has components with the
+   same names. The prefix keeps the two apart. */
 @plugin "../tools/daisyui.mjs" {
   themes: false;
   prefix: "d-";
@@ -136,5 +135,7 @@
   }
   body {
     font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.65; /* Thai needs the room */
   }
 }

@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% import "_ui.html" as ui %}
-{% set tw = true %}
 {% block title %}{% if row and row.id %}แก้ไข tag{% else %}เพิ่ม tag{% endif %}{% endblock %}
 {% block content %}
 <h1 class="{{ ui.h1 }} mb-3.5">{% if row and row.id %}แก้ไข tag{% else %}เพิ่ม tag{% endif %}</h1>

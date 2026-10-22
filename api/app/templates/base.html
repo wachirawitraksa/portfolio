@@ -18,7 +18,7 @@
 </head>
 {#- Classes named sidebar-collapsed, menu-open, sidebar, menu, menu-pop and scrim are hooks: admin.js and the
     collapsed: / menu-open: variants in css/input.css look for them. The rest is Tailwind and daisyUI. -#}
-<body hx-boost="true"{% if tw %} data-ui="tw"{% endif %} class="min-h-dvh bg-base-100 text-base-content antialiased {% if not with_nav %}bare grid place-items-start justify-center px-4 pt-[12vh] pb-10{% elif ui_sidebar(request) == 'collapsed' %}sidebar-collapsed{% endif %}">
+<body hx-boost="true" class="min-h-dvh bg-base-100 text-base-content antialiased {% if not with_nav %}bare grid place-items-start justify-center px-4 pt-[12vh] pb-10{% elif ui_sidebar(request) == 'collapsed' %}sidebar-collapsed{% endif %}">
 {# Language and theme switches, drawn twice: in the header when there is a menu, floating on the login page. #}
 {% macro switches() %}
   <div class="d-join" role="group" aria-label="ภาษา">
@@ -80,7 +80,7 @@
     <header class="topbar flex flex-none items-center gap-3 border-b border-base-300 bg-base-200 px-5 py-3 max-nav:sticky max-nav:top-0 max-nav:z-10 max-nav:px-3.5 max-nav:py-2.5">
       <button type="button" class="d-btn d-btn-sm d-btn-square d-btn-ghost border-base-300" data-menu-toggle aria-label="ย่อ/ขยายเมนู" title="ย่อ/ขยายเมนู">{{ icon("panel") }}</button>
       <span class="h-5 w-px bg-base-300" aria-hidden="true"></span>
-      <span class="crumb flex min-w-0 items-center gap-2 font-semibold">{% if crumb[0] %}<span class="crumb-group font-normal text-base-content/60 after:ml-2 after:text-base-300 after:content-['/']">{{ crumb[0] | tr }}</span>{% endif %}<span class="truncate">{{ (crumb[1] or "หลังบ้าน") | tr }}</span></span>
+      <span class="crumb flex min-w-0 items-center gap-2 font-semibold">{% if crumb[0] %}<span class="crumb-group font-normal whitespace-nowrap text-base-content/60 after:ml-2 after:text-base-300 after:content-['/'] max-[480px]:hidden">{{ crumb[0] | tr }}</span>{% endif %}<span class="truncate">{{ (crumb[1] or "หลังบ้าน") | tr }}</span></span>
       <span class="flex-1"></span>
       {{ switches() }}
       <a class="d-btn d-btn-sm d-btn-square d-btn-primary" href="/settings" aria-label="ตั้งค่าการแสดงผล" title="ตั้งค่าการแสดงผล">{{ icon("sliders") }}</a>
