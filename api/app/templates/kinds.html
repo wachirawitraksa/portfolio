@@ -1,43 +1,36 @@
 {% extends "base.html" %}
+{% import "_ui.html" as ui with context %}
+{% set tw = true %}
 {% block title %}ชนิดของรายการ{% endblock %}
 {% block content %}
-<h1>{% if trash %}ถังขยะ: ชนิดของรายการ{% else %}ชนิดของรายการ{% endif %}</h1>
-<div class="toolbar">
-  {% if trash %}<a class="btn" href="/kinds">← กลับไปรายการ</a>
-  {% else %}<a class="btn primary" href="/kinds/new">+ เพิ่มชนิด</a><a class="btn" href="/kinds?trash=true">ถังขยะ</a>{% endif %}
-</div>
+{{ ui.list_head("ชนิดของรายการ", "ถังขยะ: ชนิดของรายการ", "/kinds", "/kinds/new", "เพิ่มชนิด") }}
 {% if rows %}
-<table>
-  <thead><tr><th>ชื่อไทย</th><th>ชื่ออังกฤษ</th><th>ช่องที่ใช้</th><th>สถานะ</th><th></th></tr></thead>
-  <tbody>
+<div class="{{ ui.table_box }}">
+  <table class="{{ ui.table }}">
+    <thead><tr><th>ชื่อไทย</th><th>ชื่ออังกฤษ</th><th>ช่องที่ใช้</th><th>สถานะ</th><th></th></tr></thead>
+    <tbody>
   {% for r in rows %}
     <tr>
-      <td>{{ r.name_th or '' }}{% if not r.name_th %}<span class="missing">ยังไม่ได้กรอก</span>{% endif %}</td>
-      <td>{{ r.name_en or '' }}{% if not r.name_en %}<span class="missing">ยังไม่ได้กรอก</span>{% endif %}</td>
-      <td>{% for key in r.fields %}<span class="badge info">{{ (groups[key] | tr).split(' (')[0] if key in groups else key }}</span> {% endfor %}{% if not r.fields %}<span class="muted">เฉพาะช่องพื้นฐาน</span>{% endif %}</td>
-      <td>{% if r.hidden %}<span class="badge">ซ่อนอยู่</span>{% else %}<span class="badge ok">แสดง</span>{% endif %}</td>
-      <td class="row-actions">
+      <td>{{ r.name_th or '' }}{% if not r.name_th %}<span class="{{ ui.missing }}">ยังไม่ได้กรอก</span>{% endif %}</td>
+      <td>{{ r.name_en or '' }}{% if not r.name_en %}<span class="{{ ui.missing }}">ยังไม่ได้กรอก</span>{% endif %}</td>
+      <td><div class="flex flex-wrap gap-1">{% for key in r.fields %}{% call ui.badge('info') %}{{ (groups[key] | tr).split(' (')[0] if key in groups else key }}{% endcall %}{% endfor %}{% if not r.fields %}<span class="{{ ui.muted }}">เฉพาะช่องพื้นฐาน</span>{% endif %}</div></td>
+      <td>{% if r.hidden %}{% call ui.badge() %}ซ่อนอยู่{% endcall %}{% else %}{% call ui.badge('ok') %}แสดง{% endcall %}{% endif %}</td>
+      <td class="{{ ui.actions }}"><div class="{{ ui.actions_inner }}">
         {% if trash %}
-          <form method="post" action="/kinds/{{ r.id }}/restore" class="inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>กู้คืน</button></form>
+          {{ ui.act("/kinds/" ~ r.id ~ "/restore", "กู้คืน") }}
         {% else %}
-          <form method="post" action="/kinds/{{ r.id }}/move" class="inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf }}">
-            <button name="direction" value="up" aria-label="ขยับขึ้น">↑</button>
-            <button name="direction" value="down" aria-label="ขยับลง">↓</button></form>
-          <a class="btn" href="/kinds/{{ r.id }}/edit">แก้ไข</a>
-          <form method="post" action="/kinds/{{ r.id }}/hide" class="inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf }}">
-            <button>{% if r.hidden %}แสดง{% else %}ซ่อน{% endif %}</button></form>
-          <form method="post" action="/kinds/{{ r.id }}/trash" class="inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>ลบ</button></form>
+          {{ ui.move("/kinds/" ~ r.id ~ "/move") }}
+          {{ ui.edit("/kinds/" ~ r.id ~ "/edit") }}
+          {{ ui.act("/kinds/" ~ r.id ~ "/hide", "แสดง" if r.hidden else "ซ่อน") }}
+          {{ ui.act("/kinds/" ~ r.id ~ "/trash", "ลบ", "danger") }}
         {% endif %}
-      </td>
+      </div></td>
     </tr>
   {% endfor %}
-  </tbody>
-</table>
+    </tbody>
+  </table>
+</div>
 {% else %}
-<p class="empty">{% if trash %}ถังขยะว่างอยู่{% else %}ยังไม่มีชนิด กด "เพิ่มชนิด" เพื่อเริ่มต้น (เช่น ผลงาน ใบเซอร์ รางวัล คอร์ส กิจกรรม){% endif %}</p>
+<p class="{{ ui.empty }}">{% if trash %}ถังขยะว่างอยู่{% else %}ยังไม่มีชนิด กด "เพิ่มชนิด" เพื่อเริ่มต้น (เช่น ผลงาน ใบเซอร์ รางวัล คอร์ส กิจกรรม){% endif %}</p>
 {% endif %}
 {% endblock %}

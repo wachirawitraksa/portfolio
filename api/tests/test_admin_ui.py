@@ -130,9 +130,9 @@ async def test_the_counts_follow_the_content(authed):
     await add_work(authed, hidden="on")
     await add_article(authed)
     page = await home(authed)
-    assert re.search(r'<div class="num">1</div>\s*<div class="label">ผลงานที่เผยแพร่</div>\s*<div class="sub">ร่าง 1 · ถูกซ่อน 1</div>', page)
-    assert re.search(r'<div class="num">1</div>\s*<div class="label">ประวัติการทำงาน</div>\s*<div class="sub">ถูกซ่อน 1</div>', page)
-    assert re.search(r'<div class="num">1</div>\s*<div class="label">บทความที่เผยแพร่</div>', page)
+    assert re.search(r'<div class="num[^"]*">1</div>\s*<div class="label[^"]*">ผลงานที่เผยแพร่</div>\s*<div class="sub[^"]*">ร่าง 1 · ถูกซ่อน 1</div>', page)
+    assert re.search(r'<div class="num[^"]*">1</div>\s*<div class="label[^"]*">ประวัติการทำงาน</div>\s*<div class="sub[^"]*">ถูกซ่อน 1</div>', page)
+    assert re.search(r'<div class="num[^"]*">1</div>\s*<div class="label[^"]*">บทความที่เผยแพร่</div>', page)
     assert "มีผลงานฉบับร่าง 1 ชิ้น" in page
 
 
@@ -167,14 +167,14 @@ async def test_each_thing_that_needs_attention_is_listed_with_a_link(authed, set
     page = await home(authed)
     assert expected in page
     item = page.split(expected)[1].split("</li>")[0]
-    assert re.search(r'<a class="btn" href="/[^"]*">', item)  # each item says where to go
+    assert re.search(r'<a class="[^"]*" href="/[^"]*">', item)  # each item says where to go
 
 
 async def test_a_broken_storage_is_the_first_thing_shown(authed):
     app.dependency_overrides[__import__("app.storage", fromlist=["get_storage"]).get_storage] = lambda: Broken()
     page = await home(authed)
     assert "ที่เก็บไฟล์ไม่ตอบสนอง" in page and "ที่เก็บไฟล์ ไม่ตอบสนอง" in page
-    first = re.search(r'<li>(.*?)</li>', page.split("<main")[1], re.S).group(1)
+    first = re.search(r'<li(?: [^>]*)?>(.*?)</li>', page.split("<main")[1], re.S).group(1)
     assert "ควรทำ" in first and "ที่เก็บไฟล์ไม่ตอบสนอง" in first
     assert "ฐานข้อมูล ปกติ" in page  # the page still opens
 
@@ -188,9 +188,9 @@ async def test_a_long_to_do_list_is_folded(authed):
     await post(authed, "/admin/projects/3/trash")
     page = await home(authed)
     content = page.split("<main")[1]  # the menus are lists too
-    shown = content.split('<details class="todo-more">')[0]
-    assert shown.count("<li>") == 6 and "ดูอีก" in page
-    assert content.count("<li>") >= 8  # the folded ones are still in the page, behind the summary
+    shown = content.split('<details class="todo-more')[0]
+    assert len(re.findall(r"<li[ >]", shown)) == 6 and "ดูอีก" in page
+    assert len(re.findall(r"<li[ >]", content)) >= 8  # the folded ones are still in the page, behind the summary
 
 
 async def test_the_rebuild_shortcut_appears_only_when_the_index_is_stale(authed):
@@ -216,8 +216,10 @@ async def test_list_pages_use_the_toolbar_and_status_badges(authed):
     await add_project(authed, title_en="Published one")
     await add_project(authed, title_en="Draft one", status="draft")
     page = (await authed.get("/admin/projects")).text
-    assert '<div class="toolbar">' in page and 'class="btn primary" href="/projects/new"' in page
-    assert '<span class="badge ok">เผยแพร่</span>' in page and '<span class="badge warn">ร่าง</span>' in page
+    assert '/projects?trash=true' in page  # the toolbar links to the trash
+    assert re.search(r'<a class="[^"]*btn-primary[^"]*" href="/projects/new"', page)  # the main action is marked
+    assert re.search(r'<span class="[^"]*bg-success[^"]*">เผยแพร่</span>', page)  # published is green
+    assert re.search(r'<span class="[^"]*bg-warning[^"]*">ร่าง</span>', page)  # a draft is amber
     trash = (await authed.get("/admin/projects?trash=true")).text
     assert "← กลับไปรายการ" in trash and "+ เพิ่มรายการ" not in trash
 
@@ -227,7 +229,8 @@ async def test_dangerous_buttons_are_marked(authed):
     await add_project(authed)
     await post(authed, "/admin/projects/1/trash")
     page = (await authed.get("/admin/trash")).text
-    assert '<button class="danger">ลบถาวร</button>' in page and 'class="danger">ล้างถังขยะทั้งหมด' in page
+    assert re.search(r'<button class="[^"]*btn-error[^"]*">ลบถาวร</button>', page)
+    assert re.search(r'<button class="[^"]*btn-error[^"]*">ล้างถังขยะทั้งหมด', page)
     assert "confirm(" in page  # and each asks first
 
 

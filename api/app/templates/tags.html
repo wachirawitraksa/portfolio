@@ -1,35 +1,33 @@
 {% extends "base.html" %}
+{% import "_ui.html" as ui with context %}
+{% set tw = true %}
 {% block title %}Tag เทคโนโลยี{% endblock %}
 {% block content %}
-<h1>{% if trash %}ถังขยะ: tag เทคโนโลยี{% else %}Tag เทคโนโลยี{% endif %}</h1>
-<div class="toolbar">
-  {% if trash %}<a class="btn" href="/tags">← กลับไปรายการ</a>
-  {% else %}<a class="btn primary" href="/tags/new">+ เพิ่ม tag</a><a class="btn" href="/tags?trash=true">ถังขยะ</a>{% endif %}
-</div>
+{{ ui.list_head("Tag เทคโนโลยี", "ถังขยะ: tag เทคโนโลยี", "/tags", "/tags/new", "เพิ่ม tag") }}
 {% if rows %}
-<table>
-  <thead><tr><th>ชื่อ</th><th>ชื่อย่อ / ชื่อเรียกอื่น</th><th>กลุ่มทักษะ</th><th></th></tr></thead>
-  <tbody>
+<div class="{{ ui.table_box }}">
+  <table class="{{ ui.table }}">
+    <thead><tr><th>ชื่อ</th><th>ชื่อย่อ / ชื่อเรียกอื่น</th><th>กลุ่มทักษะ</th><th></th></tr></thead>
+    <tbody>
   {% for r in rows %}
     <tr>
       <td>{{ r.name }}</td>
       <td>{{ r.aliases | join(", ") }}</td>
       <td>{{ r.group_th or r.group_en }}</td>
-      <td class="row-actions">
+      <td class="{{ ui.actions }}"><div class="{{ ui.actions_inner }}">
         {% if trash %}
-          <form method="post" action="/tags/{{ r.id }}/restore" class="inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>กู้คืน</button></form>
+          {{ ui.act("/tags/" ~ r.id ~ "/restore", "กู้คืน") }}
         {% else %}
-          <a class="btn" href="/tags/{{ r.id }}/edit">แก้ไข</a>
-          <form method="post" action="/tags/{{ r.id }}/trash" class="inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>ลบ</button></form>
+          {{ ui.edit("/tags/" ~ r.id ~ "/edit") }}
+          {{ ui.act("/tags/" ~ r.id ~ "/trash", "ลบ", "danger") }}
         {% endif %}
-      </td>
+      </div></td>
     </tr>
   {% endfor %}
-  </tbody>
-</table>
+    </tbody>
+  </table>
+</div>
 {% else %}
-<p class="empty">{% if trash %}ถังขยะว่างอยู่{% else %}ยังไม่มี tag กด "เพิ่ม tag" เพื่อเริ่มต้น{% endif %}</p>
+<p class="{{ ui.empty }}">{% if trash %}ถังขยะว่างอยู่{% else %}ยังไม่มี tag กด "เพิ่ม tag" เพื่อเริ่มต้น{% endif %}</p>
 {% endif %}
 {% endblock %}

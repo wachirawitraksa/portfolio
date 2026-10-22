@@ -50,10 +50,32 @@
 {# --- small pieces ----------------------------------------------------------------------------------------- #}
 {# A status pill. kind: ok, warn, bad, info, or empty for a plain one. #}
 {% macro badge(kind="") -%}
-<span class="{% if kind == 'ok' %}d-badge d-badge-sm d-badge-soft d-badge-success{% elif kind == 'warn' %}d-badge d-badge-sm d-badge-soft d-badge-warning{% elif kind == 'bad' %}d-badge d-badge-sm d-badge-soft d-badge-error{% elif kind == 'info' %}d-badge d-badge-sm d-badge-soft d-badge-info{% else %}d-badge d-badge-sm d-badge-ghost border-base-300{% endif %} whitespace-nowrap">{{ caller() }}</span>
+<span class="d-badge d-badge-sm whitespace-nowrap {% if kind == 'ok' %}border-0 bg-success/15 text-success{% elif kind == 'warn' %}border-0 bg-warning/15 text-warning{% elif kind == 'bad' %}border-0 bg-error/15 text-error{% elif kind == 'info' %}border-0 bg-info/15 text-info{% else %}border-base-300 bg-transparent text-base-content/70{% endif %}">{{ caller() }}</span>
 {%- endmacro %}
 
 {# A message box. kind: error (role alert), ok (role status), warn (role status). Use with {% call ui.alert("error") %}text{% endcall %}. #}
 {% macro alert(kind="ok") -%}
 <div class="{% if kind == 'error' %}d-alert d-alert-soft d-alert-error{% elif kind == 'warn' %}d-alert d-alert-soft d-alert-warning{% else %}d-alert d-alert-soft d-alert-success{% endif %} my-3 py-2.5" role="{% if kind == 'error' %}alert{% else %}status{% endif %}">{{ caller() }}</div>
 {%- endmacro %}
+
+{# --- list pages (projects, articles, work, ...): header, toolbar and the buttons in each row ---------------------
+   Import with context (`{% import "_ui.html" as ui with context %}`) so these can read `csrf` and `trash`. #}
+{% macro list_head(title, trash_title, base, new_href, new_label) -%}
+<h1 class="{{ h1 }} mb-3.5">{% if trash %}{{ trash_title }}{% else %}{{ title }}{% endif %}</h1>
+<div class="{{ toolbar }}">
+  {% if trash %}<a class="{{ btn }}" href="{{ base }}">← กลับไปรายการ</a>
+  {% else %}<a class="{{ btn_primary }}" href="{{ new_href }}">+ {{ new_label }}</a><a class="{{ btn }}" href="{{ base }}?trash=true">ถังขยะ</a>{% endif %}
+</div>
+{%- endmacro %}
+
+{# One button in its own small POST form. kind: danger, primary, or empty. #}
+{% macro act(action, label, kind="") -%}
+<form method="post" action="{{ action }}" class="inline"><input type="hidden" name="csrf_token" value="{{ csrf }}"><button class="{% if kind == 'danger' %}{{ btn_sm_danger }}{% elif kind == 'primary' %}{{ btn_sm_primary }}{% else %}{{ btn_sm }}{% endif %}">{{ label }}</button></form>
+{%- endmacro %}
+
+{# The up and down arrows that reorder a row. #}
+{% macro move(action) -%}
+<form method="post" action="{{ action }}" class="inline"><input type="hidden" name="csrf_token" value="{{ csrf }}"><button class="{{ btn_sm }}" name="direction" value="up" aria-label="ขยับขึ้น">↑</button> <button class="{{ btn_sm }}" name="direction" value="down" aria-label="ขยับลง">↓</button></form>
+{%- endmacro %}
+
+{% macro edit(href) -%}<a class="{{ btn_sm }}" href="{{ href }}">แก้ไข</a>{%- endmacro %}

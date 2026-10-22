@@ -1,48 +1,41 @@
 {% extends "base.html" %}
+{% import "_ui.html" as ui with context %}
+{% set tw = true %}
 {% block title %}ผลงาน{% endblock %}
 {% block content %}
-<h1>{% if trash %}ถังขยะ: รายการ{% else %}รายการทั้งหมด{% endif %}</h1>
-<div class="toolbar">
-  {% if trash %}<a class="btn" href="/projects">← กลับไปรายการ</a>
-  {% else %}<a class="btn primary" href="/projects/new">+ เพิ่มรายการ</a><a class="btn" href="/projects?trash=true">ถังขยะ</a>{% endif %}
-</div>
+{{ ui.list_head("รายการทั้งหมด", "ถังขยะ: รายการ", "/projects", "/projects/new", "เพิ่มรายการ") }}
 {% if rows %}
-<table>
-  <thead><tr><th>ชื่อ</th><th>ชนิด</th><th>ปี</th><th>ประเภท</th><th>สถานะ</th><th></th></tr></thead>
-  <tbody>
+<div class="{{ ui.table_box }}">
+  <table class="{{ ui.table }}">
+    <thead><tr><th>ชื่อ</th><th>ชนิด</th><th>ปี</th><th>ประเภท</th><th>สถานะ</th><th></th></tr></thead>
+    <tbody>
   {% for r in rows %}
     <tr>
       <td>
         {{ r.title_th or r.title_en }}
-        {% if r.title_th and r.title_en %}<div class="muted">{{ r.title_en }}</div>{% endif %}
-        {% if untranslated[r.id] %}<div class="missing">ยังไม่ได้แปล {{ untranslated[r.id] | length }} ช่อง</div>{% endif %}
+        {% if r.title_th and r.title_en %}<div class="{{ ui.muted }}">{{ r.title_en }}</div>{% endif %}
+        {% if untranslated[r.id] %}<div class="{{ ui.missing }}">ยังไม่ได้แปล {{ untranslated[r.id] | length }} ช่อง</div>{% endif %}
       </td>
       <td>{% if r.kind %}{{ r.kind.name_th or r.kind.name_en }}{% endif %}</td>
       <td>{{ r.year or '' }}</td>
       <td>{% for c in r.categories %}{{ c.name_th or c.name_en }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
-      <td><span class="badge {{ {'published': 'ok', 'draft': 'warn', 'hidden': ''}[r.status] }}">{{ status_labels[r.status] | tr }}</span>{% if r.featured %} <span class="badge info">หน้าแรก</span>{% endif %}</td>
-      <td class="row-actions">
+      <td class="whitespace-nowrap">{% call ui.badge({'published': 'ok', 'draft': 'warn', 'hidden': ''}[r.status]) %}{{ status_labels[r.status] | tr }}{% endcall %}{% if r.featured %} {% call ui.badge('info') %}หน้าแรก{% endcall %}{% endif %}</td>
+      <td class="{{ ui.actions }}"><div class="{{ ui.actions_inner }}">
         {% if trash %}
-          <form method="post" action="/projects/{{ r.id }}/restore" class="inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>กู้คืน</button></form>
+          {{ ui.act("/projects/" ~ r.id ~ "/restore", "กู้คืน") }}
         {% else %}
-          <form method="post" action="/projects/{{ r.id }}/move" class="inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf }}">
-            <button name="direction" value="up" aria-label="ขยับขึ้น">↑</button>
-            <button name="direction" value="down" aria-label="ขยับลง">↓</button></form>
-          <a class="btn" href="/projects/{{ r.id }}/edit">แก้ไข</a>
-          <form method="post" action="/projects/{{ r.id }}/feature" class="inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf }}">
-            <button>{% if r.featured %}เอาออกจากหน้าแรก{% else %}ขึ้นหน้าแรก{% endif %}</button></form>
-          <form method="post" action="/projects/{{ r.id }}/trash" class="inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>ลบ</button></form>
+          {{ ui.move("/projects/" ~ r.id ~ "/move") }}
+          {{ ui.edit("/projects/" ~ r.id ~ "/edit") }}
+          {{ ui.act("/projects/" ~ r.id ~ "/feature", "เอาออกจากหน้าแรก" if r.featured else "ขึ้นหน้าแรก") }}
+          {{ ui.act("/projects/" ~ r.id ~ "/trash", "ลบ", "danger") }}
         {% endif %}
-      </td>
+      </div></td>
     </tr>
   {% endfor %}
-  </tbody>
-</table>
+    </tbody>
+  </table>
+</div>
 {% else %}
-<p class="empty">{% if trash %}ถังขยะว่างอยู่{% else %}ยังไม่มีรายการ กด "เพิ่มรายการ" เพื่อเริ่มต้น{% endif %}</p>
+<p class="{{ ui.empty }}">{% if trash %}ถังขยะว่างอยู่{% else %}ยังไม่มีรายการ กด "เพิ่มรายการ" เพื่อเริ่มต้น{% endif %}</p>
 {% endif %}
 {% endblock %}

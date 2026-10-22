@@ -1,44 +1,40 @@
 {% extends "base.html" %}
+{% import "_ui.html" as ui with context %}
+{% set tw = true %}
 {% block title %}ประวัติการศึกษา{% endblock %}
 {% block content %}
-<h1>{% if trash %}ถังขยะ: ประวัติการศึกษา{% else %}ประวัติการศึกษา{% endif %}</h1>
-<div class="toolbar">
-  {% if trash %}<a class="btn" href="/education">← กลับไปรายการ</a>
-  {% else %}<a class="btn primary" href="/education/new">+ เพิ่มประวัติการศึกษา</a><a class="btn" href="/education?trash=true">ถังขยะ</a>{% endif %}
-</div>
+{{ ui.list_head("ประวัติการศึกษา", "ถังขยะ: ประวัติการศึกษา", "/education", "/education/new", "เพิ่มประวัติการศึกษา") }}
 {% if rows %}
-<table>
-  <thead><tr><th>สถาบัน / สาขา</th><th>ระดับ</th><th>ช่วงเวลา</th><th>สถานะ</th><th></th></tr></thead>
-  <tbody>
+<div class="{{ ui.table_box }}">
+  <table class="{{ ui.table }}">
+    <thead><tr><th>สถาบัน / สาขา</th><th>ระดับ</th><th>ช่วงเวลา</th><th>สถานะ</th><th></th></tr></thead>
+    <tbody>
   {% for r in rows %}
     <tr>
       <td>
         {{ r.institution_th or r.institution_en }}
-        {% if r.institution_th and r.institution_en %}<div class="muted">{{ r.institution_en }}</div>{% endif %}
-        {% if r.field_th or r.field_en %}<div class="muted">{{ r.field_th or r.field_en }}</div>{% endif %}
-        {% if untranslated[r.id] %}<div class="missing">ยังไม่ได้แปล {{ untranslated[r.id] | length }} ช่อง</div>{% endif %}
+        {% if r.institution_th and r.institution_en %}<div class="{{ ui.muted }}">{{ r.institution_en }}</div>{% endif %}
+        {% if r.field_th or r.field_en %}<div class="{{ ui.muted }}">{{ r.field_th or r.field_en }}</div>{% endif %}
+        {% if untranslated[r.id] %}<div class="{{ ui.missing }}">ยังไม่ได้แปล {{ untranslated[r.id] | length }} ช่อง</div>{% endif %}
       </td>
       <td>{{ level_labels[r.level] | tr }}</td>
-      <td>{{ periods[r.id] | tr }}</td>
-      <td>{% if r.hidden %}<span class="badge">ถูกซ่อน</span>{% else %}<span class="badge ok">แสดง</span>{% endif %}</td>
-      <td class="row-actions">
+      <td class="whitespace-nowrap">{{ periods[r.id] | tr }}</td>
+      <td>{% if r.hidden %}{% call ui.badge() %}ถูกซ่อน{% endcall %}{% else %}{% call ui.badge('ok') %}แสดง{% endcall %}{% endif %}</td>
+      <td class="{{ ui.actions }}"><div class="{{ ui.actions_inner }}">
         {% if trash %}
-          <form method="post" action="/education/{{ r.id }}/restore" class="inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>กู้คืน</button></form>
+          {{ ui.act("/education/" ~ r.id ~ "/restore", "กู้คืน") }}
         {% else %}
-          <a class="btn" href="/education/{{ r.id }}/edit">แก้ไข</a>
-          <form method="post" action="/education/{{ r.id }}/hide" class="inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf }}">
-            <button>{% if r.hidden %}แสดง{% else %}ซ่อน{% endif %}</button></form>
-          <form method="post" action="/education/{{ r.id }}/trash" class="inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>ลบ</button></form>
+          {{ ui.edit("/education/" ~ r.id ~ "/edit") }}
+          {{ ui.act("/education/" ~ r.id ~ "/hide", "แสดง" if r.hidden else "ซ่อน") }}
+          {{ ui.act("/education/" ~ r.id ~ "/trash", "ลบ", "danger") }}
         {% endif %}
-      </td>
+      </div></td>
     </tr>
   {% endfor %}
-  </tbody>
-</table>
+    </tbody>
+  </table>
+</div>
 {% else %}
-<p class="empty">{% if trash %}ถังขยะว่างอยู่{% else %}ยังไม่มีประวัติการศึกษา กด "เพิ่มประวัติการศึกษา" เพื่อเริ่มต้น{% endif %}</p>
+<p class="{{ ui.empty }}">{% if trash %}ถังขยะว่างอยู่{% else %}ยังไม่มีประวัติการศึกษา กด "เพิ่มประวัติการศึกษา" เพื่อเริ่มต้น{% endif %}</p>
 {% endif %}
 {% endblock %}

@@ -1,42 +1,35 @@
 {% extends "base.html" %}
+{% import "_ui.html" as ui with context %}
+{% set tw = true %}
 {% block title %}ประเภทผลงาน{% endblock %}
 {% block content %}
-<h1>{% if trash %}ถังขยะ: ประเภทผลงาน{% else %}ประเภทผลงาน{% endif %}</h1>
-<div class="toolbar">
-  {% if trash %}<a class="btn" href="/categories">← กลับไปรายการ</a>
-  {% else %}<a class="btn primary" href="/categories/new">+ เพิ่มประเภท</a><a class="btn" href="/categories?trash=true">ถังขยะ</a>{% endif %}
-</div>
+{{ ui.list_head("ประเภทผลงาน", "ถังขยะ: ประเภทผลงาน", "/categories", "/categories/new", "เพิ่มประเภท") }}
 {% if rows %}
-<table>
-  <thead><tr><th>ชื่อไทย</th><th>ชื่ออังกฤษ</th><th>สถานะ</th><th></th></tr></thead>
-  <tbody>
+<div class="{{ ui.table_box }}">
+  <table class="{{ ui.table }}">
+    <thead><tr><th>ชื่อไทย</th><th>ชื่ออังกฤษ</th><th>สถานะ</th><th></th></tr></thead>
+    <tbody>
   {% for r in rows %}
     <tr>
-      <td>{{ r.name_th or '' }}{% if not r.name_th %}<span class="missing">ยังไม่ได้กรอก</span>{% endif %}</td>
-      <td>{{ r.name_en or '' }}{% if not r.name_en %}<span class="missing">ยังไม่ได้กรอก</span>{% endif %}</td>
-      <td>{% if r.hidden %}<span class="badge">ซ่อนอยู่</span>{% else %}<span class="badge ok">แสดง</span>{% endif %}</td>
-      <td class="row-actions">
+      <td>{{ r.name_th or '' }}{% if not r.name_th %}<span class="{{ ui.missing }}">ยังไม่ได้กรอก</span>{% endif %}</td>
+      <td>{{ r.name_en or '' }}{% if not r.name_en %}<span class="{{ ui.missing }}">ยังไม่ได้กรอก</span>{% endif %}</td>
+      <td>{% if r.hidden %}{% call ui.badge() %}ซ่อนอยู่{% endcall %}{% else %}{% call ui.badge('ok') %}แสดง{% endcall %}{% endif %}</td>
+      <td class="{{ ui.actions }}"><div class="{{ ui.actions_inner }}">
         {% if trash %}
-          <form method="post" action="/categories/{{ r.id }}/restore" class="inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>กู้คืน</button></form>
+          {{ ui.act("/categories/" ~ r.id ~ "/restore", "กู้คืน") }}
         {% else %}
-          <form method="post" action="/categories/{{ r.id }}/move" class="inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf }}">
-            <button name="direction" value="up" aria-label="ขยับขึ้น">↑</button>
-            <button name="direction" value="down" aria-label="ขยับลง">↓</button></form>
-          <a class="btn" href="/categories/{{ r.id }}/edit">แก้ไข</a>
-          <form method="post" action="/categories/{{ r.id }}/hide" class="inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf }}">
-            <button>{% if r.hidden %}แสดง{% else %}ซ่อน{% endif %}</button></form>
-          <form method="post" action="/categories/{{ r.id }}/trash" class="inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>ลบ</button></form>
+          {{ ui.move("/categories/" ~ r.id ~ "/move") }}
+          {{ ui.edit("/categories/" ~ r.id ~ "/edit") }}
+          {{ ui.act("/categories/" ~ r.id ~ "/hide", "แสดง" if r.hidden else "ซ่อน") }}
+          {{ ui.act("/categories/" ~ r.id ~ "/trash", "ลบ", "danger") }}
         {% endif %}
-      </td>
+      </div></td>
     </tr>
   {% endfor %}
-  </tbody>
-</table>
+    </tbody>
+  </table>
+</div>
 {% else %}
-<p class="empty">{% if trash %}ถังขยะว่างอยู่{% else %}ยังไม่มีประเภทผลงาน กด "เพิ่มประเภท" เพื่อเริ่มต้น{% endif %}</p>
+<p class="{{ ui.empty }}">{% if trash %}ถังขยะว่างอยู่{% else %}ยังไม่มีประเภทผลงาน กด "เพิ่มประเภท" เพื่อเริ่มต้น{% endif %}</p>
 {% endif %}
 {% endblock %}

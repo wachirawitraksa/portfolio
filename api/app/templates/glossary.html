@@ -1,35 +1,33 @@
 {% extends "base.html" %}
+{% import "_ui.html" as ui with context %}
+{% set tw = true %}
 {% block title %}glossary{% endblock %}
 {% block content %}
-<h1>{% if trash %}ถังขยะ: glossary{% else %}glossary (คำที่มีความหมายเดียวกัน){% endif %}</h1>
-<p class="muted">ช่วยให้ช่องถามตอบหาเจอแม้ผู้ถามใช้คำคนละคำ เช่น สต็อก = stock = inventory · tag เทคโนโลยีและชื่อเรียกอื่นของผลงานเป็น glossary ให้อัตโนมัติอยู่แล้ว</p>
-<div class="toolbar">
-  {% if trash %}<a class="btn" href="/glossary">← กลับไปรายการ</a>
-  {% else %}<a class="btn primary" href="/glossary/new">+ เพิ่มกลุ่มคำ</a><a class="btn" href="/glossary?trash=true">ถังขยะ</a>{% endif %}
-</div>
+{{ ui.list_head("glossary (คำที่มีความหมายเดียวกัน)", "ถังขยะ: glossary", "/glossary", "/glossary/new", "เพิ่มกลุ่มคำ") }}
+<p class="{{ ui.muted }} mb-4">ช่วยให้ช่องถามตอบหาเจอแม้ผู้ถามใช้คำคนละคำ เช่น สต็อก = stock = inventory · tag เทคโนโลยีและชื่อเรียกอื่นของผลงานเป็น glossary ให้อัตโนมัติอยู่แล้ว</p>
 {% if rows %}
-<table>
-  <thead><tr><th>คำที่เท่ากัน</th><th>หมายเหตุ</th><th></th></tr></thead>
-  <tbody>
+<div class="{{ ui.table_box }}">
+  <table class="{{ ui.table }}">
+    <thead><tr><th>คำที่เท่ากัน</th><th>หมายเหตุ</th><th></th></tr></thead>
+    <tbody>
   {% for r in rows %}
     <tr>
       <td>{{ r.terms | join(" = ") }}</td>
-      <td class="muted">{{ r.note }}</td>
-      <td class="row-actions">
+      <td class="{{ ui.muted }}">{{ r.note }}</td>
+      <td class="{{ ui.actions }}"><div class="{{ ui.actions_inner }}">
         {% if trash %}
-          <form method="post" action="/glossary/{{ r.id }}/restore" class="inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>กู้คืน</button></form>
+          {{ ui.act("/glossary/" ~ r.id ~ "/restore", "กู้คืน") }}
         {% else %}
-          <a class="btn" href="/glossary/{{ r.id }}/edit">แก้ไข</a>
-          <form method="post" action="/glossary/{{ r.id }}/trash" class="inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf }}"><button>ลบ</button></form>
+          {{ ui.edit("/glossary/" ~ r.id ~ "/edit") }}
+          {{ ui.act("/glossary/" ~ r.id ~ "/trash", "ลบ", "danger") }}
         {% endif %}
-      </td>
+      </div></td>
     </tr>
   {% endfor %}
-  </tbody>
-</table>
+    </tbody>
+  </table>
+</div>
 {% else %}
-<p class="empty">{% if trash %}ถังขยะว่างอยู่{% else %}ยังไม่มีกลุ่มคำ{% endif %}</p>
+<p class="{{ ui.empty }}">{% if trash %}ถังขยะว่างอยู่{% else %}ยังไม่มีกลุ่มคำ{% endif %}</p>
 {% endif %}
 {% endblock %}

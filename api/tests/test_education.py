@@ -129,7 +129,7 @@ async def test_the_menu_dashboard_and_trash_know_about_education(authed):
     page = (await authed.get("/admin/education")).text
     assert re.search(r'<a href="/education"[^>]*aria-current="page"', page)
     home = (await authed.get("/admin/")).text
-    assert re.search(r'<div class="num">1</div>\s*<div class="label">ประวัติการศึกษา</div>', home)
+    assert re.search(r'<div class="num[^"]*">1</div>\s*<div class="label[^"]*">ประวัติการศึกษา</div>', home)
     assert "ประวัติการศึกษาที่ยังแปลไม่ครบสองภาษา 1 รายการ" in home
     await post(authed, "/admin/education/1/trash")
     trash = (await authed.get("/admin/trash")).text
