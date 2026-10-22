@@ -1,9 +1,11 @@
-/* Source of the admin stylesheet. Built by scripts/build_css.sh (or .ps1) into app/static/admin.tw.css.
+/* Source of the admin stylesheet. Built by scripts/build_css.sh (or .ps1) into app/static/admin.css.
 
    Tailwind CSS + daisyUI. The two themes are named "light" and "dark" on purpose: the server already writes
    <html data-theme="light|dark"> from a cookie, and with no choice made the system setting decides, so none of
    that logic changes. Colours follow the public site (VS Code Dark+ / Light+). */
 @import "tailwindcss";
+/* TEMPORARY: the old stylesheet for templates not yet converted. Removed with the last conversion. */
+@import "./legacy.css" layer(components);
 
 /* Every class the admin uses is found here. Class names must be written out whole in the templates
    (no "btn-" ~ name): Tailwind cannot see names that are put together at run time. */
@@ -11,8 +13,11 @@
 @source "../app/static/admin.js";
 
 /* Only the daisyUI components the admin uses, which keeps the file small. Add a name here when a template needs another. */
+/* daisyUI classes carry a "d-" prefix (d-btn, d-card, ...) while the old stylesheet is still around, because
+   both define .btn, .card and .badge. */
 @plugin "../tools/daisyui.mjs" {
   themes: false;
+  prefix: "d-";
   include: button, card, badge, input, select, textarea, checkbox, radio, toggle, label, fieldset, table, alert,
     menu, dropdown, collapse, stat, join, divider, tab, tooltip, link, loading, list, status, kbd, validator, filter;
 }
@@ -100,6 +105,21 @@
 @font-face { font-family: "JetBrains Mono"; font-weight: 400; font-display: swap; src: url("/static/fonts/jetbrains-mono-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 @font-face { font-family: "JetBrains Mono"; font-weight: 500; font-display: swap; src: url("/static/fonts/jetbrains-mono-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 @font-face { font-family: "JetBrains Mono"; font-weight: 700; font-display: swap; src: url("/static/fonts/jetbrains-mono-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
+/* dark: the dark theme, chosen by the cookie (data-theme="dark") or, with no choice made, by the system. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme]), :root:not([data-theme]) *) {
+      @slot;
+    }
+  }
+}
+/* collapsed: the sidebar is narrowed to icons (a cookie-backed class on <body>). menu-open: the phone drawer is open. */
+@custom-variant collapsed (:where(.sidebar-collapsed) &);
+@custom-variant menu-open (:where(.menu-open) &);
 
 @theme {
   --font-sans: "Poppins", "IBM Plex Sans Thai", system-ui, sans-serif;

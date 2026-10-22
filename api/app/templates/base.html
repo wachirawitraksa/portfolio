@@ -16,74 +16,79 @@
   <script src="/static/htmx.min.js" defer></script>
   <script src="/static/admin.js" defer></script>
 </head>
-<body hx-boost="true" class="{% if not with_nav %}bare{% elif ui_sidebar(request) == 'collapsed' %}sidebar-collapsed{% endif %}">
+{#- Classes named sidebar-collapsed, menu-open, sidebar, menu, menu-pop and scrim are hooks: admin.js and the
+    collapsed: / menu-open: variants in css/input.css look for them. The rest is Tailwind and daisyUI. -#}
+<body hx-boost="true" class="min-h-dvh bg-base-100 text-base-content antialiased {% if not with_nav %}bare grid place-items-start justify-center px-4 pt-[12vh] pb-10{% elif ui_sidebar(request) == 'collapsed' %}sidebar-collapsed{% endif %}">
 {# Language and theme switches, drawn twice: in the header when there is a menu, floating on the login page. #}
 {% macro switches() %}
-  <div class="lang" role="group" aria-label="ภาษา">
-    <a href="/lang/th?next={{ (here ~ ('?' ~ request.url.query if request.url.query else '')) | urlencode }}" hx-boost="false"{% if lang == 'th' %} aria-current="true"{% endif %}>&#3652;&#3607;&#3618;</a>
-    <a href="/lang/en?next={{ (here ~ ('?' ~ request.url.query if request.url.query else '')) | urlencode }}" hx-boost="false"{% if lang == 'en' %} aria-current="true"{% endif %}>EN</a>
+  <div class="d-join" role="group" aria-label="ภาษา">
+    <a href="/lang/th?next={{ (here ~ ('?' ~ request.url.query if request.url.query else '')) | urlencode }}" class="d-btn d-btn-sm d-join-item {% if lang == 'th' %}d-btn-primary{% else %}d-btn-ghost border-base-300{% endif %}" hx-boost="false"{% if lang == 'th' %} aria-current="true"{% endif %}>&#3652;&#3607;&#3618;</a>
+    <a href="/lang/en?next={{ (here ~ ('?' ~ request.url.query if request.url.query else '')) | urlencode }}" class="d-btn d-btn-sm d-join-item {% if lang == 'en' %}d-btn-primary{% else %}d-btn-ghost border-base-300{% endif %}" hx-boost="false"{% if lang == 'en' %} aria-current="true"{% endif %}>EN</a>
   </div>
-  <button type="button" class="icon-btn" data-theme-toggle aria-label="สลับธีมสว่าง/มืด" title="สลับธีมสว่าง/มืด">
-    <span class="i-moon">{{ icon("moon") }}</span><span class="i-sun">{{ icon("sun") }}</span>
+  <button type="button" class="d-btn d-btn-sm d-btn-square d-btn-ghost border-base-300" data-theme-toggle aria-label="สลับธีมสว่าง/มืด" title="สลับธีมสว่าง/มืด">
+    <span class="i-moon dark:hidden">{{ icon("moon") }}</span><span class="i-sun hidden dark:inline">{{ icon("sun") }}</span>
   </button>
 {% endmacro %}
 {% if with_nav %}
 {% set crumb = nav_current(here) %}
-<div class="shell">
-  <aside class="sidebar" aria-label="เมนูหลังบ้าน">
-    <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">P</span><span class="label">หลังบ้าน</span></a>
-    <div class="quick-row">
-      <details class="menu quick">
-        <summary class="btn create-btn">{{ icon("plus") }}<span class="create-label">สร้างใหม่</span></summary>
-        <div class="menu-pop">
-          {% for label, href in QUICK_CREATE %}<a href="{{ href }}">{{ icon("plus", 16) }}{{ label | tr }}</a>{% endfor %}
-        </div>
+<div class="shell grid nav:h-dvh nav:grid-cols-[264px_minmax(0,1fr)] nav:collapsed:grid-cols-[76px_minmax(0,1fr)] nav:transition-[grid-template-columns] nav:duration-200">
+  <aside class="sidebar flex h-dvh flex-col border-r border-base-300 bg-base-200 px-3.5 pt-1.5 pb-3.5 collapsed:nav:px-2.5 max-nav:fixed max-nav:inset-y-0 max-nav:left-0 max-nav:z-40 max-nav:w-72 max-nav:max-w-[88vw] max-nav:-translate-x-[102%] max-nav:shadow-2xl max-nav:transition-transform max-nav:duration-200 menu-open:max-nav:translate-x-0" aria-label="เมนูหลังบ้าน">
+    <a class="brand flex items-center gap-2.5 px-2.5 pt-2.5 pb-3.5 text-[17px] font-bold whitespace-nowrap text-base-content no-underline collapsed:nav:justify-center collapsed:nav:px-0" href="/">
+      <span class="brand-mark grid size-[30px] flex-none place-items-center rounded-full border-[2.5px] border-base-content" aria-hidden="true"><span class="size-2.5 rounded-full bg-primary"></span></span>
+      <span class="label collapsed:nav:hidden">หลังบ้าน</span>
+    </a>
+    <div class="quick-row flex items-stretch gap-2 pb-2.5 collapsed:nav:flex-col">
+      <details class="menu quick d-dropdown min-w-0 flex-1">
+        <summary class="d-btn d-btn-primary w-full justify-start rounded-xl font-semibold collapsed:nav:justify-center collapsed:nav:px-0">{{ icon("plus") }}<span class="create-label collapsed:nav:hidden">สร้างใหม่</span></summary>
+        <ul class="menu-pop d-dropdown-content d-menu z-30 mt-1.5 w-60 rounded-box border border-base-300 bg-base-200 p-1.5 shadow-lg">
+          {% for label, href in QUICK_CREATE %}<li><a href="{{ href }}" class="text-base-content no-underline">{{ icon("plus", 16) }}{{ label | tr }}</a></li>{% endfor %}
+        </ul>
       </details>
-      <a class="mail-btn" href="/rag/questions" title="คำถามจากผู้เข้าชม" aria-label="คำถามจากผู้เข้าชม">{{ icon("inbox") }}</a>
+      <a class="mail-btn d-btn d-btn-square d-btn-ghost w-[42px] flex-none rounded-xl border-base-300 collapsed:nav:w-full" href="/rag/questions" title="คำถามจากผู้เข้าชม" aria-label="คำถามจากผู้เข้าชม">{{ icon("inbox") }}</a>
     </div>
-    <nav>
+    <nav class="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
       {% for group, items in NAV %}
-      <div class="nav-group">
-        {% if group %}<div class="nav-title">{{ group | tr }}</div>{% endif %}
+      <div class="nav-group mt-3.5 first:mt-0 collapsed:nav:mt-1.5 collapsed:nav:border-t collapsed:nav:border-base-300 collapsed:nav:pt-1.5 collapsed:nav:first:border-t-0">
+        {% if group %}<div class="nav-title px-3 pb-1 text-[13px] font-medium whitespace-nowrap text-base-content/60 collapsed:nav:hidden">{{ group | tr }}</div>{% endif %}
         {% for label, href, exact, icon_name in items %}
-        <a href="{{ href }}" title="{{ label | tr }}"{% if nav_active(here, href, exact) %} aria-current="page"{% endif %}>{{ icon(icon_name) }}<span class="nav-label">{{ label | tr }}</span></a>
+        <a href="{{ href }}" title="{{ label | tr }}" class="flex items-center gap-[11px] rounded-[10px] px-3 py-2 text-[14.5px] whitespace-nowrap text-base-content no-underline hover:bg-base-content/5 hover:no-underline collapsed:nav:justify-center collapsed:nav:px-0 collapsed:nav:py-2.5 aria-[current=page]:bg-primary/20 aria-[current=page]:font-semibold aria-[current=page]:text-primary [&_.icon]:opacity-70 aria-[current=page]:[&_.icon]:opacity-100"{% if nav_active(here, href, exact) %} aria-current="page"{% endif %}>{{ icon(icon_name) }}<span class="nav-label collapsed:nav:hidden">{{ label | tr }}</span></a>
         {% endfor %}
       </div>
       {% endfor %}
     </nav>
-    <div class="sidebar-foot">
-      <details class="menu">
-        <summary class="me">
-          <span class="avatar">{{ (email or "A")[0] }}</span>
-          <span class="me-text"><strong>ผู้ดูแลเว็บ</strong><span>{{ email }}</span></span>
-          {{ icon("dots") }}
+    <div class="sidebar-foot relative pt-3.5">
+      <details class="menu d-dropdown d-dropdown-top w-full">
+        <summary class="me flex w-full cursor-pointer list-none items-center gap-2.5 rounded-xl p-2 text-left hover:bg-base-content/5 collapsed:nav:justify-center collapsed:nav:px-0 [&::-webkit-details-marker]:hidden">
+          <span class="avatar grid size-[34px] flex-none place-items-center rounded-full bg-primary/20 font-bold text-primary uppercase">{{ (email or "A")[0] }}</span>
+          <span class="me-text min-w-0 flex-1 leading-tight collapsed:nav:hidden"><strong class="block text-sm">ผู้ดูแลเว็บ</strong><span class="block truncate text-[12.5px] text-base-content/60">{{ email }}</span></span>
+          <span class="collapsed:nav:hidden">{{ icon("dots") }}</span>
         </summary>
-        <div class="menu-pop">
-          <a href="/account">{{ icon("shield", 16) }}บัญชีและความปลอดภัย</a>
-          <a href="/sessions">{{ icon("monitor", 16) }}session ที่ล็อกอินอยู่</a>
-          <div class="sep"></div>
-          <form method="post" action="/logout">
-            <input type="hidden" name="csrf_token" value="{{ csrf }}">
-            <button>{{ icon("logout", 16) }}ออกจากระบบ</button>
-          </form>
-        </div>
+        <ul class="menu-pop d-dropdown-content d-menu z-30 mb-1 w-60 rounded-box border border-base-300 bg-base-200 p-1.5 shadow-lg">
+          <li><a href="/account" class="text-base-content no-underline">{{ icon("shield", 16) }}บัญชีและความปลอดภัย</a></li>
+          <li><a href="/sessions" class="text-base-content no-underline">{{ icon("monitor", 16) }}session ที่ล็อกอินอยู่</a></li>
+          <li class="my-1 h-px bg-base-300 p-0" role="separator"></li>
+          <li><button form="logout" class="text-base-content">{{ icon("logout", 16) }}ออกจากระบบ</button></li>
+        </ul>
       </details>
+      <form id="logout" method="post" action="/logout" hidden>
+        <input type="hidden" name="csrf_token" value="{{ csrf }}">
+      </form>
     </div>
   </aside>
-  <div class="scrim" data-menu-toggle></div>
-  <div class="content">
-    <header class="topbar">
-      <button type="button" class="icon-btn" data-menu-toggle aria-label="ย่อ/ขยายเมนู" title="ย่อ/ขยายเมนู">{{ icon("panel") }}</button>
-      <span class="sep"></span>
-      <span class="crumb">{% if crumb[0] %}<span class="group">{{ crumb[0] | tr }}</span>{% endif %}<span>{{ (crumb[1] or "หลังบ้าน") | tr }}</span></span>
-      <span class="grow"></span>
+  <div class="scrim fixed inset-0 z-[35] hidden bg-black/40 menu-open:max-nav:block" data-menu-toggle></div>
+  <div class="content flex min-w-0 flex-col nav:h-dvh nav:overflow-hidden max-nav:min-h-dvh">
+    <header class="topbar flex flex-none items-center gap-3 border-b border-base-300 bg-base-200 px-5 py-3 max-nav:sticky max-nav:top-0 max-nav:z-10 max-nav:px-3.5 max-nav:py-2.5">
+      <button type="button" class="d-btn d-btn-sm d-btn-square d-btn-ghost border-base-300" data-menu-toggle aria-label="ย่อ/ขยายเมนู" title="ย่อ/ขยายเมนู">{{ icon("panel") }}</button>
+      <span class="h-5 w-px bg-base-300" aria-hidden="true"></span>
+      <span class="crumb flex min-w-0 items-center gap-2 font-semibold">{% if crumb[0] %}<span class="crumb-group font-normal text-base-content/60 after:ml-2 after:text-base-300 after:content-['/']">{{ crumb[0] | tr }}</span>{% endif %}<span class="truncate">{{ (crumb[1] or "หลังบ้าน") | tr }}</span></span>
+      <span class="flex-1"></span>
       {{ switches() }}
-      <a class="icon-btn accent" href="/settings" aria-label="ตั้งค่าการแสดงผล" title="ตั้งค่าการแสดงผล">{{ icon("sliders") }}</a>
+      <a class="d-btn d-btn-sm d-btn-square d-btn-primary" href="/settings" aria-label="ตั้งค่าการแสดงผล" title="ตั้งค่าการแสดงผล">{{ icon("sliders") }}</a>
     </header>
 {% else %}
-<div class="bare-tools">{{ switches() }}</div>
+<div class="bare-tools fixed top-3.5 right-4 flex gap-2">{{ switches() }}</div>
 {% endif %}
-    <main>{% block content %}{% endblock %}</main>
+    <main class="{% if with_nav %}flex-1 overflow-y-auto px-7 pt-6 pb-[72px] max-nav:overflow-visible max-nav:px-4 max-nav:pt-5 max-nav:pb-16 *:mx-auto *:max-w-[1040px]{% else %}w-full max-w-[440px]{% endif %}">{% block content %}{% endblock %}</main>
 {% if with_nav %}
   </div>
 </div>

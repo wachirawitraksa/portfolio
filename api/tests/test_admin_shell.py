@@ -55,8 +55,8 @@ async def test_the_sidebar_choice_is_drawn_by_the_server(authed):
 
 async def test_theme_toggle_and_sidebar_button_are_in_the_header(authed):
     text = await page(authed)
-    assert "data-theme-toggle" in text and 'class="i-moon"' in text and 'class="i-sun"' in text
-    assert re.search(r'<button type="button" class="icon-btn" data-menu-toggle', text)
+    assert "data-theme-toggle" in text and re.search(r'class="i-moon[ "]', text) and re.search(r'class="i-sun[ "]', text)
+    assert re.search(r'<button type="button" class="[^"]*" data-menu-toggle', text)
     script = (await authed.get("/admin/static/admin.js")).text
     for needle in ('setCookie("theme"', 'setCookie("sidebar"', "data-theme-toggle", "data-menu-toggle", "prefers-color-scheme"):
         assert needle in script, needle
@@ -64,7 +64,7 @@ async def test_theme_toggle_and_sidebar_button_are_in_the_header(authed):
 
 async def test_the_login_page_has_the_switches_too(client):
     text = (await client.get("/admin/login")).text
-    assert 'class="bare-tools"' in text and "data-theme-toggle" in text and "/lang/en" in text
+    assert re.search(r'class="bare-tools[ "]', text) and "data-theme-toggle" in text and "/lang/en" in text
     assert 'data-theme="dark"' in html_tag(await page(client, "/admin/login", theme="dark"))
 
 
@@ -73,24 +73,24 @@ async def test_the_login_page_has_the_switches_too(client):
 
 async def test_header_shows_where_you_are(authed):
     text = await page(authed, "/admin/projects")
-    assert '<span class="group">เนื้อหา</span><span>ผลงาน / รายการ</span>' in text
+    assert re.search(r'<span class="crumb-group[^"]*">เนื้อหา</span><span[^>]*>ผลงาน / รายการ</span>', text)
     home = await page(authed, "/admin/")
-    assert 'class="group"' not in home and "<span>ภาพรวม</span>" in home
+    assert "crumb-group" not in home and re.search(r"<span[^>]*>ภาพรวม</span>", home)
     edit = await page(authed, "/admin/work/new")
-    assert '<span class="group">เนื้อหา</span><span>ประวัติการทำงาน</span>' in edit
+    assert re.search(r'<span class="crumb-group[^"]*">เนื้อหา</span><span[^>]*>ประวัติการทำงาน</span>', edit)
 
 
 async def test_the_create_menu_lists_every_create_page_and_they_open(authed):
     text = await page(authed)
     for label, href in QUICK_CREATE:
-        assert f'<a href="{href}">' in text and label in text, href
+        assert re.search(rf'<a href="{re.escape(href)}"[ >]', text) and label in text, href
         assert (await authed.get(f"/admin{href}")).status_code == 200, href
-    assert 'class="mail-btn" href="/rag/questions"' in text
+    assert re.search(r'<a class="[^"]*(?<![a-z-])mail-btn[^"]*" href="/rag/questions"', text)
 
 
 async def test_the_account_menu_names_the_admin_and_can_log_out(authed):
     text = await page(authed)
-    assert f"<span>{EMAIL}</span>" in text and '<span class="avatar">a</span>' in text
+    assert f">{EMAIL}</span>" in text and re.search(r'<span class="avatar[^"]*">a</span>', text)
     assert 'href="/account"' in text and 'action="/logout"' in text and f'value="{authed.csrf}"' in text
 
 

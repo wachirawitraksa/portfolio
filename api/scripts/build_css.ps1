@@ -1,4 +1,4 @@
-# Builds the admin stylesheet (app/static/admin.tw.css) from css/input.css with the Tailwind standalone CLI and
+# Builds the admin stylesheet (app/static/admin.css) from css/input.css with the Tailwind standalone CLI and
 # daisyUI. Same job as build_css.sh, for Windows PowerShell. No Node is needed.
 #
 #   scripts\build_css.ps1            build once
@@ -41,6 +41,6 @@ foreach ($file in "daisyui.mjs", "daisyui-theme.mjs") {
     Copy-Item -Force $target (Join-Path $Tools $file)  # css/input.css names the plain file
 }
 
-$arguments = @("-i", "css/input.css", "-o", "app/static/admin.tw.css", "--minify")
+$arguments = @("-i", "css/input.css", "-o", "app/static/admin.css", "--minify")
 if ($Watch) { $arguments += "--watch" }
 & $Cli @arguments

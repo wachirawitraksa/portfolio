@@ -1,5 +1,5 @@
 #!/bin/sh
-# Builds the admin stylesheet (app/static/admin.tw.css) from css/input.css with the Tailwind standalone CLI
+# Builds the admin stylesheet (app/static/admin.css) from css/input.css with the Tailwind standalone CLI
 # and daisyUI. No Node is needed here or in the api container: run this on your machine after changing a template
 # or css/input.css, and commit the generated file.
 #
@@ -50,4 +50,4 @@ for file in daisyui.mjs daisyui-theme.mjs; do
   cp "$target" "$TOOLS/$file"  # css/input.css names the plain file; the versioned copy is what is checked
 done
 
-exec "$CLI" -i css/input.css -o app/static/admin.tw.css --minify "$@"
+exec "$CLI" -i css/input.css -o app/static/admin.css --minify "$@"

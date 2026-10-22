@@ -47,7 +47,7 @@ async def test_every_menu_item_opens_a_real_admin_page(authed):
 async def test_menu_is_grouped_marks_the_current_page_and_has_a_logout_form(authed):
     page = await home(authed)
     for group in ("เนื้อหา", "จัดหมวด", "ช่องถามตอบ", "ระบบ"):
-        assert f'<div class="nav-title">{group}</div>' in page
+        assert re.search(rf'<div class="nav-title[^"]*">{group}</div>', page)
     assert page.count('aria-current="page"') == 1 and re.search(r'<a href="/"[^>]*aria-current="page"', page)
     assert f'<input type="hidden" name="csrf_token" value="{authed.csrf}">' in page and 'action="/logout"' in page
     projects = (await authed.get("/admin/projects/new")).text
@@ -63,19 +63,19 @@ async def test_every_admin_page_has_the_menu(authed):
     for path in ("/", "/projects", "/projects/1/edit", "/work", "/articles", "/profile", "/settings", "/rag", "/glossary",
                  "/trash", "/account", "/sessions", "/categories", "/kinds", "/tags", "/rag/questions"):
         page = (await authed.get(f"/admin{path}")).text
-        assert 'class="sidebar"' in page and "/static/admin.css" in page, path
+        assert re.search(r'<aside class="sidebar[ "]', page) and "/static/admin.css" in page, path
 
 
 async def test_login_page_is_bare_and_asks_nothing_of_the_menu(client):
     page = (await client.get("/admin/login")).text
-    assert 'class="bare"' in page and 'class="sidebar"' not in page and "เข้าสู่ระบบหลังบ้าน" in page
+    assert re.search(r'<body[^>]*class="[^"]*(?<![a-z-])bare', page) and "<aside" not in page and "เข้าสู่ระบบหลังบ้าน" in page
 
 
 async def test_the_one_time_totp_page_has_no_menu(authed):
     from .conftest import PASSWORD
 
     page = (await post(authed, "/admin/account/totp/reset", current_password=PASSWORD)).text
-    assert 'class="sidebar"' not in page and "รหัสลับ" in page
+    assert "<aside" not in page and "รหัสลับ" in page
 
 
 # --- assets: nothing from another site ------------------------------------------------------------
@@ -174,7 +174,7 @@ async def test_a_broken_storage_is_the_first_thing_shown(authed):
     app.dependency_overrides[__import__("app.storage", fromlist=["get_storage"]).get_storage] = lambda: Broken()
     page = await home(authed)
     assert "ที่เก็บไฟล์ไม่ตอบสนอง" in page and "ที่เก็บไฟล์ ไม่ตอบสนอง" in page
-    first = re.search(r'<li>(.*?)</li>', page, re.S).group(1)
+    first = re.search(r'<li>(.*?)</li>', page.split("<main")[1], re.S).group(1)
     assert "ควรทำ" in first and "ที่เก็บไฟล์ไม่ตอบสนอง" in first
     assert "ฐานข้อมูล ปกติ" in page  # the page still opens
 
@@ -187,9 +187,10 @@ async def test_a_long_to_do_list_is_folded(authed):
     await add_project(authed)
     await post(authed, "/admin/projects/3/trash")
     page = await home(authed)
-    shown = page.split('<details class="todo-more">')[0]
+    content = page.split("<main")[1]  # the menus are lists too
+    shown = content.split('<details class="todo-more">')[0]
     assert shown.count("<li>") == 6 and "ดูอีก" in page
-    assert page.count("<li>") >= 8  # the folded ones are still in the page, behind the summary
+    assert content.count("<li>") >= 8  # the folded ones are still in the page, behind the summary
 
 
 async def test_the_rebuild_shortcut_appears_only_when_the_index_is_stale(authed):
