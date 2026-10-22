@@ -5,6 +5,10 @@ import type { components, paths } from "./api-types";
 
 export type Lang = "th" | "en";
 
+// Where the public site lives, for absolute URLs in link previews, the sitemap and structured data.
+// Set SITE_URL in the web service's environment; the fallback is only for local development.
+export const siteUrl = (): string => (process.env.SITE_URL || "http://localhost:3000").replace(/\/+$/, "");
+
 type Schemas = components["schemas"];
 export type Category = Schemas["CategoryOut"];
 export type Kind = Schemas["KindOut"];
@@ -20,6 +24,7 @@ export type ArticleList = Schemas["ArticleList"];
 export type Profile = Schemas["ProfileOut"];
 export type SiteSettings = Schemas["SettingsOut"];
 export type AskAnswer = Schemas["AskOut"];
+export type UpdateItem = Schemas["UpdateItem"];
 
 export type ProjectQuery = NonNullable<paths["/api/projects"]["get"]["parameters"]["query"]>;
 
@@ -48,6 +53,13 @@ export const getProject = (id: number) => get<ProjectDetail | null>(`/api/projec
 // null when no project is chosen in the admin (or it is not published): leave the section out.
 export const getHowIWork = () => get<ProjectDetail | null>("/api/how-i-work", null);
 export const getArticle = (id: number) => get<ArticleDetail | null>(`/api/articles/${id}`, null);
+// What was edited lately, for the sidebar timeline. Empty until something is edited after the site started recording it.
+export const getUpdates = (limit = 8) => get<UpdateItem[]>(`/api/updates?limit=${limit}`, []);
+// The owner's "preview on the site" links carry a short-lived token that lets a draft be read.
+export const getProjectPreview = (id: number, token: string) =>
+  get<ProjectDetail | null>(`/api/preview/projects/${id}?token=${encodeURIComponent(token)}`, null);
+export const getArticlePreview = (id: number, token: string) =>
+  get<ArticleDetail | null>(`/api/preview/articles/${id}?token=${encodeURIComponent(token)}`, null);
 
 export function getProjects(query: ProjectQuery = {}) {
   const params = new URLSearchParams();
@@ -92,4 +104,19 @@ export async function fetchProjects(query: ProjectQuery): Promise<ProjectList> {
   const res = await fetch(`/api/projects?${params}`);
   if (!res.ok) throw new Error(`projects failed: ${res.status}`);
   return (await res.json()) as ProjectList;
+}
+
+// The API serves pictures at fixed widths (?w=480). Ask for the one that fits, so a card does not download the original.
+export const IMAGE_WIDTHS = [320, 480, 640, 960, 1280, 1600] as const;
+
+export function imageUrl(url: string, width?: number, preview?: string): string {
+  const params = new URLSearchParams();
+  if (width) params.set("w", String(width));
+  if (preview) params.set("preview", preview);
+  const extra = params.toString();
+  return extra ? `${url}${url.includes("?") ? "&" : "?"}${extra}` : url;
+}
+
+export function imageSrcSet(url: string, widths: readonly number[], preview?: string): string {
+  return widths.map((w) => `${imageUrl(url, w, preview)} ${w}w`).join(", ");
 }

@@ -1,7 +1,7 @@
 from datetime import date, datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -9,6 +9,7 @@ from ..db import get_db
 from ..deps import current_session, require_csrf
 from ..forms import is_http_url
 from ..models import ARTICLE_SOURCES, STATUSES, Article, AuthSession, Tag
+from ..previews import mint, site_base
 from ..templating import templates
 from .auth import go
 from .projects import STATUS_LABELS, resolve_tags
@@ -161,6 +162,20 @@ async def edit_form(
 ):
     row = await get_or_404(db, article_id)
     return await form_page(request, session, db, row, [t.id for t in row.tags])
+
+
+@router.get("/{article_id}/preview")
+async def preview(
+    article_id: int,
+    request: Request,
+    session: AuthSession = Depends(current_session),
+    db: AsyncSession = Depends(get_db),
+):
+    """Open this entry on the real website, drafts included. The link works for a few minutes."""
+    row = await get_or_404(db, article_id)
+    token = await mint(db, "article", row.id)
+    lang = "en" if request.cookies.get("lang") == "en" else "th"
+    return RedirectResponse(f"{site_base(request)}/{lang}/articles/{row.id}?preview={token}", status_code=302)
 
 
 @router.post("/{article_id}")

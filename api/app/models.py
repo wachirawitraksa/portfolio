@@ -24,6 +24,11 @@ class Base(DeclarativeBase):
     pass
 
 
+def stamp() -> Mapped[datetime | None]:
+    """When the row was last edited. NULL for rows from before the column existed (see migration 0013)."""
+    return mapped_column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
+
+
 class User(Base):
     __tablename__ = "user"
 
@@ -69,6 +74,9 @@ class Tag(Base):
     name: Mapped[str] = mapped_column(String(80))
     # Other names for the same thing (pg, postgres). The RAG glossary reads these.
     aliases: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list)
+    # Optional heading the Skills section groups this tag under (Frontend, Backend, ...). Empty: the general group.
+    group_th: Mapped[str] = mapped_column(String(60), default="")
+    group_en: Mapped[str] = mapped_column(String(60), default="")
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
@@ -152,6 +160,7 @@ class Project(Base):
     featured: Mapped[bool] = mapped_column(Boolean, default=False)
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime | None] = stamp()
 
     kind: Mapped[Kind | None] = relationship(lazy="selectin")
     categories: Mapped[list[Category]] = relationship(
@@ -209,6 +218,7 @@ class WorkEntry(Base):
     bullets_en: Mapped[str] = mapped_column(Text, default="")
     hidden: Mapped[bool] = mapped_column(Boolean, default=False)
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime | None] = stamp()
 
     tags: Mapped[list[Tag]] = relationship(secondary=work_tag, lazy="selectin", order_by="Tag.name")
 
@@ -253,6 +263,7 @@ class EducationEntry(Base):
     details_en: Mapped[str] = mapped_column(Text, default="")
     hidden: Mapped[bool] = mapped_column(Boolean, default=False)
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime | None] = stamp()
 
     @property
     def span(self) -> str:
@@ -288,6 +299,7 @@ class Article(Base):
     published_on: Mapped[date | None] = mapped_column(Date)
     status: Mapped[str] = mapped_column(String(16), default="draft")
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime | None] = stamp()
 
     tags: Mapped[list[Tag]] = relationship(secondary=article_tag, lazy="selectin", order_by="Tag.name")
 
@@ -304,6 +316,9 @@ class Profile(Base):
     intro_en: Mapped[str] = mapped_column(Text, default="")
     location_th: Mapped[str] = mapped_column(String(200), default="")
     location_en: Mapped[str] = mapped_column(String(200), default="")
+    # One line under the name, e.g. "Software Engineer". The hero types it out.
+    headline_th: Mapped[str] = mapped_column(String(200), default="")
+    headline_en: Mapped[str] = mapped_column(String(200), default="")
     email: Mapped[str] = mapped_column(String(255), default="")
     # Files live in object storage; an empty key means nothing uploaded.
     photo_key: Mapped[str] = mapped_column(String(200), default="")
@@ -312,6 +327,7 @@ class Profile(Base):
     cv_th_name: Mapped[str] = mapped_column(String(200), default="")
     cv_en_key: Mapped[str] = mapped_column(String(200), default="")
     cv_en_name: Mapped[str] = mapped_column(String(200), default="")
+    updated_at: Mapped[datetime | None] = stamp()
 
 
 class ContactLink(Base):
@@ -337,6 +353,11 @@ class SiteSettings(Base):
     articles_page_size: Mapped[int] = mapped_column(Integer, default=12)
     # The one project the "how I work" section tells the story through. Empty: the section is hidden.
     how_i_work_project_id: Mapped[int | None] = mapped_column(ForeignKey("project.id", ondelete="SET NULL"))
+    # Page title and description for search results and link previews. Empty: the site builds them from the profile.
+    site_title_th: Mapped[str] = mapped_column(String(120), default="")
+    site_title_en: Mapped[str] = mapped_column(String(120), default="")
+    site_description_th: Mapped[str] = mapped_column(String(300), default="")
+    site_description_en: Mapped[str] = mapped_column(String(300), default="")
 
 
 class GlossaryEntry(Base):

@@ -14,6 +14,19 @@
   </section>
 
   <section class="card">
+    <h2>ชื่อและคำอธิบายเว็บ</h2>
+    <p class="muted">ใช้ในผลการค้นหาและตัวอย่างลิงก์ที่แชร์ · เว้นว่าง = ระบบสร้างจากชื่อในข้อมูลส่วนตัว</p>
+    <div class="pair">
+      <div><label for="site_title_th">ชื่อเว็บ · ไทย</label><input id="site_title_th" name="site_title_th" type="text" maxlength="120" value="{{ row.site_title_th }}"></div>
+      <div><label for="site_title_en">ชื่อเว็บ · English</label><input id="site_title_en" name="site_title_en" type="text" maxlength="120" value="{{ row.site_title_en }}"></div>
+    </div>
+    <div class="pair">
+      <div><label for="site_description_th">คำอธิบายสั้น ๆ · ไทย</label><textarea id="site_description_th" name="site_description_th" rows="3" maxlength="300">{{ row.site_description_th }}</textarea></div>
+      <div><label for="site_description_en">คำอธิบายสั้น ๆ · English</label><textarea id="site_description_en" name="site_description_en" rows="3" maxlength="300">{{ row.site_description_en }}</textarea></div>
+    </div>
+  </section>
+
+  <section class="card">
     <h2>วิธีการทำงาน</h2>
     <p class="muted">หน้าเว็บเล่าวิธีการทำงานของผมผ่านผลงานจริงหนึ่งชิ้น เลือกชิ้นที่อยากให้ใช้เล่า (ต้องเผยแพร่แล้วจึงจะขึ้นหน้าเว็บ) · ไม่เลือก = ไม่แสดงส่วนนี้</p>
     <label for="how_i_work_project_id">ผลงานที่ใช้เล่า</label>

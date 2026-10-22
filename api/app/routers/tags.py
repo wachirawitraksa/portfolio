@@ -51,14 +51,16 @@ async def create(
     request: Request,
     name: str = Form(""),
     aliases: str = Form(""),
+    group_th: str = Form(""),
+    group_en: str = Form(""),
     session: AuthSession = Depends(current_session),
     _: None = Depends(require_csrf),
     db: AsyncSession = Depends(get_db),
 ):
     name = name.strip()
     if not name:
-        return form_page(request, session, Tag(name="", aliases=split_lines(aliases)), "ต้องกรอกชื่อ tag", 422)
-    db.add(Tag(name=name, aliases=split_lines(aliases)))
+        return form_page(request, session, Tag(name="", aliases=split_lines(aliases), group_th=group_th, group_en=group_en), "ต้องกรอกชื่อ tag", 422)
+    db.add(Tag(name=name, aliases=split_lines(aliases), group_th=group_th.strip()[:60], group_en=group_en.strip()[:60]))
     await db.commit()
     return go("/tags")
 
@@ -79,6 +81,8 @@ async def update(
     request: Request,
     name: str = Form(""),
     aliases: str = Form(""),
+    group_th: str = Form(""),
+    group_en: str = Form(""),
     session: AuthSession = Depends(current_session),
     _: None = Depends(require_csrf),
     db: AsyncSession = Depends(get_db),
@@ -86,9 +90,10 @@ async def update(
     row = await get_or_404(db, tag_id)
     name = name.strip()
     if not name:
-        shown = Tag(id=row.id, name="", aliases=split_lines(aliases))
+        shown = Tag(id=row.id, name="", aliases=split_lines(aliases), group_th=group_th, group_en=group_en)
         return form_page(request, session, shown, "ต้องกรอกชื่อ tag", 422)
     row.name, row.aliases = name, split_lines(aliases)
+    row.group_th, row.group_en = group_th.strip()[:60], group_en.strip()[:60]
     await db.commit()
     return go("/tags")
 

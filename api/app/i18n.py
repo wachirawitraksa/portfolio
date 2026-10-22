@@ -211,6 +211,16 @@ CATALOG: dict[str, str] = {
     "ไฟล์ใหญ่เกิน": "The file is larger than", "รับเฉพาะไฟล์ JPEG, PNG, GIF หรือ WebP": "Only JPEG, PNG, GIF or WebP files are accepted", "CV ต้องเป็นไฟล์ PDF": "The CV must be a PDF file",
     "ลบไม่ได้ เพราะยังมีผลงาน": "Cannot delete: there are still projects in this category (", "ลบไม่ได้ เพราะยังมีรายการ": "Cannot delete: there are still items of this kind (",
     "เขียนในเว็บนี้": "Written on this site", "ต้องเป็นตัวเลข": "must be a number",
+    # --- headline, tag groups, site title, preview ----------------------------------------------------
+    "ตำแหน่ง / บรรทัดใต้ชื่อ (เช่น Software Engineer)": "Headline (the line under the name, e.g. Software Engineer)",
+    "กลุ่มในส่วนทักษะ · ไทย": "Skills group · Thai", "กลุ่มในส่วนทักษะ · English": "Skills group · English",
+    "(เช่น ฟรอนต์เอนด์ · เว้นว่าง = กลุ่มทั่วไป)": "(e.g. Frontend · empty = general group)", "กลุ่มทักษะ": "Skills group",
+    "ชื่อและคำอธิบายเว็บ": "Site title and description",
+    "ใช้ในผลการค้นหาและตัวอย่างลิงก์ที่แชร์ · เว้นว่าง = ระบบสร้างจากชื่อในข้อมูลส่วนตัว": "Used in search results and shared link previews · empty = built from the name in the profile",
+    "ชื่อเว็บ · ไทย": "Site title · Thai", "ชื่อเว็บ · English": "Site title · English",
+    "คำอธิบายสั้น ๆ · ไทย": "Short description · Thai", "คำอธิบายสั้น ๆ · English": "Short description · English",
+    "ดูตัวอย่างบนหน้าเว็บ ↗": "Preview on the site ↗",
+    "เปิดดูหน้าจริงได้แม้ยังเป็นฉบับร่าง (ลิงก์ใช้ได้ไม่กี่นาที · บันทึกก่อนจึงจะเห็นสิ่งที่แก้)": "See the real page even while it is a draft (the link works for a few minutes · save first to see your edits)",
 }
 # fmt: on
 

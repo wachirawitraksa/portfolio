@@ -48,7 +48,7 @@ async def read_upload(upload: UploadFile) -> bytes:
 def untranslated(row) -> list[str]:
     return [
         name
-        for name in ("name", "intro", "location")
+        for name in ("name", "headline", "intro", "location")
         if bool(getattr(row, f"{name}_th").strip()) != bool(getattr(row, f"{name}_en").strip())
     ]
 
@@ -90,7 +90,7 @@ async def save(
     form = await request.form()
     values = {
         key: str(form.get(key, "")).strip()
-        for key in ("name_th", "name_en", "intro_th", "intro_en", "location_th", "location_en", "email")
+        for key in ("name_th", "name_en", "headline_th", "headline_en", "intro_th", "intro_en", "location_th", "location_en", "email")
     }
     row = await get_profile(db)
     if values["email"] and ("@" not in values["email"] or " " in values["email"]):

@@ -9,7 +9,7 @@
 
   <section class="card">
     <h2>ผมเป็นใคร</h2>
-    {% for name, label, multiline in (("name", "ชื่อ", False), ("intro", "แนะนำตัวสั้น ๆ", True), ("location", "ที่อยู่ / อยู่ที่ไหน", False)) %}
+    {% for name, label, multiline in (("name", "ชื่อ", False), ("headline", "ตำแหน่ง / บรรทัดใต้ชื่อ (เช่น Software Engineer)", False), ("intro", "แนะนำตัวสั้น ๆ", True), ("location", "ที่อยู่ / อยู่ที่ไหน", False)) %}
     <div class="pair">
       {% for lang, lang_label in (("th", "ไทย"), ("en", "English")) %}
       {% set value = row | attr(name ~ "_" ~ lang) %}

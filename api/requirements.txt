@@ -12,3 +12,4 @@ boto3==1.43.0
 httpx==0.28.1
 pythainlp==5.4.0
 pgvector==0.5.1
+pillow==13.0.0

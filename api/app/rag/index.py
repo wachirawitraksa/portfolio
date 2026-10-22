@@ -16,6 +16,7 @@ from ..models import (
     WorkEntry,
 )
 from ..site import get_profile
+from ..visibility import project_visible
 from . import knowledge
 from .embed import embed
 from .text import normalize, sound_key, tokenize
@@ -191,9 +192,9 @@ async def profile_chunk(db: AsyncSession) -> RagChunk | None:
         return None
     return make_chunk(
         "profile", 1, "about", "เกี่ยวกับผม", "About me",
-        lines(("ชื่อ", p.name_th), ("แนะนำตัว", p.intro_th), ("ที่อยู่", p.location_th), ("อีเมล", p.email),
+        lines(("ชื่อ", p.name_th), ("ตำแหน่ง", p.headline_th), ("แนะนำตัว", p.intro_th), ("ที่อยู่", p.location_th), ("อีเมล", p.email),
               *link_lines, ("CV ดาวน์โหลดได้", ", ".join(cv))),
-        lines(("Name", p.name_en), ("About", p.intro_en), ("Location", p.location_en), ("Email", p.email),
+        lines(("Name", p.name_en), ("Headline", p.headline_en), ("About", p.intro_en), ("Location", p.location_en), ("Email", p.email),
               *link_lines, ("CV available", ", ".join(cv))),
     )
 
@@ -203,7 +204,7 @@ async def collect(db: AsyncSession) -> list[RagChunk]:
     chunks: list[RagChunk] = []
     projects = (
         await db.execute(
-            select(Project).where(Project.status == "published", Project.deleted_at.is_(None)).order_by(Project.id)
+            select(Project).where(*project_visible()).order_by(Project.id)
         )
     ).scalars()
     for project in projects:

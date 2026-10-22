@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Profile } from "../../lib";
-import { pick } from "../../lib";
+import { imageSrcSet, imageUrl, pick } from "../../lib";
 import { useShell } from "../shell-context";
 
 // Types the text out, holds, then erases, like the mockup's `const role = "..."` line.
@@ -42,7 +42,7 @@ export function Hero({ profile, role }: { profile: Profile | null; role: string 
     <section id="home" className="flex min-h-[min(520px,70vh)] flex-col items-start gap-7 pt-8 ide:flex-row ide:items-center ide:gap-14">
       {profile?.photo_url && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={profile.photo_url} alt={name} className="order-first size-[120px] shrink-0 rounded-[20px] bg-card object-cover sm:size-[200px] ide:order-last ide:aspect-[4/5] ide:h-auto ide:w-[300px]" />
+        <img src={imageUrl(profile.photo_url, 640)} srcSet={imageSrcSet(profile.photo_url, [320, 640, 960])} sizes="(min-width: 901px) 300px, (min-width: 640px) 200px, 120px" alt={name} className="order-first size-[120px] shrink-0 rounded-[20px] bg-card object-cover sm:size-[200px] ide:order-last ide:aspect-[4/5] ide:h-auto ide:w-[300px]" />
       )}
       <div className="flex min-w-0 flex-1 flex-col gap-5">
         {role && (

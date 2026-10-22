@@ -7,6 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models import GlossaryEntry, Project, RagChunk, Tag
+from ..visibility import project_visible
 from .text import has_thai, normalize
 
 
@@ -56,7 +57,7 @@ async def load_groups(db: AsyncSession) -> list[list[str]]:
     for tag in (await db.execute(select(Tag).where(Tag.deleted_at.is_(None)))).scalars():
         groups.append(make_group([tag.name, *tag.aliases]))
     projects = (
-        await db.execute(select(Project).where(Project.status == "published", Project.deleted_at.is_(None)))
+        await db.execute(select(Project).where(*project_visible()))
     ).scalars()
     for project in projects:
         groups.append(make_group([project.title_th, project.title_en, *project.aliases]))

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { Shell } from "../../components/Shell";
 import { getDict, isLang } from "../../i18n";
-import { getProfile, pick } from "../../lib";
+import { getProfile, getSettings, imageUrl, pick, siteUrl } from "../../lib";
 import { getShellData } from "../../shell-data";
 import "../fonts";
 import "../globals.css";
@@ -16,9 +16,27 @@ const BOOT_SCRIPT = `try{if(!matchMedia("(prefers-reduced-motion: reduce)").matc
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;
   if (!isLang(lang)) return {};
-  const profile = await getProfile();
+  const [profile, settings] = await Promise.all([getProfile(), getSettings()]);
   const name = profile ? pick(lang, profile.name_th, profile.name_en) : "";
-  return { title: name ? `${name} — Portfolio` : "Portfolio" };
+  // What the owner wrote in the admin wins; otherwise the title and description are built from the profile.
+  const title = (settings && pick(lang, settings.site_title_th, settings.site_title_en)) || (name ? `${name} — Portfolio` : "Portfolio");
+  const description =
+    (settings && pick(lang, settings.site_description_th, settings.site_description_en)) ||
+    (profile ? pick(lang, profile.intro_th, profile.intro_en).replace(/\s+/g, " ").slice(0, 160) : "") ||
+    undefined;
+  return {
+    metadataBase: new URL(siteUrl()),
+    title,
+    description,
+    alternates: { canonical: `/${lang}`, languages: { th: "/th", en: "/en" } },
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      locale: lang === "th" ? "th_TH" : "en_US",
+      images: profile?.photo_url ? [{ url: imageUrl(profile.photo_url, 1280) }] : undefined,
+    },
+  };
 }
 
 export default async function RootLayout({ children, params }: { children: ReactNode; params: Promise<{ lang: string }> }) {

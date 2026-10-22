@@ -1,6 +1,6 @@
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy import exists, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -33,9 +33,13 @@ from ..schemas import (
     ProjectCard,
     SettingsOut,
     TagCount,
+    UpdateItem,
     WorkItem,
 )
+from ..imaging import variant, width_param
+from ..previews import valid as preview_valid
 from ..site import get_profile, get_site_settings
+from ..visibility import project_visible
 from ..storage import Storage, get_storage
 from .images import image_response
 from .profile import file_response, version
@@ -47,7 +51,7 @@ CARD_TEXT_FIELDS = ("title", "problem")
 
 
 def visible() -> list:
-    return [Project.status == "published", Project.deleted_at.is_(None)]
+    return project_visible()
 
 
 def image_json(i: ProjectImage) -> dict:
@@ -128,7 +132,7 @@ async def tags(db: AsyncSession = Depends(get_db)):
             .order_by(Tag.name)
         )
     ).all()
-    return [{"id": tag.id, "name": tag.name, "count": n} for tag, n in rows]
+    return [{"id": tag.id, "name": tag.name, "count": n, "group_th": tag.group_th, "group_en": tag.group_en} for tag, n in rows]
 
 
 @router.get("/projects", response_model=ProjectList)
@@ -364,6 +368,8 @@ async def profile(db: AsyncSession = Depends(get_db)):
         "intro_en": p.intro_en,
         "location_th": p.location_th,
         "location_en": p.location_en,
+        "headline_th": p.headline_th,
+        "headline_en": p.headline_en,
         "email": p.email,
         "photo_url": f"/api/profile/photo?v={version(p.photo_key)}" if p.photo_key else None,
         "cv_th_url": f"/api/profile/cv/th?v={version(p.cv_th_key)}" if p.cv_th_key else None,
@@ -373,13 +379,20 @@ async def profile(db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/profile/photo")
-async def profile_photo(db: AsyncSession = Depends(get_db), storage: Storage = Depends(get_storage)):
+async def profile_photo(
+    w: int | None = Depends(width_param), db: AsyncSession = Depends(get_db), storage: Storage = Depends(get_storage)
+):
     p = await get_profile(db)
-    data = await storage.get(p.photo_key) if p.photo_key else None
-    if data is None:
+    if not p.photo_key:
         raise HTTPException(404)
     # The URL carries a version tag that changes with the file, so it may be cached for good.
-    return file_response(data, p.photo_content_type, "public, max-age=31536000, immutable")
+    cache = "public, max-age=31536000, immutable"
+    if w and (made := await variant(storage, p.photo_key, w)):
+        return file_response(made[0], made[1], cache)
+    data = await storage.get(p.photo_key)
+    if data is None:
+        raise HTTPException(404)
+    return file_response(data, p.photo_content_type, cache)
 
 
 @router.get("/profile/cv/{lang}")
@@ -402,12 +415,23 @@ async def site_settings(db: AsyncSession = Depends(get_db)):
         "projects_page_size": s.projects_page_size,
         "articles_page_size": s.articles_page_size,
         "how_i_work_project_id": s.how_i_work_project_id,
+        "site_title_th": s.site_title_th,
+        "site_title_en": s.site_title_en,
+        "site_description_th": s.site_description_th,
+        "site_description_en": s.site_description_en,
     }
 
 
 @router.get("/media/{image_id}")
-async def media(image_id: int, db: AsyncSession = Depends(get_db), storage: Storage = Depends(get_storage)):
-    """An image of a public project. Drafts, hidden and trashed entries do not leak their pictures."""
+async def media(
+    image_id: int,
+    w: int | None = Depends(width_param),
+    preview: str | None = None,
+    db: AsyncSession = Depends(get_db),
+    storage: Storage = Depends(get_storage),
+):
+    """An image of a public project, optionally at one of the fixed widths (`?w=480`).
+    Drafts, hidden and trashed entries do not leak their pictures, unless a valid preview link names the project."""
     row = (
         await db.execute(
             select(ProjectImage)
@@ -415,7 +439,71 @@ async def media(image_id: int, db: AsyncSession = Depends(get_db), storage: Stor
             .where(ProjectImage.id == image_id, ProjectImage.deleted_at.is_(None), *visible())
         )
     ).scalar_one_or_none()
-    data = await storage.get(row.key) if row else None
-    if row is None or data is None:
+    cache = "public, max-age=86400"
+    if row is None and preview:
+        candidate = await db.get(ProjectImage, image_id)
+        if candidate and candidate.deleted_at is None and await preview_valid(db, preview, "project", candidate.project_id):
+            row, cache = candidate, "private, no-store"
+    if row is None:
         raise HTTPException(404)
-    return image_response(data, row.content_type, "public, max-age=86400")
+    if w and (made := await variant(storage, row.key, w)):
+        return image_response(made[0], made[1], cache)
+    data = await storage.get(row.key)
+    if data is None:
+        raise HTTPException(404)
+    return image_response(data, row.content_type, cache)
+
+
+def no_index(response: Response) -> None:
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["X-Robots-Tag"] = "noindex"
+
+
+@router.get("/preview/projects/{project_id}", response_model=ProjectDetail)
+async def preview_project(project_id: int, token: str, response: Response, db: AsyncSession = Depends(get_db)):
+    """A project as it will look once published, for the owner's preview link only (drafts included)."""
+    row = await db.get(Project, project_id)
+    if row is None or row.deleted_at is not None or not await preview_valid(db, token, "project", project_id):
+        raise HTTPException(404)
+    no_index(response)
+    return project_json(row, PROJECT_TEXT_FIELDS, detail=True)
+
+
+@router.get("/preview/articles/{article_id}", response_model=ArticleDetail)
+async def preview_article(article_id: int, token: str, response: Response, db: AsyncSession = Depends(get_db)):
+    row = await db.get(Article, article_id)
+    if row is None or row.deleted_at is not None or not await preview_valid(db, token, "article", article_id):
+        raise HTTPException(404)
+    no_index(response)
+    return article_json(row, detail=True)
+
+
+@router.get("/updates", response_model=list[UpdateItem])
+async def updates(limit: Annotated[int, Query(ge=1, le=30)] = 8, db: AsyncSession = Depends(get_db)):
+    """What was edited lately, newest first: public projects and articles, work and education that are not hidden,
+    and the profile. Entries that have not been edited since the site started recording it are left out
+    rather than given a made-up date."""
+
+    def newest(model, *where):
+        return select(model).where(model.updated_at.is_not(None), *where).order_by(model.updated_at.desc()).limit(limit)
+
+    found: list[tuple] = []
+    for p in (await db.execute(newest(Project, *visible()))).scalars():
+        kind = {"id": p.kind.id, "name_th": p.kind.name_th, "name_en": p.kind.name_en} if p.kind else None
+        found.append((p.updated_at, "project", p.id, p.title_th, p.title_en, kind))
+    for a in (await db.execute(newest(Article, *published_articles()))).scalars():
+        found.append((a.updated_at, "article", a.id, a.title_th, a.title_en, None))
+    for w in (await db.execute(newest(WorkEntry, WorkEntry.hidden.is_(False), WorkEntry.deleted_at.is_(None)))).scalars():
+        found.append((w.updated_at, "work", w.id, w.position_th, w.position_en, None))
+    for e in (
+        await db.execute(newest(EducationEntry, EducationEntry.hidden.is_(False), EducationEntry.deleted_at.is_(None)))
+    ).scalars():
+        found.append((e.updated_at, "education", e.id, e.institution_th, e.institution_en, None))
+    me = await get_profile(db)
+    if me.updated_at and (me.name_th or me.name_en or me.intro_th or me.intro_en):
+        found.append((me.updated_at, "profile", me.id, me.name_th, me.name_en, None))
+    found.sort(key=lambda row: row[0], reverse=True)
+    return [
+        {"type": kind_of, "id": item_id, "title_th": th, "title_en": en, "kind": kind, "at": at.isoformat()}
+        for at, kind_of, item_id, th, en, kind in found[:limit]
+    ]

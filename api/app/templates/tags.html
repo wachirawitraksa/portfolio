@@ -8,12 +8,13 @@
 </div>
 {% if rows %}
 <table>
-  <thead><tr><th>ชื่อ</th><th>ชื่อย่อ / ชื่อเรียกอื่น</th><th></th></tr></thead>
+  <thead><tr><th>ชื่อ</th><th>ชื่อย่อ / ชื่อเรียกอื่น</th><th>กลุ่มทักษะ</th><th></th></tr></thead>
   <tbody>
   {% for r in rows %}
     <tr>
       <td>{{ r.name }}</td>
       <td>{{ r.aliases | join(", ") }}</td>
+      <td>{{ r.group_th or r.group_en }}</td>
       <td class="row-actions">
         {% if trash %}
           <form method="post" action="/tags/{{ r.id }}/restore" class="inline">

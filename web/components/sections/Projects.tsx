@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 import type { Dict } from "../../i18n";
-import { fetchProjects, pick, type Category, type Lang, type ProjectCard, type ProjectList } from "../../lib";
+import { fetchProjects, imageSrcSet, imageUrl, pick, type Category, type Lang, type ProjectCard, type ProjectList } from "../../lib";
 import { SectionHead, sectionClass } from "./SectionHead";
 
 type Props = { id: string; file: string; title: string; kindId: number | null; lang: Lang; t: Dict; categories: Category[]; initial: ProjectList; pageSize: number };
@@ -91,7 +91,15 @@ function Card({ p, lang }: { p: ProjectCard; lang: Lang }) {
       <div className="flex aspect-video w-full items-center justify-center bg-chip font-mono text-xs text-muted">
         {p.cover_url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={p.cover_url} alt="" loading="lazy" className="size-full object-cover" />
+          <img
+            src={imageUrl(p.cover_url, 640)}
+            srcSet={imageSrcSet(p.cover_url, [320, 480, 640, 960, 1280])}
+            sizes="(min-width: 640px) 460px, calc(100vw - 40px)"
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="size-full object-cover"
+          />
         ) : (
           <span aria-hidden="true" className="text-2xl opacity-40">{"{ }"}</span>
         )}

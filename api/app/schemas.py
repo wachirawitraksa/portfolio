@@ -27,6 +27,8 @@ class TagRef(BaseModel):
 
 class TagCount(TagRef):
     count: int  # public projects that use the tag
+    group_th: str  # heading the Skills section files it under; empty = no group
+    group_en: str
 
 
 class ImageOut(BaseModel):
@@ -150,6 +152,8 @@ class ProfileOut(BaseModel):
     intro_en: str
     location_th: str
     location_en: str
+    headline_th: str  # one line under the name, e.g. "Software Engineer"; empty = none
+    headline_en: str
     email: str
     photo_url: str | None
     cv_th_url: str | None
@@ -162,6 +166,21 @@ class SettingsOut(BaseModel):
     projects_page_size: int
     articles_page_size: int
     how_i_work_project_id: int | None
+    site_title_th: str  # empty = build it from the profile
+    site_title_en: str
+    site_description_th: str
+    site_description_en: str
+
+
+class UpdateItem(BaseModel):
+    """One entry in the "recent updates" list: something on the site that was edited lately."""
+
+    type: Literal["project", "article", "work", "education", "profile"]
+    id: int
+    title_th: str
+    title_en: str
+    kind: KindOut | None  # of a project; null for the rest
+    at: str  # ISO date-time
 
 
 class LiveOut(BaseModel):

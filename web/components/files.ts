@@ -7,6 +7,8 @@ const FIXED: Record<string, FileInfo> = {
   home: { name: "home.tsx", badge: "TSX", color: "#4ec9b0" },
   about: { name: "about.md", badge: "MD", color: "#519aba" },
   experience: { name: "career.tsx", badge: "TSX", color: "#4ec9b0" },
+  education: { name: "education.md", badge: "MD", color: "#519aba" },
+  how: { name: "how-i-work.md", badge: "MD", color: "#519aba" },
   articles: { name: "articles/", badge: "▸", color: "#dcb67a" },
   skills: { name: "skills.json", badge: "{}", color: "#cbcb41" },
   contact: { name: "contact.css", badge: "#", color: "#569cd6" },

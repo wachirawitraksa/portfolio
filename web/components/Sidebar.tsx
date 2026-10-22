@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { timeAgo } from "../format";
 import type { Dict } from "../i18n";
-import type { SectionId, ShellData } from "../shell-data";
+import type { Lang } from "../lib";
+import type { SectionId, ShellData, UpdateRow } from "../shell-data";
 import type { OutlineItem } from "./shell-context";
 import { fileInfo, RESUME_FILE } from "./files";
 
 type Props = {
+  lang: Lang;
   data: ShellData;
   t: Dict;
   active: SectionId | null;
@@ -16,14 +19,21 @@ type Props = {
   goTo: (id: SectionId) => void;
   openResume: () => void;
   onChat: () => void;
+  onUpdate: (update: UpdateRow) => void;
 };
 
 function Chevron({ open }: { open: boolean }) {
   return <span className={`inline-block w-3 transition-transform ${open ? "rotate-90" : ""}`}>›</span>;
 }
 
-export function Sidebar({ data, t, active, pageOutline, hasCv, className, goTo, openResume, onChat }: Props) {
+const UPDATE_COLOR: Record<UpdateRow["type"], string> = { project: "#4ec9b0", article: "#dcb67a", work: "#569cd6", education: "#519aba", profile: "#9a9a9a" };
+
+export function Sidebar({ lang, data, t, active, pageOutline, hasCv, className, goTo, openResume, onChat, onUpdate }: Props) {
   const [filesOpen, setFilesOpen] = useState(true);
+  const [timelineOpen, setTimelineOpen] = useState(false);
+  // Relative times use the clock, so they appear after mount; the server and first browser render agree on none.
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => setNow(Date.now()), []);
   const [outlineToggled, setOutlineOpen] = useState<boolean | null>(null);
   // Closed on the home page like the mockup; a detail page opens it because its headings are the point.
   const outlineOpen = outlineToggled ?? Boolean(pageOutline);
@@ -35,7 +45,7 @@ export function Sidebar({ data, t, active, pageOutline, hasCv, className, goTo, 
   for (const item of pageOutline ?? []) outline.push({ label: item.label, id: item.id, pad: 14, page: true });
   for (const id of pageOutline ? [] : data.sections) {
     const kind = data.kinds.find((k) => k.id === id);
-    const label = kind ? kind.title : id === "home" ? "home" : id === "experience" ? t.career : id === "contact" ? t.contact : id === "about" ? t.about : id === "articles" ? t.articles : t.skills;
+    const label = kind ? kind.title : id === "home" ? "home" : id === "experience" ? t.career : id === "contact" ? t.contact : id === "about" ? t.about : id === "education" ? t.education : id === "how" ? t.howIWork : id === "articles" ? t.articles : t.skills;
     outline.push({ label, id, pad: 14, sub: kind ? String(kind.count) : undefined });
     if (id === "experience") for (const job of data.jobs) outline.push({ label: job, id, pad: 30 });
   }
@@ -101,13 +111,35 @@ export function Sidebar({ data, t, active, pageOutline, hasCv, className, goTo, 
             </div>
           )}
         </div>
+        {data.updates.length > 0 && (
+          <div className="flex min-h-0 flex-col border-t border-line">
+            <button
+              type="button"
+              onClick={() => setTimelineOpen(!timelineOpen)}
+              aria-expanded={timelineOpen}
+              className="flex h-7 shrink-0 items-center gap-1.5 px-2.5 text-left font-mono text-[11px] font-bold tracking-[0.06em] text-fg hover:bg-hover"
+            >
+              <Chevron open={timelineOpen} />
+              TIMELINE
+            </button>
+            {timelineOpen && (
+              <div className="max-h-[200px] overflow-y-auto pb-1.5">
+                {data.updates.map((u) => (
+                  <button key={`${u.type}-${u.id}`} type="button" onClick={() => onUpdate(u)} className={row} style={{ paddingLeft: 14 }}>
+                    <span className="w-4 shrink-0 font-mono text-[11px] font-bold" style={{ color: UPDATE_COLOR[u.type] }}>●</span>
+                    <span className="min-w-0 flex-1 truncate">{u.label}</span>
+                    <span className="font-mono text-[11px] whitespace-nowrap text-muted">{now ? timeAgo(u.at, lang, now) : ""}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
-      {data.github && (
-        <div className="flex flex-col gap-2 border-t border-line p-3 sm:hidden">
-          <button type="button" onClick={onChat} className="cursor-pointer rounded-md border border-line px-3 py-2.5 text-left font-mono text-[13px] text-fg hover:bg-hover">&gt; openChat()</button>
-          <a href={data.github} target="_blank" rel="noopener" className="rounded-md border border-line px-3 py-2.5 font-mono text-[13px] text-fg no-underline">GitHub ↗</a>
-        </div>
-      )}
+      <div className="flex flex-col gap-2 border-t border-line p-3 sm:hidden">
+        <button type="button" onClick={onChat} className="cursor-pointer rounded-md border border-line px-3 py-2.5 text-left font-mono text-[13px] text-fg hover:bg-hover">&gt; openChat()</button>
+        {data.github && <a href={data.github} target="_blank" rel="noopener" className="rounded-md border border-line px-3 py-2.5 font-mono text-[13px] text-fg no-underline">GitHub ↗</a>}
+      </div>
     </aside>
   );
 }

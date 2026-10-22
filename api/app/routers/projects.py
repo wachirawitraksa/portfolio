@@ -2,13 +2,14 @@ import re
 from datetime import date, datetime, timezone
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..db import get_db
 from ..deps import current_session, require_csrf
 from ..forms import is_http_url, split_lines, untranslated
+from ..previews import mint, site_base
 from ..models import (
     KIND_FIELD_GROUPS,
     MAX_CATEGORIES,
@@ -317,6 +318,20 @@ async def edit_form(
 ):
     row = await get_or_404(db, project_id)
     return await form_page(request, session, db, row, [c.id for c in row.categories], [t.id for t in row.tags])
+
+
+@router.get("/{project_id}/preview")
+async def preview(
+    project_id: int,
+    request: Request,
+    session: AuthSession = Depends(current_session),
+    db: AsyncSession = Depends(get_db),
+):
+    """Open this entry on the real website, drafts included. The link works for a few minutes."""
+    row = await get_or_404(db, project_id)
+    token = await mint(db, "project", row.id)
+    lang = "en" if request.cookies.get("lang") == "en" else "th"
+    return RedirectResponse(f"{site_base(request)}/{lang}/projects/{row.id}?preview={token}", status_code=302)
 
 
 @router.post("/{project_id}")

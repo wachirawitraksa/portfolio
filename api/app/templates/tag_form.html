@@ -10,6 +10,10 @@
   <label for="aliases">ชื่อย่อ / ชื่อเรียกอื่น (หนึ่งบรรทัดต่อหนึ่งชื่อ เช่น pg, postgres)</label>
   <textarea id="aliases" name="aliases" rows="4">{{ (row.aliases | join("\n")) if row else '' }}</textarea>
   <p class="muted">ระบบถามตอบ (RAG) ใช้ชื่อเหล่านี้ช่วยหาผลงานที่เกี่ยวข้อง</p>
+  <label for="group_th">กลุ่มในส่วนทักษะ · ไทย <span class="muted">(เช่น ฟรอนต์เอนด์ · เว้นว่าง = กลุ่มทั่วไป)</span></label>
+  <input id="group_th" name="group_th" type="text" maxlength="60" value="{{ row.group_th if row else '' }}">
+  <label for="group_en">กลุ่มในส่วนทักษะ · English <span class="muted">(e.g. Frontend)</span></label>
+  <input id="group_en" name="group_en" type="text" maxlength="60" value="{{ row.group_en if row else '' }}">
   <p><button>บันทึก</button> <a href="/tags">ยกเลิก</a></p>
 </form>
 {% endblock %}

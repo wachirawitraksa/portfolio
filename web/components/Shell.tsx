@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { Dict } from "../i18n";
 import type { Lang } from "../lib";
-import type { SectionId, ShellData } from "../shell-data";
+import type { SectionId, ShellData, UpdateRow } from "../shell-data";
 import { fileInfo } from "./files";
 import { AskMe } from "./AskMe";
 import { ChatIcon, FileIcon, GithubIcon, MailIcon, TerminalIcon } from "./icons";
@@ -92,6 +92,19 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
       else router.push(`/${lang}#${id}`);
     },
     [onHome, router, lang],
+  );
+
+  // A click in the sidebar timeline: go to the thing that was edited.
+  const openUpdate = useCallback(
+    (u: UpdateRow) => {
+      setDrawer(false);
+      if (u.type === "project") router.push(`/${lang}/projects/${u.id}`);
+      else if (u.type === "article") router.push(`/${lang}/articles/${u.id}`);
+      else if (u.type === "work") goTo("experience");
+      else if (u.type === "education") goTo("education");
+      else goTo(data.sections.includes("about") ? "about" : "home");
+    },
+    [router, lang, goTo, data.sections],
   );
 
   const copyEmail = useCallback(() => {
@@ -220,6 +233,7 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
 
           {drawer && <button type="button" onClick={() => setDrawer(false)} aria-label={t.close} className="absolute inset-0 z-[7] cursor-default border-0 bg-scrim ide:hidden" />}
           <Sidebar
+            lang={lang}
             data={data}
             t={t}
             active={onHome ? active : null}
@@ -228,6 +242,7 @@ export function Shell({ lang, t, data, initialTheme, children }: Props) {
             goTo={goTo}
             openResume={openResume}
             onChat={() => askAi()}
+            onUpdate={openUpdate}
             className={`${drawer ? "absolute top-0 bottom-0 left-0 z-[8] flex w-[min(280px,85vw)] shadow-2xl sm:left-12 sm:w-[220px]" : "hidden"} ${sidebarWide ? "ide:static ide:flex ide:shadow-none" : "ide:hidden"}`}
           />
 

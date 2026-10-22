@@ -5,28 +5,38 @@ import { PageOutline } from "../../../../components/PageOutline";
 import { formatDate } from "../../../../format";
 import { getDict, isLang } from "../../../../i18n";
 import { getKindSections } from "../../../../kind-sections";
-import { getProfile, getProject, pick, type Lang } from "../../../../lib";
+import { getProfile, getProject, getProjectPreview, imageSrcSet, imageUrl, pick, type Lang } from "../../../../lib";
 
-type Params = { params: Promise<{ lang: string; id: string }> };
+type Params = { params: Promise<{ lang: string; id: string }>; searchParams: Promise<{ preview?: string }> };
 
-async function load(params: Params["params"]) {
+// With ?preview=<token> (the owner's "preview on the site" link) a draft is shown, marked as not public.
+async function load({ params, searchParams }: Params) {
   const { lang, id } = await params;
+  const { preview } = await searchParams;
   if (!isLang(lang) || !/^\d+$/.test(id)) notFound();
-  const project = await getProject(Number(id));
+  const project = preview ? await getProjectPreview(Number(id), preview) : await getProject(Number(id));
   if (!project) notFound();
-  return { lang: lang as Lang, project };
+  return { lang: lang as Lang, project, preview };
 }
 
-export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const { lang, project } = await load(params);
+export async function generateMetadata(props: Params): Promise<Metadata> {
+  const { lang, project, preview } = await load(props);
   const profile = await getProfile();
   const title = pick(lang, project.title_th, project.title_en);
   const who = profile ? pick(lang, profile.name_th, profile.name_en) : "";
-  return { title: who ? `${title} — ${who}` : title, description: pick(lang, project.problem_th, project.problem_en).slice(0, 160) || undefined };
+  const description = pick(lang, project.problem_th, project.problem_en).slice(0, 160) || undefined;
+  const full = who ? `${title} — ${who}` : title;
+  if (preview) return { title: full, robots: { index: false, follow: false } };
+  return {
+    title: full,
+    description,
+    alternates: { canonical: `/${lang}/projects/${project.id}`, languages: { th: `/th/projects/${project.id}`, en: `/en/projects/${project.id}` } },
+    openGraph: { title: full, description, type: "article", images: project.cover_url ? [{ url: imageUrl(project.cover_url, 1280) }] : undefined },
+  };
 }
 
-export default async function ProjectPage({ params }: Params) {
-  const { lang, project } = await load(params);
+export default async function ProjectPage(props: Params) {
+  const { lang, project, preview } = await load(props);
   const t = getDict(lang);
 
   // Only the fields that have text are shown; the order follows the mockup.
@@ -57,6 +67,7 @@ export default async function ProjectPage({ params }: Params) {
   return (
     <article className="mx-auto flex max-w-[820px] flex-col gap-7 px-5 pt-12 pb-36 sm:px-10 min-[1101px]:px-14">
       <PageOutline items={fields.map((f) => ({ id: f.id, label: f.label }))} />
+      {preview && <p role="status" className="m-0 rounded-md border border-[#dcb67a] px-3.5 py-2.5 font-mono text-xs text-[#dcb67a]">{t.previewBanner}</p>}
       <Link href={back} className="self-start rounded-md border border-line px-3.5 py-2.5 font-mono text-xs text-fg no-underline hover:bg-hover hover:text-fg">
         ← cd ../{home?.file.replace(/\/$/, "") ?? ""}
       </Link>
@@ -78,7 +89,15 @@ export default async function ProjectPage({ params }: Params) {
             return (
               <figure key={img.id} className="m-0 flex w-full shrink-0 snap-center flex-col gap-2">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={img.url} alt={caption} loading="lazy" className="aspect-[16/8] w-full rounded-xl bg-card object-cover" />
+                <img
+                  src={imageUrl(img.url, 1280, preview)}
+                  srcSet={imageSrcSet(img.url, [640, 960, 1280, 1600], preview)}
+                  sizes="(min-width: 1100px) 740px, 100vw"
+                  alt={caption}
+                  loading="lazy"
+                  decoding="async"
+                  className="aspect-[16/8] w-full rounded-xl bg-card object-cover"
+                />
                 {caption && <figcaption className="font-mono text-xs text-muted">{caption}</figcaption>}
               </figure>
             );

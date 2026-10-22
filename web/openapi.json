@@ -584,6 +584,14 @@
             "title": "Email",
             "type": "string"
           },
+          "headline_en": {
+            "title": "Headline En",
+            "type": "string"
+          },
+          "headline_th": {
+            "title": "Headline Th",
+            "type": "string"
+          },
           "intro_en": {
             "title": "Intro En",
             "type": "string"
@@ -634,6 +642,8 @@
           "intro_en",
           "location_th",
           "location_en",
+          "headline_th",
+          "headline_en",
           "email",
           "photo_url",
           "cv_th_url",
@@ -989,13 +999,33 @@
           "projects_page_size": {
             "title": "Projects Page Size",
             "type": "integer"
+          },
+          "site_description_en": {
+            "title": "Site Description En",
+            "type": "string"
+          },
+          "site_description_th": {
+            "title": "Site Description Th",
+            "type": "string"
+          },
+          "site_title_en": {
+            "title": "Site Title En",
+            "type": "string"
+          },
+          "site_title_th": {
+            "title": "Site Title Th",
+            "type": "string"
           }
         },
         "required": [
           "featured_limit",
           "projects_page_size",
           "articles_page_size",
-          "how_i_work_project_id"
+          "how_i_work_project_id",
+          "site_title_th",
+          "site_title_en",
+          "site_description_th",
+          "site_description_en"
         ],
         "title": "SettingsOut",
         "type": "object"
@@ -1005,6 +1035,14 @@
           "count": {
             "title": "Count",
             "type": "integer"
+          },
+          "group_en": {
+            "title": "Group En",
+            "type": "string"
+          },
+          "group_th": {
+            "title": "Group Th",
+            "type": "string"
           },
           "id": {
             "title": "Id",
@@ -1018,7 +1056,9 @@
         "required": [
           "id",
           "name",
-          "count"
+          "count",
+          "group_th",
+          "group_en"
         ],
         "title": "TagCount",
         "type": "object"
@@ -1039,6 +1079,58 @@
           "name"
         ],
         "title": "TagRef",
+        "type": "object"
+      },
+      "UpdateItem": {
+        "description": "One entry in the \"recent updates\" list: something on the site that was edited lately.",
+        "properties": {
+          "at": {
+            "title": "At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/KindOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title_en": {
+            "title": "Title En",
+            "type": "string"
+          },
+          "title_th": {
+            "title": "Title Th",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "project",
+              "article",
+              "work",
+              "education",
+              "profile"
+            ],
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "id",
+          "title_th",
+          "title_en",
+          "kind",
+          "at"
+        ],
+        "title": "UpdateItem",
         "type": "object"
       },
       "ValidationError": {
@@ -1498,7 +1590,7 @@
     },
     "/api/media/{image_id}": {
       "get": {
-        "description": "An image of a public project. Drafts, hidden and trashed entries do not leak their pictures.",
+        "description": "An image of a public project, optionally at one of the fixed widths (`?w=480`).\nDrafts, hidden and trashed entries do not leak their pictures, unless a valid preview link names the project.",
         "operationId": "media_api_media__image_id__get",
         "parameters": [
           {
@@ -1508,6 +1600,40 @@
             "schema": {
               "title": "Image Id",
               "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "preview",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Preview"
+            }
+          },
+          {
+            "description": "Serve a copy this many pixels wide: 320, 480, 640, 960, 1280 or 1600",
+            "in": "query",
+            "name": "w",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Serve a copy this many pixels wide: 320, 480, 640, 960, 1280 or 1600",
+              "title": "W"
             }
           }
         ],
@@ -1532,6 +1658,103 @@
           }
         },
         "summary": "Media"
+      }
+    },
+    "/api/preview/articles/{article_id}": {
+      "get": {
+        "operationId": "preview_article_api_preview_articles__article_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "article_id",
+            "required": true,
+            "schema": {
+              "title": "Article Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticleDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preview Article"
+      }
+    },
+    "/api/preview/projects/{project_id}": {
+      "get": {
+        "description": "A project as it will look once published, for the owner's preview link only (drafts included).",
+        "operationId": "preview_project_api_preview_projects__project_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preview Project"
       }
     },
     "/api/profile": {
@@ -1593,6 +1816,26 @@
     "/api/profile/photo": {
       "get": {
         "operationId": "profile_photo_api_profile_photo_get",
+        "parameters": [
+          {
+            "description": "Serve a copy this many pixels wide: 320, 480, 640, 960, 1280 or 1600",
+            "in": "query",
+            "name": "w",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Serve a copy this many pixels wide: 320, 480, 640, 960, 1280 or 1600",
+              "title": "W"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -1601,6 +1844,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
           }
         },
         "summary": "Profile Photo"
@@ -1867,6 +2120,53 @@
           }
         },
         "summary": "Tags"
+      }
+    },
+    "/api/updates": {
+      "get": {
+        "description": "What was edited lately, newest first: public projects and articles, work and education that are not hidden,\nand the profile. Entries that have not been edited since the site started recording it are left out\nrather than given a made-up date.",
+        "operationId": "updates_api_updates_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 8,
+              "maximum": 30,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UpdateItem"
+                  },
+                  "title": "Response Updates Api Updates Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Updates"
       }
     }
   }

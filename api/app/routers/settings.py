@@ -19,6 +19,8 @@ FIELDS = (
     ("articles_page_size", "บทความ", "จำนวนบทความต่อหนึ่งครั้งที่โหลด"),
 )
 MIN, MAX = 1, 60
+# (field, longest allowed)
+META_FIELDS = (("site_title_th", 120), ("site_title_en", 120), ("site_description_th", 300), ("site_description_en", 300))
 
 
 async def live_projects(db: AsyncSession) -> list[Project]:
@@ -75,6 +77,8 @@ async def save(
             return await page(request, session, db, row, error="ไม่พบผลงานที่เลือกสำหรับ \"วิธีการทำงาน\"", status=422)
         project_id = project.id
     values["how_i_work_project_id"] = project_id
+    for field, longest in META_FIELDS:
+        values[field] = str(form.get(field, "")).strip()[:longest]
 
     for field, value in values.items():
         setattr(row, field, value)

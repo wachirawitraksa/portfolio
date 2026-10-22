@@ -3,6 +3,7 @@
 {% from "_chips.html" import chips, chips_script %}
 {% block content %}
 <h1>{% if row and row.id %}แก้ไขรายการ{% else %}เพิ่มรายการ{% endif %}</h1>
+{% if row and row.id %}<p><a class="btn" href="/projects/{{ row.id }}/preview" target="_blank" rel="noopener">ดูตัวอย่างบนหน้าเว็บ ↗</a> <span class="muted">เปิดดูหน้าจริงได้แม้ยังเป็นฉบับร่าง (ลิงก์ใช้ได้ไม่กี่นาที · บันทึกก่อนจึงจะเห็นสิ่งที่แก้)</span></p>{% endif %}
 {% if error %}<p class="error" role="alert">{{ error | tr }}</p>{% endif %}
 
 <form id="project-form" method="post" action="{% if row and row.id %}/projects/{{ row.id }}{% else %}/projects{% endif %}"

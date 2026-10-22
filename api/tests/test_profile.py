@@ -136,6 +136,10 @@ async def test_settings_drive_default_page_sizes(authed):
         "projects_page_size": 12,
         "articles_page_size": 12,
         "how_i_work_project_id": None,
+        "site_title_th": "",
+        "site_title_en": "",
+        "site_description_th": "",
+        "site_description_en": "",
     }
     resp = await post(authed, "/admin/settings", featured_limit="2", projects_page_size="1", articles_page_size="5")
     assert resp.status_code == 303

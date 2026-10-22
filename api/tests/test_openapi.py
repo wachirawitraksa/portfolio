@@ -10,7 +10,7 @@ PUBLIC_JSON = (
     ("get", "/api/categories"), ("get", "/api/kinds"), ("get", "/api/tags"), ("get", "/api/projects"),
     ("get", "/api/projects/featured"), ("get", "/api/projects/{project_id}"), ("get", "/api/how-i-work"),
     ("get", "/api/experience"), ("get", "/api/education"), ("get", "/api/articles"), ("get", "/api/articles/{article_id}"),
-    ("get", "/api/profile"), ("get", "/api/settings"), ("post", "/api/ask"),
+    ("get", "/api/profile"), ("get", "/api/settings"), ("get", "/api/updates"), ("post", "/api/ask"),
     ("get", "/api/health"), ("get", "/api/health/live"),
 )
 

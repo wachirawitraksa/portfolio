@@ -206,9 +206,47 @@ export interface paths {
         };
         /**
          * Media
-         * @description An image of a public project. Drafts, hidden and trashed entries do not leak their pictures.
+         * @description An image of a public project, optionally at one of the fixed widths (`?w=480`).
+         *     Drafts, hidden and trashed entries do not leak their pictures, unless a valid preview link names the project.
          */
         get: operations["media_api_media__image_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/preview/articles/{article_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Preview Article */
+        get: operations["preview_article_api_preview_articles__article_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/preview/projects/{project_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview Project
+         * @description A project as it will look once published, for the owner's preview link only (drafts included).
+         */
+        get: operations["preview_project_api_preview_projects__project_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -355,6 +393,28 @@ export interface paths {
          * @description Tags used by at least one public project, for the filter list.
          */
         get: operations["tags_api_tags_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/updates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Updates
+         * @description What was edited lately, newest first: public projects and articles, work and education that are not hidden,
+         *     and the profile. Entries that have not been edited since the site started recording it are left out
+         *     rather than given a made-up date.
+         */
+        get: operations["updates_api_updates_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -592,6 +652,10 @@ export interface components {
             cv_th_url: string | null;
             /** Email */
             email: string;
+            /** Headline En */
+            headline_en: string;
+            /** Headline Th */
+            headline_th: string;
             /** Intro En */
             intro_en: string;
             /** Intro Th */
@@ -719,11 +783,23 @@ export interface components {
             how_i_work_project_id: number | null;
             /** Projects Page Size */
             projects_page_size: number;
+            /** Site Description En */
+            site_description_en: string;
+            /** Site Description Th */
+            site_description_th: string;
+            /** Site Title En */
+            site_title_en: string;
+            /** Site Title Th */
+            site_title_th: string;
         };
         /** TagCount */
         TagCount: {
             /** Count */
             count: number;
+            /** Group En */
+            group_en: string;
+            /** Group Th */
+            group_th: string;
             /** Id */
             id: number;
             /** Name */
@@ -735,6 +811,26 @@ export interface components {
             id: number;
             /** Name */
             name: string;
+        };
+        /**
+         * UpdateItem
+         * @description One entry in the "recent updates" list: something on the site that was edited lately.
+         */
+        UpdateItem: {
+            /** At */
+            at: string;
+            /** Id */
+            id: number;
+            kind: components["schemas"]["KindOut"] | null;
+            /** Title En */
+            title_en: string;
+            /** Title Th */
+            title_th: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "project" | "article" | "work" | "education" | "profile";
         };
         /** ValidationError */
         ValidationError: {
@@ -1049,7 +1145,11 @@ export interface operations {
     };
     media_api_media__image_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                preview?: string | null;
+                /** @description Serve a copy this many pixels wide: 320, 480, 640, 960, 1280 or 1600 */
+                w?: number | null;
+            };
             header?: never;
             path: {
                 image_id: number;
@@ -1065,6 +1165,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_article_api_preview_articles__article_id__get: {
+        parameters: {
+            query: {
+                token: string;
+            };
+            header?: never;
+            path: {
+                article_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArticleDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_project_api_preview_projects__project_id__get: {
+        parameters: {
+            query: {
+                token: string;
+            };
+            header?: never;
+            path: {
+                project_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectDetail"];
                 };
             };
             /** @description Validation Error */
@@ -1131,7 +1297,10 @@ export interface operations {
     };
     profile_photo_api_profile_photo_get: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Serve a copy this many pixels wide: 320, 480, 640, 960, 1280 or 1600 */
+                w?: number | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1145,6 +1314,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -1284,6 +1462,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TagCount"][];
+                };
+            };
+        };
+    };
+    updates_api_updates_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UpdateItem"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

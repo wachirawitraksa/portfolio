@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     s3_secret_key: str = ""
     s3_bucket: str = "portfolio"
     max_upload_mb: int = 8
+    # Where the public website lives, for "preview on the site" links. Empty: the admin host without its "admin." prefix.
+    site_url: str = ""
 
 
 def get_settings() -> Settings:
