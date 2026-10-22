@@ -1,5 +1,6 @@
 """The only place that talks to a language model. One small interface, so another provider (Groq, ...)
 can be added or swapped in without touching the rest. The API key lives here and nowhere else."""
+import logging
 from typing import Protocol
 
 import httpx
@@ -7,6 +8,7 @@ import httpx
 from ..config import get_settings
 
 CHEAP, SMART = "cheap", "smart"
+log = logging.getLogger("portfolio.llm")
 ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
 
@@ -32,7 +34,16 @@ class Gemini:
                 resp = await http.post(
                     ENDPOINT.format(model=model), json=body, headers={"x-goog-api-key": s.gemini_api_key}
                 )
-            if resp.status_code != 200:  # 429 is the quota; 5xx is the provider
+            if resp.status_code != 200:  # 429 is the quota; 5xx is the provider; 404 a model Google has retired
+                # The visitor just sees the "where to read" fallback, so say why in the log (never the key).
+                reason = ""
+                try:
+                    data = resp.json()
+                    error = data.get("error") if isinstance(data, dict) else None
+                    reason = str(error.get("message", ""))[:160] if isinstance(error, dict) else ""
+                except ValueError:
+                    pass
+                log.warning("gemini model %s returned %s: %s", model, resp.status_code, reason)
                 raise LLMUnavailable(f"gemini returned {resp.status_code}")
             parts = resp.json()["candidates"][0]["content"]["parts"]
             text = "".join(p.get("text", "") for p in parts).strip()

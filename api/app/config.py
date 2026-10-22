@@ -15,8 +15,8 @@ class Settings(BaseSettings):
     github_redirect_uri: str = ""
     # The question box. Without an API key it still works, in the "show me where to read" mode.
     gemini_api_key: str = ""
-    gemini_model_cheap: str = "gemini-2.5-flash-lite"  # confident matches
-    gemini_model_smart: str = "gemini-2.5-flash"  # partial matches, where wording matters more
+    gemini_model_cheap: str = "gemini-3.5-flash-lite"  # confident matches
+    gemini_model_smart: str = "gemini-3.5-flash"  # partial matches, where wording matters more
     llm_timeout_seconds: int = 20
     ask_per_ip_per_day: int = 30
     ask_per_minute: int = 6
