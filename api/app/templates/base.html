@@ -18,7 +18,7 @@
 </head>
 {#- Classes named sidebar-collapsed, menu-open, sidebar, menu, menu-pop and scrim are hooks: admin.js and the
     collapsed: / menu-open: variants in css/input.css look for them. The rest is Tailwind and daisyUI. -#}
-<body hx-boost="true" class="min-h-dvh bg-base-100 text-base-content antialiased {% if not with_nav %}bare grid place-items-start justify-center px-4 pt-[12vh] pb-10{% elif ui_sidebar(request) == 'collapsed' %}sidebar-collapsed{% endif %}">
+<body hx-boost="true"{% if tw %} data-ui="tw"{% endif %} class="min-h-dvh bg-base-100 text-base-content antialiased {% if not with_nav %}bare grid place-items-start justify-center px-4 pt-[12vh] pb-10{% elif ui_sidebar(request) == 'collapsed' %}sidebar-collapsed{% endif %}">
 {# Language and theme switches, drawn twice: in the header when there is a menu, floating on the login page. #}
 {% macro switches() %}
   <div class="d-join" role="group" aria-label="ภาษา">

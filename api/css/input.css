@@ -18,7 +18,7 @@
 @plugin "../tools/daisyui.mjs" {
   themes: false;
   prefix: "d-";
-  include: button, card, badge, input, select, textarea, checkbox, radio, toggle, label, fieldset, table, alert,
+  include: button, card, badge, input, select, textarea, checkbox, fileinput, radio, toggle, label, fieldset, table, alert,
     menu, dropdown, collapse, stat, join, divider, tab, tooltip, link, loading, list, status, kbd, validator, filter;
 }
 

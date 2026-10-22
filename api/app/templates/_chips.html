@@ -1,17 +1,18 @@
+{% import "_ui.html" as ui %}
 {% macro chips(id, label, hint, ids_name, new_name, chosen, options, limit) %}
-<div class="chips" id="{{ id }}" data-ids-name="{{ ids_name }}" data-new-name="{{ new_name }}" data-limit="{{ limit }}" data-options='{{ options | tojson }}'>
-  <label for="{{ id }}-input">{{ label }} <span class="muted">{{ hint }}</span></label>
-  <div class="chip-list">
+<div class="chips mt-3.5" id="{{ id }}" data-ids-name="{{ ids_name }}" data-new-name="{{ new_name }}" data-limit="{{ limit }}" data-options='{{ options | tojson }}'>
+  <label for="{{ id }}-input" class="mb-1.5 block font-medium">{{ label }} <span class="font-normal {{ ui.muted }}">{{ hint }}</span></label>
+  <div class="chip-list mb-2 flex flex-wrap gap-1.5">
     {% for c in chosen %}
-    <span class="chip{% if c.new %} chip-new{% endif %}">{{ c.label }}{% if c.new %} <small>ใหม่</small>{% endif %}
+    <span class="chip inline-flex items-center gap-1 rounded-full border border-primary bg-primary/15 py-0.5 pr-1 pl-3{% if c.new %} border-dashed{% endif %}">{{ c.label }}{% if c.new %} <small class="text-xs {{ ui.muted }}">ใหม่</small>{% endif %}
       <input type="hidden" name="{{ new_name if c.new else ids_name }}" value="{{ c.value }}">
-      <button type="button" class="chip-remove" aria-label="เอาออก">×</button></span>
+      <button type="button" class="chip-remove cursor-pointer border-0 bg-transparent px-2 text-lg leading-none text-base-content/60 hover:text-error" aria-label="เอาออก">×</button></span>
     {% endfor %}
   </div>
-  <div class="chip-add">
-    <input id="{{ id }}-input" type="text" list="{{ id }}-list" autocomplete="off" placeholder="พิมพ์ชื่อ แล้วกด Enter หรือ + เพิ่ม">
+  <div class="chip-add flex max-w-[460px] gap-2">
+    <input id="{{ id }}-input" class="{{ ui.input }}" type="text" list="{{ id }}-list" autocomplete="off" placeholder="พิมพ์ชื่อ แล้วกด Enter หรือ + เพิ่ม">
     <datalist id="{{ id }}-list">{% for o in options %}<option value="{{ o.label }}"{% if o.also %} label="{{ o.also }}"{% endif %}>{% endfor %}</datalist>
-    <button type="button" class="chip-add-btn">+ เพิ่ม</button>
+    <button type="button" class="chip-add-btn {{ ui.btn }}">+ เพิ่ม</button>
   </div>
 </div>
 {% endmacro %}
@@ -48,17 +49,17 @@
         return o.names.some(function (n) { return n.toLowerCase() === text.toLowerCase(); });
       });
       var chip = document.createElement("span");
-      chip.className = "chip" + (match ? "" : " chip-new");
+      chip.className = "chip inline-flex items-center gap-1 rounded-full border border-primary bg-primary/15 py-0.5 pr-1 pl-3" + (match ? "" : " border-dashed");
       chip.dataset.label = match ? match.label : text;
       chip.append(chip.dataset.label + (match ? "" : " "));
-      if (!match) { var small = document.createElement("small"); small.textContent = "ใหม่"; chip.append(small); }
+      if (!match) { var small = document.createElement("small"); small.className = "text-xs text-base-content/60"; small.textContent = "ใหม่"; chip.append(small); }
       var hidden = document.createElement("input");
       hidden.type = "hidden";
       hidden.name = match ? box.dataset.idsName : box.dataset.newName;
       hidden.value = match ? match.id : text;
       var remove = document.createElement("button");
       remove.type = "button";
-      remove.className = "chip-remove";
+      remove.className = "chip-remove cursor-pointer border-0 bg-transparent px-2 text-lg leading-none text-base-content/60 hover:text-error";
       remove.setAttribute("aria-label", "เอาออก");
       remove.textContent = "×";
       chip.append(hidden, remove);

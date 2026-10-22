@@ -44,6 +44,9 @@ code { background: var(--panel); padding: 1px 6px; border-radius: 6px; font-size
 img { max-width: 100%; }
 .icon { flex: none; vertical-align: -3px; }
 
+/* Everything from here on only reaches pages that have not been converted: a converted template sets
+   {% set tw = true %}, base.html then writes data-ui="tw" on <body>, and these rules stop applying. */
+:where(body:not([data-ui])) {
 /* ---- page header and toolbars ---- */
 main > h1 { margin-bottom: 14px; }
 .page-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
@@ -145,3 +148,5 @@ a.stat:hover { border-color: var(--accent); text-decoration: none; }
 .health { display: flex; flex-wrap: wrap; gap: 8px; }
 .cols { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 18px; align-items: start; }
 @media (max-width: 980px) { .cols { grid-template-columns: 1fr; } }
+
+}

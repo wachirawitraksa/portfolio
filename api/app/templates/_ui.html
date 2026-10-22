@@ -1,0 +1,58 @@
+{#- The look of the admin, in one place. Templates import this (`{% import "_ui.html" as ui %}`) and write
+    `class="{{ ui.btn_primary }}"` instead of repeating utility strings, so a change to a button or a card is one edit.
+
+    Every class below is written out whole, so Tailwind finds it when css/input.css is built. Run
+    scripts/build_css.sh (or .ps1) after changing anything here. daisyUI classes carry the "d-" prefix set in
+    css/input.css. -#}
+
+{# --- text ------------------------------------------------------------------------------------------------ #}
+{% set h1 = "mb-1 text-2xl leading-tight font-semibold tracking-tight" %}
+{% set h2 = "mb-1.5 text-[17px] font-semibold" %}
+{% set h3 = "mt-4 mb-1.5 text-[15px] font-semibold" %}
+{% set muted = "text-base-content/60" %}
+{% set empty = "py-2 italic text-base-content/60" %}
+{% set missing = "text-[13px] text-warning" %}
+{% set link = "text-primary hover:underline" %}
+
+{# --- layout ---------------------------------------------------------------------------------------------- #}
+{% set page_head = "mb-4 flex flex-wrap items-end justify-between gap-3" %}
+{% set toolbar = "mb-4 flex flex-wrap items-center gap-2" %}
+{% set card = "mb-4 rounded-box border border-base-300 bg-base-200 px-5 pt-4 pb-5" %}
+{% set pair = "grid grid-cols-1 gap-3.5 min-[701px]:grid-cols-2" %}
+{% set cols = "grid grid-cols-1 items-start gap-4 min-[981px]:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]" %}
+
+{# --- forms ----------------------------------------------------------------------------------------------- #}
+{% set label = "mt-3.5 mb-1.5 block font-medium" %}
+{% set check_label = "my-2 flex cursor-pointer items-center gap-2 font-normal" %}
+{% set checkbox = "d-checkbox d-checkbox-primary d-checkbox-sm" %}
+{% set input = "d-input w-full" %}
+{% set textarea = "d-textarea w-full" %}
+{% set select = "d-select w-full" %}
+{% set file = "d-file-input w-full" %}
+{% set fieldset = "my-4 rounded-box border border-base-300 px-4 pb-3" %}
+{% set legend = "px-1.5 font-semibold" %}
+
+{# --- buttons: one set at normal size, one small (inside tables and lists) --------------------------------- #}
+{% set btn = "d-btn border-base-300 bg-base-100 text-base-content hover:bg-base-300" %}
+{% set btn_primary = "d-btn d-btn-primary" %}
+{% set btn_danger = "d-btn d-btn-outline d-btn-error" %}
+{% set btn_sm = "d-btn d-btn-sm border-base-300 bg-base-100 text-base-content hover:bg-base-300" %}
+{% set btn_sm_primary = "d-btn d-btn-sm d-btn-primary" %}
+{% set btn_sm_danger = "d-btn d-btn-sm d-btn-outline d-btn-error" %}
+
+{# --- tables: the box scrolls sideways on a phone, so the page never does ----------------------------------- #}
+{% set table_box = "overflow-x-auto rounded-box border border-base-300 bg-base-200" %}
+{% set table = "d-table w-full min-w-[36rem]" %}
+{% set actions = "text-right whitespace-nowrap" %}
+{% set actions_inner = "inline-flex flex-wrap items-center justify-end gap-1.5" %}
+
+{# --- small pieces ----------------------------------------------------------------------------------------- #}
+{# A status pill. kind: ok, warn, bad, info, or empty for a plain one. #}
+{% macro badge(kind="") -%}
+<span class="{% if kind == 'ok' %}d-badge d-badge-sm d-badge-soft d-badge-success{% elif kind == 'warn' %}d-badge d-badge-sm d-badge-soft d-badge-warning{% elif kind == 'bad' %}d-badge d-badge-sm d-badge-soft d-badge-error{% elif kind == 'info' %}d-badge d-badge-sm d-badge-soft d-badge-info{% else %}d-badge d-badge-sm d-badge-ghost border-base-300{% endif %} whitespace-nowrap">{{ caller() }}</span>
+{%- endmacro %}
+
+{# A message box. kind: error (role alert), ok (role status), warn (role status). Use with {% call ui.alert("error") %}text{% endcall %}. #}
+{% macro alert(kind="ok") -%}
+<div class="{% if kind == 'error' %}d-alert d-alert-soft d-alert-error{% elif kind == 'warn' %}d-alert d-alert-soft d-alert-warning{% else %}d-alert d-alert-soft d-alert-success{% endif %} my-3 py-2.5" role="{% if kind == 'error' %}alert{% else %}status{% endif %}">{{ caller() }}</div>
+{%- endmacro %}
