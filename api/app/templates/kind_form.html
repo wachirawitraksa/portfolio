@@ -1,25 +1,27 @@
 {% extends "base.html" %}
+{% import "_ui.html" as ui %}
+{% set tw = true %}
 {% block title %}{% if row %}แก้ไขชนิด{% else %}เพิ่มชนิด{% endif %}{% endblock %}
 {% block content %}
-<h1>{% if row %}แก้ไขชนิด{% else %}เพิ่มชนิด{% endif %}</h1>
-<form method="post" action="{% if row %}/kinds/{{ row.id }}{% else %}/kinds{% endif %}" style="max-width: 640px">
+<h1 class="{{ ui.h1 }} mb-3.5">{% if row %}แก้ไขชนิด{% else %}เพิ่มชนิด{% endif %}</h1>
+<form method="post" action="{% if row %}/kinds/{{ row.id }}{% else %}/kinds{% endif %}" class="max-w-2xl">
   <input type="hidden" name="csrf_token" value="{{ csrf }}">
   <input type="hidden" name="fields_sent" value="1">
-  <section class="card">
-    <label for="name_th">ชื่อภาษาไทย</label>
-    <input id="name_th" name="name_th" type="text" value="{{ row.name_th if row else '' }}">
-    <label for="name_en">ชื่อภาษาอังกฤษ</label>
-    <input id="name_en" name="name_en" type="text" value="{{ row.name_en if row else '' }}">
-    <p class="muted">กรอกได้ทีละภาษา ช่องที่ยังว่างจะมีป้ายเตือนในรายการ และหน้าเว็บจะแสดงอีกภาษาแทน</p>
+  <section class="{{ ui.card }}">
+    <label class="{{ ui.label }}" for="name_th">ชื่อภาษาไทย</label>
+    <input class="{{ ui.input }}" id="name_th" name="name_th" type="text" value="{{ row.name_th if row else '' }}">
+    <label class="{{ ui.label }}" for="name_en">ชื่อภาษาอังกฤษ</label>
+    <input class="{{ ui.input }}" id="name_en" name="name_en" type="text" value="{{ row.name_en if row else '' }}">
+    <p class="{{ ui.muted }} my-2">กรอกได้ทีละภาษา ช่องที่ยังว่างจะมีป้ายเตือนในรายการ และหน้าเว็บจะแสดงอีกภาษาแทน</p>
   </section>
-  <section class="card">
-    <h2>ช่องที่ใช้กับชนิดนี้</h2>
-    <p class="muted">ตอนเพิ่มหรือแก้ไขรายการ ฟอร์มจะแสดงเฉพาะช่องที่ติ๊กไว้ตามชนิดที่เลือก (ชื่อ ประเภท ชื่อเรียกอื่น และสถานะแสดงเสมอ)
+  <section class="{{ ui.card }}">
+    <h2 class="{{ ui.h2 }}">ช่องที่ใช้กับชนิดนี้</h2>
+    <p class="{{ ui.muted }} my-2">ตอนเพิ่มหรือแก้ไขรายการ ฟอร์มจะแสดงเฉพาะช่องที่ติ๊กไว้ตามชนิดที่เลือก (ชื่อ ประเภท ชื่อเรียกอื่น และสถานะแสดงเสมอ)
       ข้อมูลที่เคยกรอกในช่องที่ซ่อนจะไม่หาย</p>
     {% for key, label in groups.items() %}
-    <label class="check"><input type="checkbox" name="fields" value="{{ key }}" {% if not row or key in row.fields %}checked{% endif %}> {{ label | tr }}</label>
+    <label class="{{ ui.check_label }}"><input class="{{ ui.checkbox }}" type="checkbox" name="fields" value="{{ key }}" {% if not row or key in row.fields %}checked{% endif %}> {{ label | tr }}</label>
     {% endfor %}
   </section>
-  <p><button>บันทึก</button> <a href="/kinds">ยกเลิก</a></p>
+  <p class="mt-5 flex items-center gap-3"><button class="{{ ui.btn_primary }}">บันทึก</button> <a class="{{ ui.btn }}" href="/kinds">ยกเลิก</a></p>
 </form>
 {% endblock %}

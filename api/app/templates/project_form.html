@@ -1,34 +1,36 @@
 {% extends "base.html" %}
+{% import "_ui.html" as ui %}
+{% set tw = true %}
 {% block title %}{% if row and row.id %}แก้ไขรายการ{% else %}เพิ่มรายการ{% endif %}{% endblock %}
 {% from "_chips.html" import chips, chips_script %}
 {% block content %}
-<h1>{% if row and row.id %}แก้ไขรายการ{% else %}เพิ่มรายการ{% endif %}</h1>
-{% if row and row.id %}<p><a class="btn" href="/projects/{{ row.id }}/preview" target="_blank" rel="noopener">ดูตัวอย่างบนหน้าเว็บ ↗</a> <span class="muted">เปิดดูหน้าจริงได้แม้ยังเป็นฉบับร่าง (ลิงก์ใช้ได้ไม่กี่นาที · บันทึกก่อนจึงจะเห็นสิ่งที่แก้)</span></p>{% endif %}
-{% if error %}<p class="error" role="alert">{{ error | tr }}</p>{% endif %}
+<h1 class="{{ ui.h1 }} mb-3.5">{% if row and row.id %}แก้ไขรายการ{% else %}เพิ่มรายการ{% endif %}</h1>
+{% if row and row.id %}<p class="mb-3 flex flex-wrap items-center gap-2"><a class="{{ ui.btn }}" href="/projects/{{ row.id }}/preview" target="_blank" rel="noopener">ดูตัวอย่างบนหน้าเว็บ ↗</a> <span class="font-normal {{ ui.muted }}">เปิดดูหน้าจริงได้แม้ยังเป็นฉบับร่าง (ลิงก์ใช้ได้ไม่กี่นาที · บันทึกก่อนจึงจะเห็นสิ่งที่แก้)</span></p>{% endif %}
+{% if error %}{% call ui.alert("error") %}{{ error | tr }}{% endcall %}{% endif %}
 
 <form id="project-form" method="post" action="{% if row and row.id %}/projects/{{ row.id }}{% else %}/projects{% endif %}"
       data-kind-fields='{{ kind_fields | tojson }}' data-filled='{{ filled_groups | tojson }}' data-labels='{{ groups | trmap | tojson }}'>
   <input type="hidden" name="csrf_token" value="{{ csrf }}">
 
-  <section class="card">
-    <h2>พิมพ์ชื่อก่อน</h2>
+  <section class="{{ ui.card }}">
+    <h2 class="{{ ui.h2 }}">พิมพ์ชื่อก่อน</h2>
     {% if kinds %}
-    <label for="kind_id">ชนิด</label>
-    <select id="kind_id" name="kind_id" style="max-width: 280px">
+    <label class="{{ ui.label }}" for="kind_id">ชนิด</label>
+    <select class="{{ ui.select }} max-w-[280px]" id="kind_id" name="kind_id">
       {% for k in kinds %}<option value="{{ k.id }}" {% if (row.kind_id if row and row.kind_id else kinds[0].id) == k.id %}selected{% endif %}>{{ k.name_th or k.name_en }}</option>{% endfor %}
     </select>
-    <p class="muted" id="hidden-note" hidden></p>
+    <p class="{{ ui.muted }} my-2" id="hidden-note" hidden></p>
     {% else %}
-    <p class="empty">ยังไม่มีชนิด <a href="/kinds/new">เพิ่มชนิดก่อน</a> (เช่น ผลงาน ใบเซอร์ รางวัล)</p>
+    <p class="{{ ui.empty }}">ยังไม่มีชนิด <a class="{{ ui.link }}" href="/kinds/new">เพิ่มชนิดก่อน</a> (เช่น ผลงาน ใบเซอร์ รางวัล)</p>
     {% endif %}
 
     {% for name, label, multiline in fields[:1] %}
-    <div class="pair">
+    <div class="{{ ui.pair }}">
       {% for lang, lang_label in (("th", "ไทย"), ("en", "English")) %}
       {% set value = (row | attr(name ~ "_" ~ lang)) if row else "" %}
       <div>
-        <label for="{{ name }}_{{ lang }}">{{ label | tr }} · {{ lang_label }}{% if row and row.id and not value %} <span class="missing">ยังไม่ได้กรอก</span>{% endif %}</label>
-        <input id="{{ name }}_{{ lang }}" name="{{ name }}_{{ lang }}" type="text" value="{{ value }}" {% if loop.first and not (row and row.id) %}autofocus{% endif %}>
+        <label class="{{ ui.label }}" for="{{ name }}_{{ lang }}">{{ label | tr }} · {{ lang_label }}{% if row and row.id and not value %} <span class="{{ ui.missing }}">ยังไม่ได้กรอก</span>{% endif %}</label>
+        <input class="{{ ui.input }}" id="{{ name }}_{{ lang }}" name="{{ name }}_{{ lang }}" type="text" value="{{ value }}" {% if loop.first and not (row and row.id) %}autofocus{% endif %}>
       </div>
       {% endfor %}
     </div>
@@ -41,17 +43,17 @@
     </div>
   </section>
 
-  <section class="card" data-group="story"{% if 'story' not in visible %} hidden{% endif %}>
-    <h2>รายละเอียด <span class="muted">(กรอกทีหลังได้)</span></h2>
+  <section class="{{ ui.card }}" data-group="story"{% if 'story' not in visible %} hidden{% endif %}>
+    <h2 class="{{ ui.h2 }}">รายละเอียด <span class="font-normal {{ ui.muted }}">(กรอกทีหลังได้)</span></h2>
     {% for name, label, multiline in fields[1:] %}
-    <fieldset>
-      <legend>{{ label | tr }}</legend>
-      <div class="pair">
+    <fieldset class="{{ ui.fieldset }}">
+      <legend class="{{ ui.legend }}">{{ label | tr }}</legend>
+      <div class="{{ ui.pair }}">
         {% for lang, lang_label in (("th", "ไทย"), ("en", "English")) %}
         {% set value = (row | attr(name ~ "_" ~ lang)) if row else "" %}
         <div>
-          <label for="{{ name }}_{{ lang }}">{{ lang_label }}{% if row and row.id and not value %} <span class="missing">ยังไม่ได้กรอก</span>{% endif %}</label>
-          <textarea id="{{ name }}_{{ lang }}" name="{{ name }}_{{ lang }}" rows="4">{{ value }}</textarea>
+          <label class="{{ ui.label }}" for="{{ name }}_{{ lang }}">{{ lang_label }}{% if row and row.id and not value %} <span class="{{ ui.missing }}">ยังไม่ได้กรอก</span>{% endif %}</label>
+          <textarea class="{{ ui.textarea }}" id="{{ name }}_{{ lang }}" name="{{ name }}_{{ lang }}" rows="4">{{ value }}</textarea>
         </div>
         {% endfor %}
       </div>
@@ -59,109 +61,109 @@
     {% endfor %}
   </section>
 
-  <section class="card" data-group="credential"{% if 'credential' not in visible %} hidden{% endif %}>
-    <h2>ใบเซอร์ / รางวัล / คอร์ส</h2>
-    <div class="pair">
+  <section class="{{ ui.card }}" data-group="credential"{% if 'credential' not in visible %} hidden{% endif %}>
+    <h2 class="{{ ui.h2 }}">ใบเซอร์ / รางวัล / คอร์ส</h2>
+    <div class="{{ ui.pair }}">
       <div>
-        <label for="issuer">ผู้ออก</label>
-        <input id="issuer" name="issuer" type="text" value="{{ row.issuer if row else '' }}">
+        <label class="{{ ui.label }}" for="issuer">ผู้ออก</label>
+        <input class="{{ ui.input }}" id="issuer" name="issuer" type="text" value="{{ row.issuer if row else '' }}">
       </div>
       <div>
-        <label for="issued_on">วันที่ได้รับ</label>
-        <input id="issued_on" name="issued_on" type="date" value="{{ row.issued_on.isoformat() if row and row.issued_on else '' }}">
+        <label class="{{ ui.label }}" for="issued_on">วันที่ได้รับ</label>
+        <input class="{{ ui.input }}" id="issued_on" name="issued_on" type="date" value="{{ row.issued_on.isoformat() if row and row.issued_on else '' }}">
       </div>
     </div>
-    <label for="verify_url">ลิงก์ตรวจสอบ</label>
-    <input id="verify_url" name="verify_url" type="text" value="{{ row.verify_url if row else '' }}">
+    <label class="{{ ui.label }}" for="verify_url">ลิงก์ตรวจสอบ</label>
+    <input class="{{ ui.input }}" id="verify_url" name="verify_url" type="text" value="{{ row.verify_url if row else '' }}">
   </section>
 
-  <section class="card">
-    <h2>ลิงก์และข้อมูลอื่น</h2>
+  <section class="{{ ui.card }}">
+    <h2 class="{{ ui.h2 }}">ลิงก์และข้อมูลอื่น</h2>
     <div data-group="year"{% if 'year' not in visible %} hidden{% endif %}>
-      <label for="year">ปี</label>
-      <input id="year" name="year" type="text" inputmode="numeric" value="{{ row.year if row and row.year else '' }}" style="max-width: 120px">
+      <label class="{{ ui.label }}" for="year">ปี</label>
+      <input class="{{ ui.input }} max-w-[120px]" id="year" name="year" type="text" inputmode="numeric" value="{{ row.year if row and row.year else '' }}">
     </div>
     <div data-group="links"{% if 'links' not in visible %} hidden{% endif %}>
-      <label for="repo_url">ลิงก์ repo</label>
-      <input id="repo_url" name="repo_url" type="text" value="{{ row.repo_url if row else '' }}">
-      <label for="demo_url">ลิงก์ demo ที่กดใช้ได้จริง</label>
-      <input id="demo_url" name="demo_url" type="text" value="{{ row.demo_url if row else '' }}">
+      <label class="{{ ui.label }}" for="repo_url">ลิงก์ repo</label>
+      <input class="{{ ui.input }}" id="repo_url" name="repo_url" type="text" value="{{ row.repo_url if row else '' }}">
+      <label class="{{ ui.label }}" for="demo_url">ลิงก์ demo ที่กดใช้ได้จริง</label>
+      <input class="{{ ui.input }}" id="demo_url" name="demo_url" type="text" value="{{ row.demo_url if row else '' }}">
     </div>
-    <label for="aliases">ชื่อเรียกอื่น (หนึ่งบรรทัดต่อหนึ่งชื่อ ใช้เป็น glossary ให้ระบบถามตอบหาเจอ)</label>
-    <textarea id="aliases" name="aliases" rows="3">{{ (row.aliases | join("\n")) if row else '' }}</textarea>
+    <label class="{{ ui.label }}" for="aliases">ชื่อเรียกอื่น (หนึ่งบรรทัดต่อหนึ่งชื่อ ใช้เป็น glossary ให้ระบบถามตอบหาเจอ)</label>
+    <textarea class="{{ ui.textarea }}" id="aliases" name="aliases" rows="3">{{ (row.aliases | join("\n")) if row else '' }}</textarea>
   </section>
 
-  <section class="card">
-    <h2>การแสดงผล</h2>
-    <label for="status">สถานะ</label>
-    <select id="status" name="status" style="max-width: 280px">
+  <section class="{{ ui.card }}">
+    <h2 class="{{ ui.h2 }}">การแสดงผล</h2>
+    <label class="{{ ui.label }}" for="status">สถานะ</label>
+    <select class="{{ ui.select }} max-w-[280px]" id="status" name="status">
       {% for value, text in statuses %}<option value="{{ value }}" {% if (row.status if row and row.status else 'draft') == value %}selected{% endif %}>{{ text | tr }}</option>{% endfor %}
     </select>
-    <label class="check"><input type="checkbox" name="featured" {% if row and row.featured %}checked{% endif %}> ขึ้นหน้าแรก</label>
+    <label class="{{ ui.check_label }}"><input class="{{ ui.checkbox }}" type="checkbox" name="featured" {% if row and row.featured %}checked{% endif %}> ขึ้นหน้าแรก</label>
   </section>
 
-  <p><button>บันทึก</button> <a href="/projects">ยกเลิก</a></p>
+  <p class="mt-5 flex items-center gap-3"><button class="{{ ui.btn_primary }}">บันทึก</button> <a class="{{ ui.btn }}" href="/projects">ยกเลิก</a></p>
 </form>
 
-<section class="card" id="images">
-  <h2>รูปภาพ / ภาพหน้าจอ</h2>
+<section class="{{ ui.card }}" id="images">
+  <h2 class="{{ ui.h2 }}">รูปภาพ / ภาพหน้าจอ</h2>
   {% if not (row and row.id) %}
-  <p class="empty">บันทึกรายการก่อน แล้วจึงเพิ่มรูปได้</p>
+  <p class="{{ ui.empty }}">บันทึกรายการก่อน แล้วจึงเพิ่มรูปได้</p>
   {% else %}
   {% if images %}
-  <div class="gallery">
+  <div class="my-3 grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-4">
     {% for img in images %}
-    <figure class="shot">
-      <img src="/media/{{ img.id }}" alt="{{ img.caption_th or img.caption_en }}" loading="lazy">
-      {% if img.is_cover %}<span class="cover-badge">รูปปก</span>{% endif %}
+    <figure class="relative m-0 rounded-box border border-base-300 bg-base-100 p-2.5">
+      <img src="/media/{{ img.id }}" alt="{{ img.caption_th or img.caption_en }}" loading="lazy" class="h-40 w-full rounded-lg bg-base-200 object-contain">
+      {% if img.is_cover %}<span class="absolute top-4 left-4 rounded-full bg-primary px-2.5 py-px text-xs text-primary-content">รูปปก</span>{% endif %}
       <form method="post" action="/projects/{{ row.id }}/images/{{ img.id }}/caption">
         <input type="hidden" name="csrf_token" value="{{ csrf }}">
-        <label for="cap_th_{{ img.id }}">คำบรรยาย · ไทย</label>
-        <input id="cap_th_{{ img.id }}" name="caption_th" type="text" maxlength="300" value="{{ img.caption_th }}">
-        <label for="cap_en_{{ img.id }}">Caption · English</label>
-        <input id="cap_en_{{ img.id }}" name="caption_en" type="text" maxlength="300" value="{{ img.caption_en }}">
-        <p class="row-actions"><button>บันทึกคำบรรยาย</button></p>
+        <label class="{{ ui.label }}" for="cap_th_{{ img.id }}">คำบรรยาย · ไทย</label>
+        <input class="{{ ui.input }}" id="cap_th_{{ img.id }}" name="caption_th" type="text" maxlength="300" value="{{ img.caption_th }}">
+        <label class="{{ ui.label }}" for="cap_en_{{ img.id }}">Caption · English</label>
+        <input class="{{ ui.input }}" id="cap_en_{{ img.id }}" name="caption_en" type="text" maxlength="300" value="{{ img.caption_en }}">
+        <p class="mt-2.5"><button class="{{ ui.btn_sm }}">บันทึกคำบรรยาย</button></p>
       </form>
-      <div class="row-actions">
+      <div class="mt-2.5 flex flex-wrap items-center gap-1.5">
         {% for direction, text in (("up", "↑"), ("down", "↓")) %}
         <form method="post" action="/projects/{{ row.id }}/images/{{ img.id }}/move" class="inline">
           <input type="hidden" name="csrf_token" value="{{ csrf }}">
           <input type="hidden" name="direction" value="{{ direction }}">
-          <button aria-label="{{ 'เลื่อนขึ้น' if direction == 'up' else 'เลื่อนลง' }}">{{ text }}</button>
+          <button class="{{ ui.btn_sm }}" aria-label="{{ 'เลื่อนขึ้น' if direction == 'up' else 'เลื่อนลง' }}">{{ text }}</button>
         </form>
         {% endfor %}
         {% if not img.is_cover %}
         <form method="post" action="/projects/{{ row.id }}/images/{{ img.id }}/cover" class="inline">
           <input type="hidden" name="csrf_token" value="{{ csrf }}">
-          <button>ตั้งเป็นรูปปก</button>
+          <button class="{{ ui.btn_sm }}">ตั้งเป็นรูปปก</button>
         </form>
         {% endif %}
         <form method="post" action="/projects/{{ row.id }}/images/{{ img.id }}/trash" class="inline">
           <input type="hidden" name="csrf_token" value="{{ csrf }}">
-          <button>ลบ</button>
+          <button class="{{ ui.btn_sm_danger }}">ลบ</button>
         </form>
       </div>
     </figure>
     {% endfor %}
   </div>
   {% else %}
-  <p class="empty">ยังไม่มีรูป</p>
+  <p class="{{ ui.empty }}">ยังไม่มีรูป</p>
   {% endif %}
 
   <form method="post" action="/projects/{{ row.id }}/images" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="{{ csrf }}">
-    <label for="files">เพิ่มรูป <span class="muted">(JPEG, PNG, GIF, WebP · เลือกได้หลายไฟล์)</span></label>
-    <input id="files" name="files" type="file" accept="image/jpeg,image/png,image/gif,image/webp" multiple required>
-    <p><button>อัปโหลด</button></p>
+    <label class="{{ ui.label }}" for="files">เพิ่มรูป <span class="font-normal {{ ui.muted }}">(JPEG, PNG, GIF, WebP · เลือกได้หลายไฟล์)</span></label>
+    <input class="{{ ui.file }}" id="files" name="files" type="file" accept="image/jpeg,image/png,image/gif,image/webp" multiple required>
+    <button class="{{ ui.btn_primary }} mt-3">อัปโหลด</button>
   </form>
 
   {% if trashed_images %}
-  <h3>รูปที่ลบแล้ว</h3>
-  <div class="row-actions">
+  <h3 class="{{ ui.h3 }}">รูปที่ลบแล้ว</h3>
+  <div class="flex flex-wrap items-center gap-1.5">
     {% for img in trashed_images %}
     <form method="post" action="/projects/{{ row.id }}/images/{{ img.id }}/restore" class="inline">
       <input type="hidden" name="csrf_token" value="{{ csrf }}">
-      <button>กู้คืนรูป #{{ img.id }}</button>
+      <button class="{{ ui.btn_sm }}">กู้คืนรูป #{{ img.id }}</button>
     </form>
     {% endfor %}
   </div>

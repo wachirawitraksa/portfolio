@@ -1,73 +1,75 @@
 {% extends "base.html" %}
+{% import "_ui.html" as ui %}
+{% set tw = true %}
 {% block title %}{% if row and row.id %}แก้ไขบทความ{% else %}เพิ่มบทความ{% endif %}{% endblock %}
 {% from "_chips.html" import chips, chips_script %}
 {% block content %}
-<h1>{% if row and row.id %}แก้ไขบทความ{% else %}เพิ่มบทความ{% endif %}</h1>
-{% if row and row.id %}<p><a class="btn" href="/articles/{{ row.id }}/preview" target="_blank" rel="noopener">ดูตัวอย่างบนหน้าเว็บ ↗</a> <span class="muted">เปิดดูหน้าจริงได้แม้ยังเป็นฉบับร่าง (ลิงก์ใช้ได้ไม่กี่นาที · บันทึกก่อนจึงจะเห็นสิ่งที่แก้)</span></p>{% endif %}
-{% if error %}<p class="error" role="alert">{{ error | tr }}</p>{% endif %}
+<h1 class="{{ ui.h1 }} mb-3.5">{% if row and row.id %}แก้ไขบทความ{% else %}เพิ่มบทความ{% endif %}</h1>
+{% if row and row.id %}<p class="mb-3 flex flex-wrap items-center gap-2"><a class="{{ ui.btn }}" href="/articles/{{ row.id }}/preview" target="_blank" rel="noopener">ดูตัวอย่างบนหน้าเว็บ ↗</a> <span class="font-normal {{ ui.muted }}">เปิดดูหน้าจริงได้แม้ยังเป็นฉบับร่าง (ลิงก์ใช้ได้ไม่กี่นาที · บันทึกก่อนจึงจะเห็นสิ่งที่แก้)</span></p>{% endif %}
+{% if error %}{% call ui.alert("error") %}{{ error | tr }}{% endcall %}{% endif %}
 
 <form method="post" action="{% if row and row.id %}/articles/{{ row.id }}{% else %}/articles{% endif %}">
   <input type="hidden" name="csrf_token" value="{{ csrf }}">
 
-  <section class="card">
-    <h2>ชื่อและที่มา</h2>
-    <div class="pair">
+  <section class="{{ ui.card }}">
+    <h2 class="{{ ui.h2 }}">ชื่อและที่มา</h2>
+    <div class="{{ ui.pair }}">
       {% for lang, lang_label in (("th", "ไทย"), ("en", "English")) %}
       {% set value = (row | attr("title_" ~ lang)) if row else "" %}
       <div>
-        <label for="title_{{ lang }}">ชื่อบทความ · {{ lang_label }}{% if row and row.id and not value %} <span class="missing">ยังไม่ได้กรอก</span>{% endif %}</label>
-        <input id="title_{{ lang }}" name="title_{{ lang }}" type="text" maxlength="200" value="{{ value }}" {% if loop.first and not (row and row.id) %}autofocus{% endif %}>
+        <label class="{{ ui.label }}" for="title_{{ lang }}">ชื่อบทความ · {{ lang_label }}{% if row and row.id and not value %} <span class="{{ ui.missing }}">ยังไม่ได้กรอก</span>{% endif %}</label>
+        <input class="{{ ui.input }}" id="title_{{ lang }}" name="title_{{ lang }}" type="text" maxlength="200" value="{{ value }}" {% if loop.first and not (row and row.id) %}autofocus{% endif %}>
       </div>
       {% endfor %}
     </div>
-    <label for="source">ที่มา</label>
-    <select id="source" name="source" style="max-width: 280px">
+    <label class="{{ ui.label }}" for="source">ที่มา</label>
+    <select class="{{ ui.select }} max-w-[280px]" id="source" name="source">
       {% for key, label in sources %}<option value="{{ key }}" {% if (row.source if row and row.source else 'internal') == key %}selected{% endif %}>{{ label | tr }}</option>{% endfor %}
     </select>
-    <label for="published_on">วันที่เผยแพร่</label>
-    <input id="published_on" name="published_on" type="date" value="{{ row.published_on.isoformat() if row and row.published_on else '' }}" style="max-width: 200px">
-    <div class="pair">
+    <label class="{{ ui.label }}" for="published_on">วันที่เผยแพร่</label>
+    <input class="{{ ui.input }} max-w-[200px]" id="published_on" name="published_on" type="date" value="{{ row.published_on.isoformat() if row and row.published_on else '' }}">
+    <div class="{{ ui.pair }}">
       {% for lang, lang_label in (("th", "ไทย"), ("en", "English")) %}
       {% set value = (row | attr("summary_" ~ lang)) if row else "" %}
       <div>
-        <label for="summary_{{ lang }}">สรุปสั้น ๆ · {{ lang_label }}{% if row and row.id and not value %} <span class="missing">ยังไม่ได้กรอก</span>{% endif %}</label>
-        <textarea id="summary_{{ lang }}" name="summary_{{ lang }}" rows="3">{{ value }}</textarea>
+        <label class="{{ ui.label }}" for="summary_{{ lang }}">สรุปสั้น ๆ · {{ lang_label }}{% if row and row.id and not value %} <span class="{{ ui.missing }}">ยังไม่ได้กรอก</span>{% endif %}</label>
+        <textarea class="{{ ui.textarea }}" id="summary_{{ lang }}" name="summary_{{ lang }}" rows="3">{{ value }}</textarea>
       </div>
       {% endfor %}
     </div>
     {{ chips("tag", "หัวข้อ / tag", "(พิมพ์ชื่อใหม่แล้วกดเพิ่มได้เลย)", "tag_ids", "new_tags", chosen_tags, tag_options, 0) }}
   </section>
 
-  <section class="card" id="external-fields">
-    <h2>ลิงก์ไปแพลตฟอร์มอื่น <span class="muted">(ใช้เมื่อที่มาเป็น "ลิงก์ไปแพลตฟอร์มอื่น")</span></h2>
-    <label for="external_url">ลิงก์บทความ</label>
-    <input id="external_url" name="external_url" type="text" maxlength="500" value="{{ row.external_url if row else '' }}">
-    <label for="platform">ชื่อแพลตฟอร์ม <span class="muted">(เช่น Medium, dev.to)</span></label>
-    <input id="platform" name="platform" type="text" maxlength="80" value="{{ row.platform if row else '' }}" style="max-width: 280px">
+  <section class="{{ ui.card }}" id="external-fields">
+    <h2 class="{{ ui.h2 }}">ลิงก์ไปแพลตฟอร์มอื่น <span class="font-normal {{ ui.muted }}">(ใช้เมื่อที่มาเป็น "ลิงก์ไปแพลตฟอร์มอื่น")</span></h2>
+    <label class="{{ ui.label }}" for="external_url">ลิงก์บทความ</label>
+    <input class="{{ ui.input }}" id="external_url" name="external_url" type="text" maxlength="500" value="{{ row.external_url if row else '' }}">
+    <label class="{{ ui.label }}" for="platform">ชื่อแพลตฟอร์ม <span class="font-normal {{ ui.muted }}">(เช่น Medium, dev.to)</span></label>
+    <input class="{{ ui.input }} max-w-[280px]" id="platform" name="platform" type="text" maxlength="80" value="{{ row.platform if row else '' }}">
   </section>
 
-  <section class="card" id="internal-fields">
-    <h2>เนื้อหา <span class="muted">(ใช้เมื่อที่มาเป็น "เขียนในเว็บนี้" · เขียนด้วย Markdown ได้)</span></h2>
-    <div class="pair">
+  <section class="{{ ui.card }}" id="internal-fields">
+    <h2 class="{{ ui.h2 }}">เนื้อหา <span class="font-normal {{ ui.muted }}">(ใช้เมื่อที่มาเป็น "เขียนในเว็บนี้" · เขียนด้วย Markdown ได้)</span></h2>
+    <div class="{{ ui.pair }}">
       {% for lang, lang_label in (("th", "ไทย"), ("en", "English")) %}
       {% set value = (row | attr("body_" ~ lang)) if row else "" %}
       <div>
-        <label for="body_{{ lang }}">{{ lang_label }}{% if row and row.id and row.source == 'internal' and not value %} <span class="missing">ยังไม่ได้กรอก</span>{% endif %}</label>
-        <textarea id="body_{{ lang }}" name="body_{{ lang }}" rows="14">{{ value }}</textarea>
+        <label class="{{ ui.label }}" for="body_{{ lang }}">{{ lang_label }}{% if row and row.id and row.source == 'internal' and not value %} <span class="{{ ui.missing }}">ยังไม่ได้กรอก</span>{% endif %}</label>
+        <textarea class="{{ ui.textarea }}" id="body_{{ lang }}" name="body_{{ lang }}" rows="14">{{ value }}</textarea>
       </div>
       {% endfor %}
     </div>
   </section>
 
-  <section class="card">
-    <h2>การแสดงผล</h2>
-    <label for="status">สถานะ</label>
-    <select id="status" name="status" style="max-width: 280px">
+  <section class="{{ ui.card }}">
+    <h2 class="{{ ui.h2 }}">การแสดงผล</h2>
+    <label class="{{ ui.label }}" for="status">สถานะ</label>
+    <select class="{{ ui.select }} max-w-[280px]" id="status" name="status">
       {% for value, text in statuses %}<option value="{{ value }}" {% if (row.status if row and row.status else 'draft') == value %}selected{% endif %}>{{ text | tr }}</option>{% endfor %}
     </select>
   </section>
 
-  <p><button>บันทึก</button> <a href="/articles">ยกเลิก</a></p>
+  <p class="mt-5 flex items-center gap-3"><button class="{{ ui.btn_primary }}">บันทึก</button> <a class="{{ ui.btn }}" href="/articles">ยกเลิก</a></p>
 </form>
 
 {{ chips_script() }}

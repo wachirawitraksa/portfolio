@@ -1,16 +1,18 @@
 {% extends "base.html" %}
+{% import "_ui.html" as ui %}
+{% set tw = true %}
 {% block title %}{% if row and row.id %}แก้ไขกลุ่มคำ{% else %}เพิ่มกลุ่มคำ{% endif %}{% endblock %}
 {% block content %}
-<h1>{% if row and row.id %}แก้ไขกลุ่มคำ{% else %}เพิ่มกลุ่มคำ{% endif %}</h1>
-{% if error %}<p class="error" role="alert">{{ error | tr }}</p>{% endif %}
+<h1 class="{{ ui.h1 }} mb-3.5">{% if row and row.id %}แก้ไขกลุ่มคำ{% else %}เพิ่มกลุ่มคำ{% endif %}</h1>
+{% if error %}{% call ui.alert("error") %}{{ error | tr }}{% endcall %}{% endif %}
 <form method="post" action="{% if row and row.id %}/glossary/{{ row.id }}{% else %}/glossary{% endif %}">
   <input type="hidden" name="csrf_token" value="{{ csrf }}">
-  <section class="card">
-    <label for="terms">คำที่มีความหมายเดียวกัน <span class="muted">(หนึ่งบรรทัดต่อหนึ่งคำ ไทยหรืออังกฤษก็ได้ อย่างน้อย 2 คำ)</span></label>
-    <textarea id="terms" name="terms" rows="6" autofocus>{{ (row.terms | join("\n")) if row else "" }}</textarea>
-    <label for="note">หมายเหตุ <span class="muted">(ไม่บังคับ)</span></label>
-    <input id="note" name="note" type="text" maxlength="200" value="{{ row.note if row else '' }}">
+  <section class="{{ ui.card }}">
+    <label class="{{ ui.label }}" for="terms">คำที่มีความหมายเดียวกัน <span class="font-normal {{ ui.muted }}">(หนึ่งบรรทัดต่อหนึ่งคำ ไทยหรืออังกฤษก็ได้ อย่างน้อย 2 คำ)</span></label>
+    <textarea class="{{ ui.textarea }}" id="terms" name="terms" rows="6" autofocus>{{ (row.terms | join("\n")) if row else "" }}</textarea>
+    <label class="{{ ui.label }}" for="note">หมายเหตุ <span class="font-normal {{ ui.muted }}">(ไม่บังคับ)</span></label>
+    <input class="{{ ui.input }}" id="note" name="note" type="text" maxlength="200" value="{{ row.note if row else '' }}">
   </section>
-  <p><button>บันทึก</button> <a href="/glossary">ยกเลิก</a></p>
+  <p class="mt-5 flex items-center gap-3"><button class="{{ ui.btn_primary }}">บันทึก</button> <a class="{{ ui.btn }}" href="/glossary">ยกเลิก</a></p>
 </form>
 {% endblock %}

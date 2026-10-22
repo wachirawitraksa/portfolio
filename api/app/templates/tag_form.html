@@ -1,19 +1,21 @@
 {% extends "base.html" %}
+{% import "_ui.html" as ui %}
+{% set tw = true %}
 {% block title %}{% if row and row.id %}แก้ไข tag{% else %}เพิ่ม tag{% endif %}{% endblock %}
 {% block content %}
-<h1>{% if row and row.id %}แก้ไข tag{% else %}เพิ่ม tag{% endif %}</h1>
-{% if error %}<p class="error" role="alert">{{ error | tr }}</p>{% endif %}
-<form method="post" action="{% if row and row.id %}/tags/{{ row.id }}{% else %}/tags{% endif %}" style="max-width: 420px">
+<h1 class="{{ ui.h1 }} mb-3.5">{% if row and row.id %}แก้ไข tag{% else %}เพิ่ม tag{% endif %}</h1>
+{% if error %}{% call ui.alert("error") %}{{ error | tr }}{% endcall %}{% endif %}
+<form method="post" action="{% if row and row.id %}/tags/{{ row.id }}{% else %}/tags{% endif %}" class="max-w-md">
   <input type="hidden" name="csrf_token" value="{{ csrf }}">
-  <label for="name">ชื่อ (เช่น PostgreSQL)</label>
-  <input id="name" name="name" type="text" value="{{ row.name if row else '' }}">
-  <label for="aliases">ชื่อย่อ / ชื่อเรียกอื่น (หนึ่งบรรทัดต่อหนึ่งชื่อ เช่น pg, postgres)</label>
-  <textarea id="aliases" name="aliases" rows="4">{{ (row.aliases | join("\n")) if row else '' }}</textarea>
-  <p class="muted">ระบบถามตอบ (RAG) ใช้ชื่อเหล่านี้ช่วยหาผลงานที่เกี่ยวข้อง</p>
-  <label for="group_th">กลุ่มในส่วนทักษะ · ไทย <span class="muted">(เช่น ฟรอนต์เอนด์ · เว้นว่าง = กลุ่มทั่วไป)</span></label>
-  <input id="group_th" name="group_th" type="text" maxlength="60" value="{{ row.group_th if row else '' }}">
-  <label for="group_en">กลุ่มในส่วนทักษะ · English <span class="muted">(e.g. Frontend)</span></label>
-  <input id="group_en" name="group_en" type="text" maxlength="60" value="{{ row.group_en if row else '' }}">
-  <p><button>บันทึก</button> <a href="/tags">ยกเลิก</a></p>
+  <label class="{{ ui.label }}" for="name">ชื่อ (เช่น PostgreSQL)</label>
+  <input class="{{ ui.input }}" id="name" name="name" type="text" value="{{ row.name if row else '' }}">
+  <label class="{{ ui.label }}" for="aliases">ชื่อย่อ / ชื่อเรียกอื่น (หนึ่งบรรทัดต่อหนึ่งชื่อ เช่น pg, postgres)</label>
+  <textarea class="{{ ui.textarea }}" id="aliases" name="aliases" rows="4">{{ (row.aliases | join("\n")) if row else '' }}</textarea>
+  <p class="{{ ui.muted }} my-2">ระบบถามตอบ (RAG) ใช้ชื่อเหล่านี้ช่วยหาผลงานที่เกี่ยวข้อง</p>
+  <label class="{{ ui.label }}" for="group_th">กลุ่มในส่วนทักษะ · ไทย <span class="font-normal {{ ui.muted }}">(เช่น ฟรอนต์เอนด์ · เว้นว่าง = กลุ่มทั่วไป)</span></label>
+  <input class="{{ ui.input }}" id="group_th" name="group_th" type="text" maxlength="60" value="{{ row.group_th if row else '' }}">
+  <label class="{{ ui.label }}" for="group_en">กลุ่มในส่วนทักษะ · English <span class="font-normal {{ ui.muted }}">(e.g. Frontend)</span></label>
+  <input class="{{ ui.input }}" id="group_en" name="group_en" type="text" maxlength="60" value="{{ row.group_en if row else '' }}">
+  <p class="mt-5 flex items-center gap-3"><button class="{{ ui.btn_primary }}">บันทึก</button> <a class="{{ ui.btn }}" href="/tags">ยกเลิก</a></p>
 </form>
 {% endblock %}

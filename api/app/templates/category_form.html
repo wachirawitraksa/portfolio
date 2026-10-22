@@ -1,14 +1,16 @@
 {% extends "base.html" %}
+{% import "_ui.html" as ui %}
+{% set tw = true %}
 {% block title %}{% if row %}แก้ไขประเภท{% else %}เพิ่มประเภท{% endif %}{% endblock %}
 {% block content %}
-<h1>{% if row %}แก้ไขประเภท{% else %}เพิ่มประเภท{% endif %}</h1>
-<form method="post" action="{% if row %}/categories/{{ row.id }}{% else %}/categories{% endif %}" style="max-width: 420px">
+<h1 class="{{ ui.h1 }} mb-3.5">{% if row %}แก้ไขประเภท{% else %}เพิ่มประเภท{% endif %}</h1>
+<form method="post" action="{% if row %}/categories/{{ row.id }}{% else %}/categories{% endif %}" class="max-w-md">
   <input type="hidden" name="csrf_token" value="{{ csrf }}">
-  <label for="name_th">ชื่อภาษาไทย</label>
-  <input id="name_th" name="name_th" type="text" value="{{ row.name_th if row else '' }}">
-  <label for="name_en">ชื่อภาษาอังกฤษ</label>
-  <input id="name_en" name="name_en" type="text" value="{{ row.name_en if row else '' }}">
-  <p class="muted">กรอกได้ทีละภาษา ช่องที่ยังว่างจะมีป้ายเตือนในรายการ และหน้าเว็บจะแสดงอีกภาษาแทน</p>
-  <p><button>บันทึก</button> <a href="/categories">ยกเลิก</a></p>
+  <label class="{{ ui.label }}" for="name_th">ชื่อภาษาไทย</label>
+  <input class="{{ ui.input }}" id="name_th" name="name_th" type="text" value="{{ row.name_th if row else '' }}">
+  <label class="{{ ui.label }}" for="name_en">ชื่อภาษาอังกฤษ</label>
+  <input class="{{ ui.input }}" id="name_en" name="name_en" type="text" value="{{ row.name_en if row else '' }}">
+  <p class="{{ ui.muted }} my-2">กรอกได้ทีละภาษา ช่องที่ยังว่างจะมีป้ายเตือนในรายการ และหน้าเว็บจะแสดงอีกภาษาแทน</p>
+  <p class="mt-5 flex items-center gap-3"><button class="{{ ui.btn_primary }}">บันทึก</button> <a class="{{ ui.btn }}" href="/categories">ยกเลิก</a></p>
 </form>
 {% endblock %}

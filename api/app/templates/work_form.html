@@ -1,70 +1,72 @@
 {% extends "base.html" %}
+{% import "_ui.html" as ui %}
+{% set tw = true %}
 {% block title %}{% if row and row.id %}แก้ไขประวัติการทำงาน{% else %}เพิ่มประวัติการทำงาน{% endif %}{% endblock %}
 {% from "_chips.html" import chips, chips_script %}
 {% block content %}
-<h1>{% if row and row.id %}แก้ไขประวัติการทำงาน{% else %}เพิ่มประวัติการทำงาน{% endif %}</h1>
-{% if error %}<p class="error" role="alert">{{ error | tr }}</p>{% endif %}
+<h1 class="{{ ui.h1 }} mb-3.5">{% if row and row.id %}แก้ไขประวัติการทำงาน{% else %}เพิ่มประวัติการทำงาน{% endif %}</h1>
+{% if error %}{% call ui.alert("error") %}{{ error | tr }}{% endcall %}{% endif %}
 
 <form method="post" action="{% if row and row.id %}/work/{{ row.id }}{% else %}/work{% endif %}">
   <input type="hidden" name="csrf_token" value="{{ csrf }}">
 
-  <section class="card">
-    <h2>ตำแหน่ง / หัวข้อ และที่ทำงาน</h2>
-    <div class="pair">
+  <section class="{{ ui.card }}">
+    <h2 class="{{ ui.h2 }}">ตำแหน่ง / หัวข้อ และที่ทำงาน</h2>
+    <div class="{{ ui.pair }}">
       {% for lang, lang_label in (("th", "ไทย"), ("en", "English")) %}
       {% set value = (row | attr("position_" ~ lang)) if row else "" %}
       <div>
-        <label for="position_{{ lang }}">ตำแหน่ง / หัวข้อ · {{ lang_label }}{% if row and row.id and not value %} <span class="missing">ยังไม่ได้กรอก</span>{% endif %}</label>
-        <input id="position_{{ lang }}" name="position_{{ lang }}" type="text" maxlength="200" value="{{ value }}" {% if loop.first and not (row and row.id) %}autofocus{% endif %}>
+        <label class="{{ ui.label }}" for="position_{{ lang }}">ตำแหน่ง / หัวข้อ · {{ lang_label }}{% if row and row.id and not value %} <span class="{{ ui.missing }}">ยังไม่ได้กรอก</span>{% endif %}</label>
+        <input class="{{ ui.input }}" id="position_{{ lang }}" name="position_{{ lang }}" type="text" maxlength="200" value="{{ value }}" {% if loop.first and not (row and row.id) %}autofocus{% endif %}>
       </div>
       {% endfor %}
     </div>
-    <label for="employment_type">รูปแบบ</label>
-    <select id="employment_type" name="employment_type" style="max-width: 280px">
+    <label class="{{ ui.label }}" for="employment_type">รูปแบบ</label>
+    <select class="{{ ui.select }} max-w-[280px]" id="employment_type" name="employment_type">
       {% for key, label in types %}<option value="{{ key }}" {% if (row.employment_type if row and row.employment_type else 'full_time') == key %}selected{% endif %}>{{ label | tr }}</option>{% endfor %}
     </select>
-    <label for="employer">ที่ทำงาน / ผู้จัด <span class="muted">(เว้นว่างได้เฉพาะ "กิจกรรม / งานสั้น")</span></label>
-    <input id="employer" name="employer" type="text" maxlength="200" value="{{ row.employer if row else '' }}">
+    <label class="{{ ui.label }}" for="employer">ที่ทำงาน / ผู้จัด <span class="font-normal {{ ui.muted }}">(เว้นว่างได้เฉพาะ "กิจกรรม / งานสั้น")</span></label>
+    <input class="{{ ui.input }}" id="employer" name="employer" type="text" maxlength="200" value="{{ row.employer if row else '' }}">
   </section>
 
-  <section class="card">
-    <h2>ช่วงเวลา</h2>
-    <p class="muted">งานยาวเป็นปีเลือก "ช่วงเวลา" · กิจกรรมสั้นที่แทรกอยู่ระหว่างงานยาวเลือก "วันเดียว" ได้ ไทม์ไลน์เรียงตามวันที่เริ่ม</p>
+  <section class="{{ ui.card }}">
+    <h2 class="{{ ui.h2 }}">ช่วงเวลา</h2>
+    <p class="{{ ui.muted }} my-2">งานยาวเป็นปีเลือก "ช่วงเวลา" · กิจกรรมสั้นที่แทรกอยู่ระหว่างงานยาวเลือก "วันเดียว" ได้ ไทม์ไลน์เรียงตามวันที่เริ่ม</p>
     {% for key, label in spans %}
-    <label class="check"><input type="radio" name="span" value="{{ key }}" {% if span == key %}checked{% endif %}> {{ label | tr }}</label>
+    <label class="{{ ui.check_label }}"><input class="{{ ui.radio }}" type="radio" name="span" value="{{ key }}" {% if span == key %}checked{% endif %}> {{ label | tr }}</label>
     {% endfor %}
-    <div class="pair">
+    <div class="{{ ui.pair }}">
       <div>
-        <label for="started_on" id="started-label">วันที่เริ่ม</label>
-        <input id="started_on" name="started_on" type="date" value="{{ row.started_on.isoformat() if row and row.started_on else '' }}">
+        <label class="{{ ui.label }}" for="started_on" id="started-label">วันที่เริ่ม</label>
+        <input class="{{ ui.input }}" id="started_on" name="started_on" type="date" value="{{ row.started_on.isoformat() if row and row.started_on else '' }}">
       </div>
       <div id="ended-box">
-        <label for="ended_on">วันที่สิ้นสุด</label>
-        <input id="ended_on" name="ended_on" type="date" value="{{ row.ended_on.isoformat() if row and row.ended_on else '' }}">
+        <label class="{{ ui.label }}" for="ended_on">วันที่สิ้นสุด</label>
+        <input class="{{ ui.input }}" id="ended_on" name="ended_on" type="date" value="{{ row.ended_on.isoformat() if row and row.ended_on else '' }}">
       </div>
     </div>
   </section>
 
-  <section class="card">
-    <h2>สิ่งที่ทำ <span class="muted">(หนึ่งบรรทัดต่อหนึ่งข้อ · ไม่ใส่รายละเอียดลับของบริษัท)</span></h2>
-    <div class="pair">
+  <section class="{{ ui.card }}">
+    <h2 class="{{ ui.h2 }}">สิ่งที่ทำ <span class="font-normal {{ ui.muted }}">(หนึ่งบรรทัดต่อหนึ่งข้อ · ไม่ใส่รายละเอียดลับของบริษัท)</span></h2>
+    <div class="{{ ui.pair }}">
       {% for lang, lang_label in (("th", "ไทย"), ("en", "English")) %}
       {% set value = (row | attr("bullets_" ~ lang)) if row else "" %}
       <div>
-        <label for="bullets_{{ lang }}">{{ lang_label }}{% if row and row.id and not value %} <span class="missing">ยังไม่ได้กรอก</span>{% endif %}</label>
-        <textarea id="bullets_{{ lang }}" name="bullets_{{ lang }}" rows="6">{{ value }}</textarea>
+        <label class="{{ ui.label }}" for="bullets_{{ lang }}">{{ lang_label }}{% if row and row.id and not value %} <span class="{{ ui.missing }}">ยังไม่ได้กรอก</span>{% endif %}</label>
+        <textarea class="{{ ui.textarea }}" id="bullets_{{ lang }}" name="bullets_{{ lang }}" rows="6">{{ value }}</textarea>
       </div>
       {% endfor %}
     </div>
     {{ chips("tag", "เครื่องมือที่ใช้ / tag", "(พิมพ์ชื่อใหม่แล้วกดเพิ่มได้เลย)", "tag_ids", "new_tags", chosen_tags, tag_options, 0) }}
   </section>
 
-  <section class="card">
-    <h2>การแสดงผล</h2>
-    <label class="check"><input type="checkbox" name="hidden" {% if row and row.hidden %}checked{% endif %}> ซ่อนจากหน้าเว็บ</label>
+  <section class="{{ ui.card }}">
+    <h2 class="{{ ui.h2 }}">การแสดงผล</h2>
+    <label class="{{ ui.check_label }}"><input class="{{ ui.checkbox }}" type="checkbox" name="hidden" {% if row and row.hidden %}checked{% endif %}> ซ่อนจากหน้าเว็บ</label>
   </section>
 
-  <p><button>บันทึก</button> <a href="/work">ยกเลิก</a></p>
+  <p class="mt-5 flex items-center gap-3"><button class="{{ ui.btn_primary }}">บันทึก</button> <a class="{{ ui.btn }}" href="/work">ยกเลิก</a></p>
 </form>
 
 {{ chips_script() }}

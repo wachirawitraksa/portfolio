@@ -47,7 +47,7 @@
   --color-warning-content: #2a1f08;
   --color-error: #f14c4c;
   --color-error-content: #ffffff;
-  --radius-selector: 0.5rem;
+  --radius-selector: 0.375rem;
   --radius-field: 0.5rem;
   --radius-box: 0.875rem;
   --size-selector: 0.25rem;
@@ -82,7 +82,7 @@
   --color-warning-content: #ffffff;
   --color-error: #c0392b;
   --color-error-content: #ffffff;
-  --radius-selector: 0.5rem;
+  --radius-selector: 0.375rem;
   --radius-field: 0.5rem;
   --radius-box: 0.875rem;
   --size-selector: 0.25rem;
