@@ -1,42 +1,44 @@
 {% extends "base.html" %}
+{% import "_ui.html" as ui %}
+{% set tw = true %}
 {% block title %}ตั้งค่า{% endblock %}
 {% block content %}
-<h1>ตั้งค่าการแสดงผล</h1>
-{% if error %}<p class="error" role="alert">{{ error | tr }}</p>{% endif %}
+<h1 class="{{ ui.h1 }} mb-3.5">ตั้งค่าการแสดงผล</h1>
+{% if error %}{% call ui.alert("error") %}{{ error | tr }}{% endcall %}{% endif %}
 <form method="post" action="/settings">
   <input type="hidden" name="csrf_token" value="{{ csrf }}">
-  <section class="card">
-    <h2>จำนวนที่แสดงในแต่ละส่วน</h2>
+  <section class="{{ ui.card }}">
+    <h2 class="{{ ui.h2 }}">จำนวนที่แสดงในแต่ละส่วน</h2>
     {% for field, label, hint in fields %}
-    <label for="{{ field }}">{{ label | tr }} <span class="muted">({{ hint | tr }} · {{ min }}–{{ max }})</span></label>
-    <input id="{{ field }}" name="{{ field }}" type="text" inputmode="numeric" value="{{ row | attr(field) }}" style="max-width: 120px">
+    <label class="{{ ui.label }}" for="{{ field }}">{{ label | tr }} <span class="font-normal {{ ui.muted }}">({{ hint | tr }} · {{ min }}–{{ max }})</span></label>
+    <input class="{{ ui.input }} max-w-[120px]" id="{{ field }}" name="{{ field }}" type="text" inputmode="numeric" value="{{ row | attr(field) }}">
     {% endfor %}
   </section>
 
-  <section class="card">
-    <h2>ชื่อและคำอธิบายเว็บ</h2>
-    <p class="muted">ใช้ในผลการค้นหาและตัวอย่างลิงก์ที่แชร์ · เว้นว่าง = ระบบสร้างจากชื่อในข้อมูลส่วนตัว</p>
-    <div class="pair">
-      <div><label for="site_title_th">ชื่อเว็บ · ไทย</label><input id="site_title_th" name="site_title_th" type="text" maxlength="120" value="{{ row.site_title_th }}"></div>
-      <div><label for="site_title_en">ชื่อเว็บ · English</label><input id="site_title_en" name="site_title_en" type="text" maxlength="120" value="{{ row.site_title_en }}"></div>
+  <section class="{{ ui.card }}">
+    <h2 class="{{ ui.h2 }}">ชื่อและคำอธิบายเว็บ</h2>
+    <p class="{{ ui.muted }} my-2">ใช้ในผลการค้นหาและตัวอย่างลิงก์ที่แชร์ · เว้นว่าง = ระบบสร้างจากชื่อในข้อมูลส่วนตัว</p>
+    <div class="{{ ui.pair }}">
+      <div><label class="{{ ui.label }}" for="site_title_th">ชื่อเว็บ · ไทย</label><input class="{{ ui.input }}" id="site_title_th" name="site_title_th" type="text" maxlength="120" value="{{ row.site_title_th }}"></div>
+      <div><label class="{{ ui.label }}" for="site_title_en">ชื่อเว็บ · English</label><input class="{{ ui.input }}" id="site_title_en" name="site_title_en" type="text" maxlength="120" value="{{ row.site_title_en }}"></div>
     </div>
-    <div class="pair">
-      <div><label for="site_description_th">คำอธิบายสั้น ๆ · ไทย</label><textarea id="site_description_th" name="site_description_th" rows="3" maxlength="300">{{ row.site_description_th }}</textarea></div>
-      <div><label for="site_description_en">คำอธิบายสั้น ๆ · English</label><textarea id="site_description_en" name="site_description_en" rows="3" maxlength="300">{{ row.site_description_en }}</textarea></div>
+    <div class="{{ ui.pair }}">
+      <div><label class="{{ ui.label }}" for="site_description_th">คำอธิบายสั้น ๆ · ไทย</label><textarea class="{{ ui.textarea }}" id="site_description_th" name="site_description_th" rows="3" maxlength="300">{{ row.site_description_th }}</textarea></div>
+      <div><label class="{{ ui.label }}" for="site_description_en">คำอธิบายสั้น ๆ · English</label><textarea class="{{ ui.textarea }}" id="site_description_en" name="site_description_en" rows="3" maxlength="300">{{ row.site_description_en }}</textarea></div>
     </div>
   </section>
 
-  <section class="card">
-    <h2>วิธีการทำงาน</h2>
-    <p class="muted">หน้าเว็บเล่าวิธีการทำงานของผมผ่านผลงานจริงหนึ่งชิ้น เลือกชิ้นที่อยากให้ใช้เล่า (ต้องเผยแพร่แล้วจึงจะขึ้นหน้าเว็บ) · ไม่เลือก = ไม่แสดงส่วนนี้</p>
-    <label for="how_i_work_project_id">ผลงานที่ใช้เล่า</label>
-    <select id="how_i_work_project_id" name="how_i_work_project_id" style="max-width: 420px">
+  <section class="{{ ui.card }}">
+    <h2 class="{{ ui.h2 }}">วิธีการทำงาน</h2>
+    <p class="{{ ui.muted }} my-2">หน้าเว็บเล่าวิธีการทำงานของผมผ่านผลงานจริงหนึ่งชิ้น เลือกชิ้นที่อยากให้ใช้เล่า (ต้องเผยแพร่แล้วจึงจะขึ้นหน้าเว็บ) · ไม่เลือก = ไม่แสดงส่วนนี้</p>
+    <label class="{{ ui.label }}" for="how_i_work_project_id">ผลงานที่ใช้เล่า</label>
+    <select class="{{ ui.select }} max-w-[420px]" id="how_i_work_project_id" name="how_i_work_project_id">
       <option value="">— ไม่แสดง —</option>
       {% for p in projects %}
       <option value="{{ p.id }}" {% if chosen == p.id %}selected{% endif %}>{{ p.title_th or p.title_en }}{% if p.status != "published" %} (ยังไม่เผยแพร่){% endif %}</option>
       {% endfor %}
     </select>
   </section>
-  <p><button>บันทึก</button></p>
+  <button class="{{ ui.btn_primary }}">บันทึก</button>
 </form>
 {% endblock %}

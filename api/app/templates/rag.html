@@ -1,50 +1,52 @@
 {% extends "base.html" %}
+{% import "_ui.html" as ui %}
+{% set tw = true %}
 {% block title %}ช่องถามตอบ{% endblock %}
 {% block content %}
-<h1>ช่องถามตอบ (RAG)</h1>
-{% if done %}<p role="status">สร้างข้อมูลสำหรับค้นหาใหม่แล้ว</p>{% endif %}
-<section class="card">
-  <h2>ข้อมูลที่ใช้ค้นหา</h2>
+<h1 class="{{ ui.h1 }} mb-3.5">ช่องถามตอบ (RAG)</h1>
+{% if done %}{% call ui.alert("ok") %}สร้างข้อมูลสำหรับค้นหาใหม่แล้ว{% endcall %}{% endif %}
+<section class="{{ ui.card }}">
+  <h2 class="{{ ui.h2 }}">ข้อมูลที่ใช้ค้นหา</h2>
   {% if total %}
   <p>ทั้งหมด {{ total }} ชิ้น · สร้างเมื่อ {{ built_at.strftime('%Y-%m-%d %H:%M') }}</p>
-  <ul>{% for label, n in counts %}<li>{{ label | tr }}: {{ n }}</li>{% endfor %}</ul>
+  <ul class="my-2 list-disc pl-6">{% for label, n in counts %}<li>{{ label | tr }}: {{ n }}</li>{% endfor %}</ul>
   {% else %}
-  <p class="empty">ยังไม่มีข้อมูล กด "สร้างใหม่" เพื่อเริ่มต้น</p>
+  <p class="{{ ui.empty }}">ยังไม่มีข้อมูล กด "สร้างใหม่" เพื่อเริ่มต้น</p>
   {% endif %}
   {% if status.stale %}
-  <p class="missing" role="status">เนื้อหาเปลี่ยนไปหลังสร้างครั้งล่าสุด
+  {% call ui.alert("warn") %}เนื้อหาเปลี่ยนไปหลังสร้างครั้งล่าสุด
     ({% if status.added %}เพิ่มใหม่ {{ status.added }}{% endif %}{% if status.changed %} ถูกแก้ {{ status.changed }}{% endif %}{% if status.removed %} ถูกลบ {{ status.removed }}{% endif %} ชิ้น)
-    กดสร้างใหม่เพื่อให้ช่องถามตอบเห็นเนื้อหาล่าสุด</p>
+    กดสร้างใหม่เพื่อให้ช่องถามตอบเห็นเนื้อหาล่าสุด{% endcall %}
   {% elif status.built %}
-  <p role="status">ข้อมูลตรงกับเนื้อหาปัจจุบันแล้ว</p>
+  {% call ui.alert("ok") %}ข้อมูลตรงกับเนื้อหาปัจจุบันแล้ว{% endcall %}
   {% endif %}
-  <p class="muted">ช่องถามตอบอ่านเฉพาะผลงาน (เผยแพร่แล้ว), ประวัติการทำงาน (ไม่ซ่อน), บทความ (เผยแพร่แล้ว) และข้อมูลส่วนตัว หลังแก้เนื้อหาต้องกดสร้างใหม่ (glossary มีผลทันที ไม่ต้องสร้างใหม่)</p>
+  <p class="{{ ui.muted }} my-2">ช่องถามตอบอ่านเฉพาะผลงาน (เผยแพร่แล้ว), ประวัติการทำงาน (ไม่ซ่อน), บทความ (เผยแพร่แล้ว) และข้อมูลส่วนตัว หลังแก้เนื้อหาต้องกดสร้างใหม่ (glossary มีผลทันที ไม่ต้องสร้างใหม่)</p>
   <form method="post" action="/rag/rebuild">
     <input type="hidden" name="csrf_token" value="{{ csrf }}">
-    <button{% if status.stale or not status.built %} class="primary"{% endif %}>สร้างข้อมูลสำหรับค้นหาใหม่</button>
+    <button class="{% if status.stale or not status.built %}{{ ui.btn_primary }}{% else %}{{ ui.btn }}{% endif %} mt-2">สร้างข้อมูลสำหรับค้นหาใหม่</button>
   </form>
 </section>
-<section class="card">
-  <h2>ลองถาม <span class="muted">(ดูว่าระบบหาเจออะไร มั่นใจแค่ไหน ยังไม่เรียกโมเดล)</span></h2>
+<section class="{{ ui.card }}">
+  <h2 class="{{ ui.h2 }}">ลองถาม <span class="font-normal {{ ui.muted }}">(ดูว่าระบบหาเจออะไร มั่นใจแค่ไหน ยังไม่เรียกโมเดล)</span></h2>
   <form method="get" action="/rag" hx-boost="false">
-    <label for="q">คำถาม</label>
-    <input id="q" name="q" type="text" maxlength="300" value="{{ q }}">
-    <p><button>ลองค้นหา</button></p>
+    <label class="{{ ui.label }}" for="q">คำถาม</label>
+    <input class="{{ ui.input }}" id="q" name="q" type="text" maxlength="300" value="{{ q }}">
+    <button class="{{ ui.btn_primary }} mt-3">ลองค้นหา</button>
   </form>
   {% if result %}
   {% set p = result.prepared %}
-  <p>
+  <p class="mt-4">
     ความมั่นใจ: <strong>{{ {"high": "สูง", "medium": "กลาง", "low": "ต่ำ / ไม่เจอ"}[result.band] }}</strong>
     ({{ "%.2f" | format(result.top) }})
-    {% if p.keyboard_fixed %}· <span class="missing">แก้แป้นพิมพ์เป็น: {{ p.text }}</span>{% endif %}
+    {% if p.keyboard_fixed %}· <span class="{{ ui.missing }}">แก้แป้นพิมพ์เป็น: {{ p.text }}</span>{% endif %}
   </p>
-  <p class="muted">
+  <p class="{{ ui.muted }} my-2">
     คำที่ใช้ค้น: {{ p.concepts | map(attribute="terms") | map("join", " / ") | join(" · ") or "-" }}
     {% if p.expansions %} · เพิ่มจาก glossary: {{ p.expansions | join(", ") }}{% endif %}
     {% if p.sound %} · เสียง: {{ p.sound }}{% endif %}
   </p>
   {% if result.hits %}
-  <table>
+  <div class="{{ ui.table_box }}"><table class="{{ ui.table }}">
     <thead><tr><th>คะแนน</th><th>keyword</th><th>vector</th><th>trigram</th><th>เสียง</th><th>ที่มา</th></tr></thead>
     <tbody>
     {% for h in result.hits %}
@@ -55,12 +57,12 @@
       </tr>
     {% endfor %}
     </tbody>
-  </table>
+  </table></div>
   {% else %}
-  <p class="empty">ไม่พบข้อมูลที่ตรงกับคำถามนี้</p>
+  <p class="{{ ui.empty }}">ไม่พบข้อมูลที่ตรงกับคำถามนี้</p>
   {% endif %}
   {% endif %}
 </section>
-<p><a href="/rag/questions">ดูคำถามจากผู้เข้าชม (และที่ตอบไม่ได้) →</a></p>
-<p><a href="/glossary">จัดการ glossary →</a></p>
+<p><a class="{{ ui.link }}" href="/rag/questions">ดูคำถามจากผู้เข้าชม (และที่ตอบไม่ได้) →</a></p>
+<p><a class="{{ ui.link }}" href="/glossary">จัดการ glossary →</a></p>
 {% endblock %}

@@ -237,6 +237,7 @@ async def test_dangerous_buttons_are_marked(authed):
 async def test_the_index_button_is_primary_when_the_index_is_out_of_date(authed):
     await add_category(authed)
     await add_project(authed)
-    assert '<button class="primary">สร้างข้อมูลสำหรับค้นหาใหม่</button>' in (await authed.get("/admin/rag")).text
+    assert re.search(r'<button class="[^"]*btn-primary[^"]*">สร้างข้อมูลสำหรับค้นหาใหม่</button>', (await authed.get("/admin/rag")).text)
     await post(authed, "/admin/rag/rebuild")
-    assert '<button>สร้างข้อมูลสำหรับค้นหาใหม่</button>' in (await authed.get("/admin/rag")).text
+    plain = (await authed.get("/admin/rag")).text  # up to date: the button is still there, but no longer the main action
+    assert re.search(r'<button class="(?![^"]*btn-primary)[^"]*">สร้างข้อมูลสำหรับค้นหาใหม่</button>', plain)
