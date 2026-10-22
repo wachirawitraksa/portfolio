@@ -36,5 +36,8 @@ Thumbs.db
 .idea/
 .claude/
 
+# Tailwind / daisyUI CLI downloaded by api/scripts/build_css.*
+api/tools/
+
 # Docs (not committed yet)
 docs/

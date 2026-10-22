@@ -1,0 +1,120 @@
+/* Source of the admin stylesheet. Built by scripts/build_css.sh (or .ps1) into app/static/admin.tw.css.
+
+   Tailwind CSS + daisyUI. The two themes are named "light" and "dark" on purpose: the server already writes
+   <html data-theme="light|dark"> from a cookie, and with no choice made the system setting decides, so none of
+   that logic changes. Colours follow the public site (VS Code Dark+ / Light+). */
+@import "tailwindcss";
+
+/* Every class the admin uses is found here. Class names must be written out whole in the templates
+   (no "btn-" ~ name): Tailwind cannot see names that are put together at run time. */
+@source "../app/templates";
+@source "../app/static/admin.js";
+
+/* Only the daisyUI components the admin uses, which keeps the file small. Add a name here when a template needs another. */
+@plugin "../tools/daisyui.mjs" {
+  themes: false;
+  include: button, card, badge, input, select, textarea, checkbox, radio, toggle, label, fieldset, table, alert,
+    menu, dropdown, collapse, stat, join, divider, tab, tooltip, link, loading, list, status, kbd, validator, filter;
+}
+
+@plugin "../tools/daisyui-theme.mjs" {
+  name: "dark";
+  default: false;
+  prefersdark: true;
+  color-scheme: dark;
+  --color-base-100: #1e1e1e;
+  --color-base-200: #252526;
+  --color-base-300: #3a3a3a;
+  --color-base-content: #d4d4d4;
+  --color-primary: #3794ff;
+  --color-primary-content: #ffffff;
+  --color-secondary: #569cd6;
+  --color-secondary-content: #ffffff;
+  --color-accent: #4ec9b0;
+  --color-accent-content: #102a25;
+  --color-neutral: #2c2c2c;
+  --color-neutral-content: #e5e5e5;
+  --color-info: #569cd6;
+  --color-info-content: #0b1a28;
+  --color-success: #22c55e;
+  --color-success-content: #06210f;
+  --color-warning: #dcb67a;
+  --color-warning-content: #2a1f08;
+  --color-error: #f14c4c;
+  --color-error-content: #ffffff;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.875rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+@plugin "../tools/daisyui-theme.mjs" {
+  name: "light";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+  --color-base-100: #ffffff;
+  --color-base-200: #f6f6f6;
+  --color-base-300: #e3e3e3;
+  --color-base-content: #333333;
+  --color-primary: #005fb8;
+  --color-primary-content: #ffffff;
+  --color-secondary: #1f6f86;
+  --color-secondary-content: #ffffff;
+  --color-accent: #1f6f86;
+  --color-accent-content: #ffffff;
+  --color-neutral: #2c2c2c;
+  --color-neutral-content: #e5e5e5;
+  --color-info: #0b5ea8;
+  --color-info-content: #ffffff;
+  --color-success: #2e7d32;
+  --color-success-content: #ffffff;
+  --color-warning: #946000;
+  --color-warning-content: #ffffff;
+  --color-error: #c0392b;
+  --color-error-content: #ffffff;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.875rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+/* Self-hosted fonts, the same families as the public site. unicode-range lets the browser fetch only what a page uses:
+   Poppins for Latin, IBM Plex Sans Thai for Thai, JetBrains Mono for code and numbers. */
+@font-face { font-family: "Poppins"; font-weight: 400; font-display: swap; src: url("/static/fonts/poppins-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Poppins"; font-weight: 500; font-display: swap; src: url("/static/fonts/poppins-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Poppins"; font-weight: 600; font-display: swap; src: url("/static/fonts/poppins-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Poppins"; font-weight: 700; font-display: swap; src: url("/static/fonts/poppins-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "IBM Plex Sans Thai"; font-weight: 400; font-display: swap; src: url("/static/fonts/ibm-plex-sans-thai-thai-400-normal.woff2") format("woff2"); unicode-range: U+0E01-0E5B, U+200C-200D, U+25CC; }
+@font-face { font-family: "IBM Plex Sans Thai"; font-weight: 500; font-display: swap; src: url("/static/fonts/ibm-plex-sans-thai-thai-500-normal.woff2") format("woff2"); unicode-range: U+0E01-0E5B, U+200C-200D, U+25CC; }
+@font-face { font-family: "IBM Plex Sans Thai"; font-weight: 600; font-display: swap; src: url("/static/fonts/ibm-plex-sans-thai-thai-600-normal.woff2") format("woff2"); unicode-range: U+0E01-0E5B, U+200C-200D, U+25CC; }
+@font-face { font-family: "IBM Plex Sans Thai"; font-weight: 700; font-display: swap; src: url("/static/fonts/ibm-plex-sans-thai-thai-700-normal.woff2") format("woff2"); unicode-range: U+0E01-0E5B, U+200C-200D, U+25CC; }
+@font-face { font-family: "JetBrains Mono"; font-weight: 400; font-display: swap; src: url("/static/fonts/jetbrains-mono-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "JetBrains Mono"; font-weight: 500; font-display: swap; src: url("/static/fonts/jetbrains-mono-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "JetBrains Mono"; font-weight: 700; font-display: swap; src: url("/static/fonts/jetbrains-mono-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+
+@theme {
+  --font-sans: "Poppins", "IBM Plex Sans Thai", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  /* The phone breakpoint the old stylesheet used (the sidebar becomes a drawer below it). */
+  --breakpoint-nav: 861px;
+}
+
+@layer base {
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden; /* a wide table scrolls inside its own box, never the page */
+  }
+  body {
+    font-family: var(--font-sans);
+  }
+}
