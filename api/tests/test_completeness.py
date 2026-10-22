@@ -352,3 +352,56 @@ async def test_the_preview_buttons_are_on_the_forms_of_existing_entries_only(aut
 async def test_preview_routes_need_a_login(client):
     assert (await client.get("/admin/projects/1/preview")).status_code == 303
     assert (await client.get("/admin/articles/1/preview")).status_code == 303
+
+
+# --- the dashboard notices a model that stopped answering -----------------------------------------------------
+
+
+async def add_question(mode, band, cached=False, ago_hours=1):
+    from datetime import datetime, timedelta, timezone
+
+    from app.models import RagQuery
+
+    async with SessionLocal() as db:
+        db.add(RagQuery(question="q", mode=mode, band=band, cached=cached, created_at=datetime.now(timezone.utc) - timedelta(hours=ago_hours)))
+        await db.commit()
+
+
+async def home_text(c, lang=None):
+    if lang:
+        c.cookies.set("lang", lang)
+    try:
+        return (await c.get("/admin/")).text
+    finally:
+        c.cookies.delete("lang")
+
+
+async def test_failing_model_calls_are_flagged_on_the_dashboard(authed, monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "key")
+    await add_question("fallback", "high")
+    await add_question("fallback", "medium")
+    page = await home_text(authed)
+    assert "โมเดลตอบคำถามล้มเหลว 2 ครั้ง" in page and "docker logs portfolio-api" in page
+    assert re.search(r'bg-error[^"]*">โมเดลตอบคำถาม\s+ล้มเหลว 2 ครั้ง', page)
+
+
+async def test_the_failure_note_is_translated(authed, monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "key")
+    await add_question("fallback", "high")
+    page = await home_text(authed, "en")
+    assert "The answer model failed 1 time(s)" in page and "ล้มเหลว" not in page
+
+
+async def test_no_key_means_the_fallback_is_expected_not_a_failure(authed, monkeypatch):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    await add_question("fallback", "high")
+    assert "ล้มเหลว" not in await home_text(authed)
+
+
+async def test_only_recent_real_failures_count(authed, monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "key")
+    await add_question("fallback", "high", ago_hours=30)  # yesterday's
+    await add_question("fallback", "high", cached=True)  # a cached copy of an old one
+    await add_question("no_answer", "low")  # nothing matched: no model was asked
+    await add_question("answer", "high")  # worked
+    assert "ล้มเหลว" not in await home_text(authed)

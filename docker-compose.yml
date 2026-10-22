@@ -19,6 +19,14 @@ services:
       API_INTERNAL_URL: http://api:8000
       # Used for absolute URLs (link previews, sitemap). Set SITE_URL in .env for https or a different address.
       SITE_URL: ${SITE_URL:-http://${SITE_DOMAIN}}
+    # Healthy when the site answers. robots.txt is a plain page that does not call the API, so this says "the web
+    # server is alive", and /api/health says whether the API and its database are.
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/robots.txt').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 6s
+      retries: 3
+      start_period: 20s
     # Dev only: direct access, bypasses the proxy. Localhost only.
     ports: ["127.0.0.1:${WEB_PORT:-3000}:3000"]
 
@@ -72,6 +80,19 @@ services:
     # Dev only: S3 API for debugging. Localhost only. Images reach browsers through the API, not directly.
     ports: ["127.0.0.1:${S3_PORT:-9100}:9000"]
 
+  # Optional uptime monitor with alerts (Discord, Telegram, email ...): `docker compose --profile monitor up -d`,
+  # then open http://localhost:${MONITOR_PORT:-3001} and follow OPERATIONS.md. Off by default.
+  monitor:
+    profiles: ["monitor"]
+    image: louislam/uptime-kuma:2.5.6
+    container_name: portfolio-monitor
+    restart: unless-stopped
+    volumes:
+      - monitor-data:/app/data
+    # Local only. Put it behind the proxy with its own password before ever exposing it.
+    ports: ["127.0.0.1:${MONITOR_PORT:-3001}:3001"]
+
 volumes:
+  monitor-data:
   db-data:
   storage-data:

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 const LANGS = ["th", "en"];
 
 // "/" and any path without a language prefix go to Thai.
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const first = req.nextUrl.pathname.split("/")[1];
   if (LANGS.includes(first)) return;
   const url = req.nextUrl.clone();

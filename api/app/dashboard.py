@@ -95,6 +95,16 @@ async def overview(db: AsyncSession, storage: Storage) -> dict:
     unanswered = await scalar(
         db, select(func.count()).select_from(RagQuery).where(RagQuery.created_at > week_ago, RagQuery.mode.in_(UNANSWERED))
     )
+    # A good match answered with "go and read it yourself" means the model could not be reached (retired model,
+    # quota, bad key, outage). Only counted when a key is set: without one the fallback is the intended behaviour.
+    llm_failures = 0
+    if settings.gemini_api_key:
+        llm_failures = await scalar(
+            db,
+            select(func.count()).select_from(RagQuery).where(
+                RagQuery.created_at > day_ago, RagQuery.mode == "fallback", RagQuery.band != "low", RagQuery.cached.is_(False)
+            ),
+        )
 
     # Translation gaps: text filled in one language and empty in the other.
     live_projects = (await db.execute(select(Project).where(Project.deleted_at.is_(None)))).scalars().all()
@@ -132,6 +142,8 @@ async def overview(db: AsyncSession, storage: Storage) -> dict:
     if any(v == "fail" for v in status.values()):
         failed = " และ ".join({"database": "ฐานข้อมูล", "storage": "ที่เก็บไฟล์"}[k] for k, v in status.items() if v == "fail")
         todo.append({"level": "warn", "text": f"{failed}ไม่ตอบสนอง", "href": "/", "cta": "ดูสถานะ"})
+    if llm_failures:
+        todo.append({"level": "warn", "text": f"โมเดลตอบคำถามล้มเหลว {llm_failures} ครั้งใน 24 ชั่วโมงที่ผ่านมา ผู้เข้าชมได้คำตอบแบบพาไปอ่านเองแทน (ดูสาเหตุ: docker logs portfolio-api)", "href": "/rag/questions", "cta": "ดูคำถาม"})
     if index["stale"]:
         parts = [f"{label} {index[key]}" for label, key in (("เพิ่มใหม่", "added"), ("ถูกแก้", "changed"), ("ถูกลบ", "removed")) if index[key]]
         todo.append({"level": "warn", "text": f"ข้อมูลช่องถามตอบล้าสมัย ({' · '.join(parts)} ชิ้น)", "href": "/rag", "cta": "สร้างข้อมูลใหม่"})
@@ -163,7 +175,7 @@ async def overview(db: AsyncSession, storage: Storage) -> dict:
         "education": {"live": education_live, "hidden": education_hidden},
         "images": images,
         "counts": counts,
-        "questions": {"asked": asked_today, "model_calls": model_calls, "unanswered": unanswered},
+        "questions": {"asked": asked_today, "model_calls": model_calls, "unanswered": unanswered, "llm_failures": llm_failures},
         "trashed": trashed,
         "health": status,
         "index": index,

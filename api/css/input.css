@@ -3,7 +3,9 @@
    Tailwind CSS + daisyUI. The two themes are named "light" and "dark" on purpose: the server already writes
    <html data-theme="light|dark"> from a cookie, and with no choice made the system setting decides, so none of
    that logic changes. Colours follow the public site (VS Code Dark+ / Light+). */
-@import "tailwindcss";
+/* source(none): look only at the @source paths below. Without it Tailwind scans every file in the project (tests,
+   scripts, caches...) and the output would depend on what happens to be on disk. */
+@import "tailwindcss" source(none);
 
 /* Every class the admin uses is found here. Class names must be written out whole in the templates
    (no "btn-" ~ name): Tailwind cannot see names that are put together at run time. */

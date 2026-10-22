@@ -34,7 +34,7 @@ CATALOG: dict[str, str] = {
     "ซ่อนอยู่": "Hidden", "ถูกซ่อน": "Hidden", "สร้างข้อมูลใหม่": "Rebuild", "เผยแพร่": "Published", "ร่าง": "Draft", "หน้าแรก": "Home page", "ขึ้นหน้าแรก": "Show on the home page",
     "เอาออกจากหน้าแรก": "Remove from the home page", "ชื่อ": "Name", "ไทย": "Thai", "ชื่อไทย": "Thai name", "ชื่ออังกฤษ": "English name",
     "ชื่อภาษาไทย": "Name in Thai", "ชื่อภาษาอังกฤษ": "Name in English", "ปี": "Year", "สถานะ": "Status", "รายการ": "items",
-    "ชิ้น": "items", "ครั้ง": "times", "วัน": "days", "คะแนน": "Score", "ที่มา": "Source", "แหล่งที่มา": "Sources", "เสียง": "Sound",
+    "ล้มเหลว": "failing", "ชิ้น": "items", "ครั้ง": "times", "วัน": "days", "คะแนน": "Score", "ที่มา": "Source", "แหล่งที่มา": "Sources", "เสียง": "Sound",
     "ล่าสุด": "Latest", "ผล": "Result", "คำถาม": "Question", "คำ": "Word", "ผลลัพธ์": "Result", "โจทย์": "Problem",
     "บทบาท": "Role", "สิ่งที่ทำ": "What I did", "รายละเอียด": "Details", "รูป": "Image", "รูปภาพ": "Images", "รูปปก": "Cover image",
     "รูป #": "Image #", "ลิงก์": "Link", "อีเมล": "Email", "รหัสผ่าน": "Password", "ที่อยู่": "Location", "ที่ทำงาน": "Workplace",
@@ -226,6 +226,7 @@ CATALOG: dict[str, str] = {
 
 # Sentences with numbers or names inside. {0}, {1} are filled from the Thai text; the English may reorder them.
 PATTERNS: dict[str, str] = {
+    "โมเดลตอบคำถามล้มเหลว {0} ครั้งใน 24 ชั่วโมงที่ผ่านมา ผู้เข้าชมได้คำตอบแบบพาไปอ่านเองแทน (ดูสาเหตุ: docker logs portfolio-api)": "The answer model failed {0} time(s) in the last 24 hours; visitors were pointed to the right page instead (see the cause: docker logs portfolio-api)",
     "{0} – ปัจจุบัน": "{0} – present",
     "{0}ต้องขึ้นต้นด้วย http:// หรือ https://": "{0} must start with http:// or https://",
     "มีผลงานฉบับร่าง {0} ชิ้นที่ยังไม่เผยแพร่": "{0} draft project(s) not published yet",

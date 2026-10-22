@@ -48,7 +48,7 @@
       <div class="health flex flex-wrap gap-2">
         {% call ui.badge('ok' if health.database == 'ok' else 'bad') %}ฐานข้อมูล {{ 'ปกติ' if health.database == 'ok' else 'ไม่ตอบสนอง' }}{% endcall %}
         {% call ui.badge('ok' if health.storage == 'ok' else 'bad') %}ที่เก็บไฟล์ {{ 'ปกติ' if health.storage == 'ok' else 'ไม่ตอบสนอง' }}{% endcall %}
-        {% call ui.badge('ok' if gemini else 'warn') %}โมเดลตอบคำถาม {{ 'ตั้งค่าแล้ว' if gemini else 'ยังไม่ตั้งค่า' }}{% endcall %}
+        {% call ui.badge('bad' if questions.llm_failures else ('ok' if gemini else 'warn')) %}โมเดลตอบคำถาม {% if questions.llm_failures %}ล้มเหลว {{ questions.llm_failures }} ครั้ง{% elif gemini %}ตั้งค่าแล้ว{% else %}ยังไม่ตั้งค่า{% endif %}{% endcall %}
         {% call ui.badge('ok' if github else '') %}GitHub login {{ 'เปิด' if github else 'ปิด' }}{% endcall %}
         {% call ui.badge('warn' if index.stale else 'ok') %}ข้อมูลช่องถามตอบ {{ 'ล้าสมัย' if index.stale else ('ตรงกับเนื้อหา' if index.built else 'ยังไม่ได้สร้าง') }}{% endcall %}
       </div>
