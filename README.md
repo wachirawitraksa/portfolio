@@ -1,18 +1,43 @@
+<div align="center">
+
 # Portfolio
 
-A bilingual (Thai / English) personal portfolio website with a private back office and a built-in
-**"ask about me"** assistant that answers visitors' questions *only* from what is published on the site.
+**A bilingual (Thai / English) portfolio with a private back office and an *"ask about me"* assistant.**
 
-The public site looks and behaves like a code editor (explorer, tabs, terminal panel, light/dark themes).
-Everything on it comes from one API: the owner edits content in a server-rendered admin, and the site updates on the
-next page load. There is no content hard-coded in the front end.
+The public site looks and behaves like a code editor. Every word on it comes from one API,
+and the assistant answers visitors *only* from what is published there.
 
 [![CI](https://github.com/wachirawitraksa/portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/wachirawitraksa/portfolio/actions/workflows/ci.yml)
 ![License](https://img.shields.io/badge/license-MIT-blue)
+![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+
+[Quick start](#12-run-it-locally) ·
+[Architecture](#2-architecture) ·
+[The assistant](#8-the-ask-about-me-assistant-rag) ·
+[Security](#10-security-model) ·
+[Deploy](DEPLOY.md) ·
+[Operations](OPERATIONS.md)
+
+</div>
 
 ---
 
-## Table of contents
+## At a glance
+
+| | |
+|---|---|
+| **Public site** | Next.js 16, server-rendered, Thai and English, code-editor look with light and dark themes |
+| **Back office** | Server-rendered admin on its own host name, password + TOTP login, trash with restore, draft previews |
+| **Assistant** | Local search first, one language-model call only to phrase the answer, always cites its sources |
+| **Data** | PostgreSQL with pgvector and pg_trgm, S3-compatible object storage |
+| **Run it** | `docker compose up -d --build`, then see [Run it locally](#12-run-it-locally) |
+| **Production** | HTTPS Caddy, backup / verify / restore scripts, optional uptime monitor |
+
+<details>
+<summary><b>Table of contents</b></summary>
 
 1. [What it does](#1-what-it-does)
 2. [Architecture](#2-architecture)
@@ -32,6 +57,8 @@ next page load. There is no content hard-coded in the front end.
 16. [Going to production](#16-going-to-production)
 17. [Design decisions](#17-design-decisions)
 18. [License](#18-license)
+
+</details>
 
 ---
 
@@ -695,8 +722,10 @@ docker compose logs -f api              # follow the API log
 docker compose up -d --build api        # apply a code or .env change to one service
 docker compose --profile monitor up -d  # optional uptime monitor (see OPERATIONS.md)
 docker compose down                     # stop (data stays in volumes)
-# docker compose down -v                # DANGER: also deletes the database and uploaded files
 ```
+
+> [!CAUTION]
+> `docker compose down -v` also deletes the database and the uploaded files. Never run it on a server with real content.
 
 Data lives in two named volumes: `db-data` (PostgreSQL) and `storage-data` (images and CVs).
 
